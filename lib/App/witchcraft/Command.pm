@@ -6,7 +6,8 @@ use constant global_options => ( 'help' => 'help' );
 
 sub alias {
     (   "l" => "list",
-        "s" => "sync"
+        "s" => "sync",
+        "e" => "euscan"
     );
 }
 
