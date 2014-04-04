@@ -43,7 +43,10 @@ sub update {
     my $Package = shift;
     my @temp    = @_;
     return if ( !$self->{update} and !$self->{check} );
-    my $dir = $self->{root} || "/home/mudler/_git/gentoo-overlay";
+    my $dir
+        = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
+        ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
+        : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
     info 'repository doesn\'t have that atom (' . $atom . ')' and return
         if ( !-d $atom );
