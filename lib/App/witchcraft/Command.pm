@@ -1,6 +1,6 @@
 package App::witchcraft::Command;
 use App::witchcraft;
-use base qw(App::CLI App::CLI::Command);
+use base qw(App::CLI::Command App::CLI);
 
 use constant global_options => ( 'help' => 'help' );
 

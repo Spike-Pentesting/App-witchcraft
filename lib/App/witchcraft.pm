@@ -2,6 +2,7 @@ package App::witchcraft;
 
 use strict;
 use 5.008_005;
+use App::CLI;
 our $VERSION = '0.01';
 
 1;
