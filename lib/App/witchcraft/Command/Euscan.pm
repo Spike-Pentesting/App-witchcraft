@@ -85,8 +85,8 @@ sub update {
             if(system("sudo ebuild $updated merge")==0){
                 notice $updated." merged";
                 chdir($atom);
-                git::add './' if ($self->{install});
-                git::commit -m => 'added '.$Package if ($self->{install});
+                git::add './' if ($self->{git});
+                git::commit -m => 'added '.$pack  if ($self->{git});
             }
         }
     }
