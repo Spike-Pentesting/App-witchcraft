@@ -16,7 +16,7 @@ sub options {
         "r|root"     => "root",
         "m|manifest" => "manifest",
         "i|install"  => "install",
-        "g|git"  => "git"
+        "g|git"      => "git"
     );
 }
 
@@ -47,14 +47,16 @@ sub update {
     my $Package = shift;
     my @temp    = @_;
     return if ( !$self->{update} and !$self->{check} );
+    error "\n";
+    error "|===================================================\\";
     my $dir
         = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
-    info 'repository doesn\'t have that atom (' . $atom . ')' and return
+    info '|| - repository doesn\'t have that atom (' . $atom . ')' and return
         if ( !-d $atom );
-    notice 'opening ' . $atom;
+    notice '|| - opening ' . $atom;
     opendir( DH, $atom );
     my @files = grep {/\.ebuild$/}
         sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
@@ -63,33 +65,38 @@ sub update {
     my $pack = shift @temp;
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;
     my $updated = join( '/', $atom, $pack . '.ebuild' );
-    info "Searching for $pack";
+    info "|| - Searching for $pack";
 
     if ( !-f $updated ) {
         return if ( $self->{check} and -f $updated );
         my $last = shift @files;
         my $source = join( '/', $atom, $last );
-        notice $last. ' was chosen to be the source of the new version';
-        notice $updated . " updated"
+        notice "|| - ".$last. ' was chosen to be the source of the new version';
+        notice "|| - ".$updated . " updated"
             if defined $last and copy( $source, $updated );
     }
     else {
-        info "Update to $Package already exists";
+        info "|| - Update to $Package already exists";
     }
     return if ( !$self->{manifest} );
     if ( system("ebuild $updated manifest") == 0 ) {
-        notice 'Manifest created successfully';
+        notice '|| - Manifest created successfully';
         return if ( !$self->{install} );
         if ( system("ebuild $updated install") == 0 ) {
-            info 'Installation OK';
-            if(system("sudo ebuild $updated merge")==0){
-                notice $updated." merged";
+            info '|| - Installation OK';
+            if ( system("sudo ebuild $updated merge") == 0 ) {
+                notice "|| - ".$updated. " merged";
                 chdir($atom);
-                git::add './' if ($self->{git});
-                git::commit -m => 'added '.$pack  if ($self->{git});
+                git::add './' and info '|| - Added to git index of the repository'
+                    if ( $self->{git} );
+                git::commit -m => 'added ' . $pack
+                    and info '|| - Committed with "' . 'added ' . $pack . "'"
+                    if ( $self->{git} );
             }
         }
     }
+    error "||\n";
+    error "|===================================================/";
 }
 
 1;
