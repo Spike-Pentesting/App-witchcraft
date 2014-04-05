@@ -4,15 +4,18 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
+use Ebuild::Sub;
 use File::stat;
 use File::Copy;
 
 sub options {
-    (   "v|verbose" => "verbose",
-        "q|quiet"   => "quiet",
-        "c|check"   => "check",
-        "u|update"  => "update",
-        "r|root"    => "root"
+    (   "v|verbose"  => "verbose",
+        "q|quiet"    => "quiet",
+        "c|check"    => "check",
+        "u|update"   => "update",
+        "r|root"     => "root",
+        "m|manifest" => "manifest",
+        "i|install"  => "install"
     );
 }
 
@@ -70,6 +73,12 @@ sub update {
     notice $last. ' was chosen to be the source of the new version';
     notice $updated . " updated"
         if defined $last and copy( $source, $updated );
+    return if ( !$self->{manifest} );
 
+    ebuild $updated. " manifest";
+    return if ( !$self->{install} );
+    ebuild $updated. " install";
+    ebuild $updated. " merge";
 }
+
 1;
