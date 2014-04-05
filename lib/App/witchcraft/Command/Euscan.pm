@@ -74,10 +74,10 @@ sub update {
         if defined $last and copy( $source, $updated );
     return if ( !$self->{manifest} );
     use Ebuild::Sub; #lazy load
-    ebuild $updated. " manifest";
+    info ebuild $updated. " manifest";
     return if ( !$self->{install} );
-    ebuild $updated. " install";
-    ebuild $updated. " merge";
+    info ebuild $updated. " install";
+    info ebuild $updated. " merge";
 }
 
 1;
