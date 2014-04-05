@@ -92,22 +92,19 @@ sub update {
         return undef if ( !$self->{install} );
         if ( system("ebuild $updated install") == 0 ) {
             info '|| - Installation OK';
-
             chdir($atom);
-            git::add './'
-                and info '|| - Added to git index of the repository'
-                if ( $self->{git} );
-            git::commit -m => 'added ' . $pack
-                and info '|| - Committed with "' . 'added ' . $pack . "'"
-                if ( $self->{git} );
-
+            if ( $self->{git} ) {
+                git::add './';
+                info '|| - Added to git index of the repository';
+                git::commit -m => 'added ' . $pack;
+                info '|| - Committed with "' . 'added ' . $pack . "'";
+            }
         }
     }
     error "||\n";
     error "|===================================================/";
     return join( "/", $Package, $pack );
 
-    
 }
 
 1;
