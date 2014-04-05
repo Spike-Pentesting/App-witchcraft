@@ -1,8 +1,12 @@
 use strict;
 use Test::More;
-use App::witchcraft;
 
 # replace with the actual test
-ok 1;
+use_ok("App::witchcraft");
+use_ok("App::witchcraft::Command::Sync");
+use_ok("App::witchcraft::Command::List");
+use_ok("App::witchcraft::Command::Euscan");
+use_ok("App::witchcraft::Command");
+use_ok("App::witchcraft::Utils");
 
 done_testing;
