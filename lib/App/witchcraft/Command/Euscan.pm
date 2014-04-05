@@ -4,7 +4,6 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
-use Ebuild::Sub;
 use File::stat;
 use File::Copy;
 
@@ -74,7 +73,7 @@ sub update {
     notice $updated . " updated"
         if defined $last and copy( $source, $updated );
     return if ( !$self->{manifest} );
-
+    use Ebuild::Sub; #lazy load
     ebuild $updated. " manifest";
     return if ( !$self->{install} );
     ebuild $updated. " install";
