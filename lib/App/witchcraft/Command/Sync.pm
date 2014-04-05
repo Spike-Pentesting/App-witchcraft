@@ -9,10 +9,11 @@ use File::Copy;
 use Regexp::Common qw/URI/;
 
 sub options {
-    (   "verbose"            => "verbose",
-        "e|echo=s"           => "echo",
-        "r|refactor=s"       => "refactor",
-        "t|refactortarget=s" => 'refactor_target'
+    (   "r|refactor=s"       => "refactor",          #Who is to refactor?
+        "t|refactortarget=s" => 'refactor_target',   #Who is the substitution?
+        "u|update" => "update",    #Wanna transfer directly the new files?
+        "r|root=s" => "root",      #where is the git repository?
+        "t|temp=s" => "temp"       #temp directory for the svn checkout
     );
 }
 
@@ -20,9 +21,10 @@ sub run {
     my $self     = shift;
     my $RepoUrl  = shift // 'http://pentoo.googlecode.com/svn/portage/trunk';
     my $refactor = $self->{'refactor'} // 'pentoo';
+    my $temp     = $self->{'temp'} // '/var/tmp/spike-trunk';
     my $refactor_target = $self->{'refactor_target'} // 'spike';
-    my @ignores
-        = qw(compat-wireless linux-live profiles prism54 compat-drivers acpid layout.conf linux-sources genmenu openrc mkxf86config genkernel);
+    my @ignores         = <DATA>;
+    chomp(@ignores);
     my $flatten = join( "|", @ignores );
     my $l_r     = lc($refactor);
     my $u_r     = uc($refactor);
@@ -32,7 +34,7 @@ sub run {
     my $m_t     = uc( substr( $refactor_target, 0, 1 ) )
         . substr( $refactor_target, 1 );
 
-    system("svn checkout $RepoUrl /var/tmp/spike-trunk");
+    system( "svn checkout $RepoUrl " . $temp );
     finddepth(
         sub {
             my $file      = $File::Find::name;
@@ -49,12 +51,13 @@ sub run {
                 return;
             }
 
-            if (    -f $file and
-                 $file_name =~ /\.ebuild$/ )
+            if ( -f $file
+                and $file_name =~ /\.ebuild$/ )
             {
                 info "[File] $file contains pentoo";
 
                 my $new_pos = $file;
+
                 # $new_pos =~ s/$l_r/$l_t/gi;
                 # move( $file, $new_pos );
                 # notice "$file moved to $new_pos";
@@ -93,10 +96,16 @@ sub run {
             }
 
         },
-        '/var/tmp/spike-trunk'
+        $temp
     );
-
-    #unlink("/var/tmp/spike-trunk/.svn");
+    #unlink( $temp . "/.svn" );
+    return if ( !$self->{update} );
+    info "Copying content to git directory";
+    my $dir
+        = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
+        ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
+        : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
+    system( "rsync -avp " . $temp . "/* $dir\/" );
     exit;
 }
 
@@ -105,14 +114,16 @@ sub refactor {
 }
 
 1;
-
-__END__
-            if ( -d $file and $file_name =~ /$refactor/i ) {
-                my $new_pos = $file;
-                notice "[Directory] $file contains $refactor";
-                $new_pos =~ s/$l_r/$refactor_target/gi;
-                move( $file, $new_pos );
-                notice "$file moved to $new_pos";
-
-            }
-            els
+__DATA__
+compat-wireless
+linux-live
+profiles
+prism54
+compat-drivers
+acpid
+layout.conf
+linux-sources
+genmenu
+openrc
+mkxf86config
+genkernel
