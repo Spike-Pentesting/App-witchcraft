@@ -75,10 +75,10 @@ sub update {
     }
     return if ( !$self->{manifest} );
     use Ebuild::Sub;    #lazy load
-    info ebuild $updated. " manifest";
+    info ebuild($updated. " manifest");
     return if ( !$self->{install} );
-    info ebuild $updated. " install";
-    info ebuild $updated. " merge";
+    info ebuild($updated. " install");
+    info ebuild($updated. " merge");
 }
 
 1;
