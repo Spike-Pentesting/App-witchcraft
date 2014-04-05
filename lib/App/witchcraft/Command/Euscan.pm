@@ -26,6 +26,7 @@ sub run {
     my @Packages = `equo query list available $Repo -q`;
     chomp(@Packages);
     my @Updates;
+    my @Added;
     foreach my $Package (@Packages) {
         notice $Package if $self->{verbose};
         my @temp = `euscan -q -C $Package`;
@@ -34,19 +35,23 @@ sub run {
             info "\t" . $_, for @temp;
         }
         push( @Updates, @temp );
-        $self->update( $Package, @temp ) if ( @temp > 0 );
+        push( @Added, $self->update( $Package, @temp ) ) if ( @temp > 0 );
     }
+    info git::push;
     if ( @Updates > 0 ) {
         print $_ . "\n" for @Updates;
     }
-
+    if ( $self->{git} ) {
+        system("layman -S")
+            && system( "emerge -av " . join( " ", @Added ) );
+    }
 }
 
 sub update {
     my $self    = shift;
     my $Package = shift;
     my @temp    = @_;
-    return if ( !$self->{update} and !$self->{check} );
+    return undef if ( !$self->{update} and !$self->{check} );
     error "\n";
     error "|===================================================\\";
     my $dir
@@ -54,7 +59,8 @@ sub update {
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
-    info '|| - repository doesn\'t have that atom (' . $atom . ')' and return
+    info '|| - repository doesn\'t have that atom (' . $atom . ')'
+        and return undef
         if ( !-d $atom );
     notice '|| - opening ' . $atom;
     opendir( DH, $atom );
@@ -63,40 +69,45 @@ sub update {
         grep { -f join( '/', $atom, $_ ) } readdir(DH);
     closedir(DH);
     my $pack = shift @temp;
+
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;
     my $updated = join( '/', $atom, $pack . '.ebuild' );
     info "|| - Searching for $pack";
 
     if ( !-f $updated ) {
-        return if ( $self->{check} and -f $updated );
+        return undef if ( $self->{check} and -f $updated );
         my $last = shift @files;
         my $source = join( '/', $atom, $last );
-        notice "|| - ".$last. ' was chosen to be the source of the new version';
-        notice "|| - ".$updated . " updated"
+        notice "|| - " . $last
+            . ' was chosen to be the source of the new version';
+        notice "|| - " . $updated . " updated"
             if defined $last and copy( $source, $updated );
     }
     else {
         info "|| - Update to $Package already exists";
     }
-    return if ( !$self->{manifest} );
+    return undef if ( !$self->{manifest} );
     if ( system("ebuild $updated manifest") == 0 ) {
         notice '|| - Manifest created successfully';
-        return if ( !$self->{install} );
+        return undef if ( !$self->{install} );
         if ( system("ebuild $updated install") == 0 ) {
             info '|| - Installation OK';
-            if ( system("sudo ebuild $updated merge") == 0 ) {
-                notice "|| - ".$updated. " merged";
-                chdir($atom);
-                git::add './' and info '|| - Added to git index of the repository'
-                    if ( $self->{git} );
-                git::commit -m => 'added ' . $pack
-                    and info '|| - Committed with "' . 'added ' . $pack . "'"
-                    if ( $self->{git} );
-            }
+
+            chdir($atom);
+            git::add './'
+                and info '|| - Added to git index of the repository'
+                if ( $self->{git} );
+            git::commit -m => 'added ' . $pack
+                and info '|| - Committed with "' . 'added ' . $pack . "'"
+                if ( $self->{git} );
+
         }
     }
     error "||\n";
     error "|===================================================/";
+    return join( "/", $Package, $pack );
+
+    
 }
 
 1;
