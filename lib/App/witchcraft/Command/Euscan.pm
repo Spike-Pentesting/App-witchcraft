@@ -6,7 +6,7 @@ use strict;
 use App::witchcraft::Utils;
 use File::stat;
 use File::Copy;
-use Ebuild::Sub;
+use Git::Sub qw(add commit);
 
 sub options {
     (   "v|verbose"  => "verbose",
@@ -15,7 +15,8 @@ sub options {
         "u|update"   => "update",
         "r|root"     => "root",
         "m|manifest" => "manifest",
-        "i|install"  => "install"
+        "i|install"  => "install",
+        "g|git"  => "git"
     );
 }
 
@@ -63,6 +64,7 @@ sub update {
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;
     my $updated = join( '/', $atom, $pack . '.ebuild' );
     info "Searching for $pack";
+
     if ( !-f $updated ) {
         return if ( $self->{check} and -f $updated );
         my $last = shift @files;
@@ -75,10 +77,19 @@ sub update {
         info "Update to $Package already exists";
     }
     return if ( !$self->{manifest} );
-    info ebuild($updated,"manifest");
-    return if ( !$self->{install} );
-    info ebuild($updated,"install");
-    info system("sudo ebuild $updated merge");
+    if ( system("ebuild $updated manifest") == 0 ) {
+        notice 'Manifest created successfully';
+        return if ( !$self->{install} );
+        if ( system("ebuild $updated install") == 0 ) {
+            info 'Installation OK';
+            if(system("sudo ebuild $updated merge")==0){
+                notice $updated." merged";
+                chdir($atom);
+                git::add './' if ($self->{install});
+                git::commit -m => 'added '.$Package if ($self->{install});
+            }
+        }
+    }
 }
 
 1;
