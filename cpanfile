@@ -1,6 +1,6 @@
 requires 'App::CLI';
 requires 'App::CLI::Command';
-requires 'Ebuild::Sub';
+requires 'Git::Sub';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'perl', '5.008_005';
