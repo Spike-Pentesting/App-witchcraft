@@ -61,19 +61,20 @@ sub update {
     my $pack = shift @temp;
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;
     my $updated = join( '/', $atom, $pack . '.ebuild' );
-
     info "Searching for $pack";
-    info "Update to $Package already exists" and return
-        if ( -f $updated );
-    return if ( $self->{check} and -f $updated );
-    my $last = shift @files;
-    my $source = join( '/', $atom, $last );
-
-    notice $last. ' was chosen to be the source of the new version';
-    notice $updated . " updated"
-        if defined $last and copy( $source, $updated );
+    if ( !-f $updated ) {
+        return if ( $self->{check} and -f $updated );
+        my $last = shift @files;
+        my $source = join( '/', $atom, $last );
+        notice $last. ' was chosen to be the source of the new version';
+        notice $updated . " updated"
+            if defined $last and copy( $source, $updated );
+    }
+    else {
+        info "Update to $Package already exists";
+    }
     return if ( !$self->{manifest} );
-    use Ebuild::Sub; #lazy load
+    use Ebuild::Sub;    #lazy load
     info ebuild $updated. " manifest";
     return if ( !$self->{install} );
     info ebuild $updated. " install";
