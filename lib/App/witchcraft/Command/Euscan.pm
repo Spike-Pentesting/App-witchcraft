@@ -60,7 +60,7 @@ sub update {
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
     info '|| - repository doesn\'t have that atom (' . $atom . ')'
-        and return undef
+        and error "|===================================================/" and return undef
         if ( !-d $atom );
     notice '|| - opening ' . $atom;
     opendir( DH, $atom );
@@ -75,7 +75,7 @@ sub update {
     info "|| - Searching for $pack";
 
     if ( !-f $updated ) {
-        return undef if ( $self->{check} and -f $updated );
+        error "|===================================================/" and return undef if ( $self->{check} and -f $updated );
         my $last = shift @files;
         my $source = join( '/', $atom, $last );
         notice "|| - " . $last
@@ -86,10 +86,10 @@ sub update {
     else {
         info "|| - Update to $Package already exists";
     }
-    return undef if ( !$self->{manifest} );
+    error "|===================================================/" and return undef if ( !$self->{manifest} );
     if ( system("ebuild $updated manifest") == 0 ) {
         notice '|| - Manifest created successfully';
-        return undef if ( !$self->{install} );
+        error "|===================================================/" and return undef if ( !$self->{install} );
         if ( system("ebuild $updated install") == 0 ) {
             info '|| - Installation OK';
             chdir($atom);
