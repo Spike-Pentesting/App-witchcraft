@@ -78,7 +78,7 @@ sub update {
     info ebuild($updated,"manifest");
     return if ( !$self->{install} );
     info ebuild($updated,"install");
-    info ebuild($updated,"merge");
+    info system("sudo ebuild $updated merge");
 }
 
 1;
