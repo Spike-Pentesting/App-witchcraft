@@ -6,6 +6,7 @@ use strict;
 use App::witchcraft::Utils;
 use File::stat;
 use File::Copy;
+use Ebuild::Sub;
 
 sub options {
     (   "v|verbose"  => "verbose",
@@ -74,7 +75,6 @@ sub update {
         info "Update to $Package already exists";
     }
     return if ( !$self->{manifest} );
-    use Ebuild::Sub;    #lazy load
     info ebuild($updated. " manifest");
     return if ( !$self->{install} );
     info ebuild($updated. " install");
