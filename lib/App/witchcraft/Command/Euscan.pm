@@ -75,6 +75,7 @@ sub update {
         info "Update to $Package already exists";
     }
     return if ( !$self->{manifest} );
+    error $updated. " manifest";
     info ebuild($updated. " manifest");
     return if ( !$self->{install} );
     info ebuild($updated. " install");
