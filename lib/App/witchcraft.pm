@@ -12,23 +12,24 @@ __END__
 
 =head1 NAME
 
-App::witchcraft - Blah blah blah
+App::witchcraft - Helps the overlay mantainer doing is dirty job
 
 =head1 SYNOPSIS
 
-  use App::witchcraft;
+  $ witchcraft --help
 
 =head1 DESCRIPTION
 
-App::witchcraft is
+App::witchcraft is an evil tool that do a lot of tasks: performs euscan for the atoms in a sabayon repository, test and update them, committing to the git repository...
+Just invoke --help to see all the features
 
 =head1 AUTHOR
 
-mudler E<lt>mudler@dark-lab.netE<gt>
+mudler E<lt>mudler@dark-lab.netE<gt>, skullbocks E<lt>skullbocks@dark-lab.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2014- mudler
+Copyright 2014- mudler, skullbocks
 
 =head1 LICENSE
 
