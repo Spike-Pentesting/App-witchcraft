@@ -3,7 +3,30 @@ package App::witchcraft;
 use strict;
 use 5.008_005;
 use App::CLI;
+use Config::Tiny;
+
 our $VERSION = '0.01';
+
+our $CONFIG_FILE          = "withcraft.conf";
+our $IGNORE_FILE          = "ignored.packages";
+our $WITCHCRAFT_DIRECTORY = ".witchcraft";
+our $HOME                 = join( "/", $ENV{HOME}, $WITCHCRAFT_DIRECTORY );
+our $CONFIG
+    = -f join( "/", $HOME, $CONFIG_FILE )
+    ? join( "/", $HOME, $CONFIG_FILE )
+    : join( "/", '.',   $CONFIG_FILE );
+our $IGNORE
+    = -f join( "/", $HOME, $IGNORE_FILE )
+    ? join( "/", $HOME, $IGNORE_FILE )
+    : join( "/", '.',   $IGNORE_FILE );
+
+sub Config {
+    return ( -e $CONFIG )
+        ? Config::Tiny->read($CONFIG)
+        : Config::Tiny->read("./witchcraft.conf")
+        ;    #Fileconfig reads the default or the one in the directory
+}
+
 =encoding utf-8
 
 =head1 NAME

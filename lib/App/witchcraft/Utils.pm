@@ -5,6 +5,7 @@ use base qw(Exporter);
 use Term::ANSIColor;
 use constant debug => $ENV{DEBUG};
 use Git::Sub;
+use Tie::File;
 
 our @EXPORT = qw(_debug
     info
@@ -28,11 +29,16 @@ sub clean_untracked {
 
 sub test_untracked {
     my $dir = shift;
+    my $ignore = shift || 0;
     my @Installed;
     chdir($dir);
+    my @Failed;
+    my @ignores;
     my @Untracked = git::ls_files '--others', '--exclude-standard';
     @Untracked = grep {/\.ebuild$/} @Untracked;
+
     foreach my $new_pos (@Untracked) {
+
         if ( system("ebuild $new_pos manifest") == 0 ) {
             &info( "created manifest for " . $new_pos );
             if ( system("ebuild $new_pos install") == 0 ) {
@@ -40,7 +46,25 @@ sub test_untracked {
                 &info("Installation OK");
                 push( @Installed, $new_pos );
             }
+            else {
+                push( @Failed, $new_pos );
+            }
 
+        }
+        else {
+            push( @Failed, $new_pos );
+        }
+    }
+    if ( $ignore == 1 and @Failed > 0 ) {
+        tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
+            or die( error $!);
+        foreach my $fail (@Failed) {
+            push( @ignores, $fail )
+                if (
+                &dialog_yes_default(
+                    "Add " . $fail . " to the ignore list?"
+                )
+                );
         }
     }
 
@@ -55,7 +79,9 @@ sub test_untracked {
         &notice("git add $result");
     }
     else {
-        &info("No files where tested, there weren't untracked files");
+        &info(
+            "No files where tested because there weren't untracked files or all packages failed to install"
+        );
     }
 }
 
@@ -153,9 +179,10 @@ sub notice {
 sub dialog_yes_default {
     my $msg = shift;
     local $|;
+    print STDERR color 'bold blue';
     print STDERR '! WitchCraft-> ' . $msg;
     print STDERR ' (Y/n) ';
-
+    print STDERR color 'reset';
     my $a = <STDIN>;
     chomp $a;
     if ( $a =~ /n/ ) {

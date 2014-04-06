@@ -7,6 +7,7 @@ use strict;
 use File::Find;
 use File::Copy;
 use Regexp::Common qw/URI/;
+use Tie::File;
 
 =encoding utf-8
 
@@ -17,7 +18,7 @@ App::witchcraft::Command::Sync - Synchronize from a remote repository, perform c
 =head1 SYNOPSIS
 
   $ witchcraft sync
-  $ witchcraft s [--help] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] <remote_repository>
+  $ witchcraft s [--help] [-a|--add] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] <remote_repository>
 
 =head1 DESCRIPTION
 
@@ -30,6 +31,10 @@ Euscan entropy repository packages.
 =item C<-t|refactortarget <term>> 
 
 if given C<<term>> the substitution will search for that.
+
+=item C<-a|--add> 
+
+It asks to add the failed installed packages to ignore list
 
 =item C<-u|--update> 
 
@@ -75,10 +80,11 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 sub options {
     (   "r|refactor=s"       => "refactor",          #Who is to refactor?
         "t|refactortarget=s" => 'refactor_target',   #Who is the substitution?
-        "u|update" => "update",    #Wanna transfer directly the new files?
-        "r|root=s" => "root",      #where is the git repository?
+        "u|update"  => "update",    #Wanna transfer directly the new files?
+        "r|root=s"  => "root",      #where is the git repository?
         "i|install" => "install",
-        "t|temp=s" => "temp"       #temp directory for the svn checkout
+        "t|temp=s"  => "temp",       #temp directory for the svn checkout
+        "a|add"     => "ignore"
     );
 }
 
@@ -86,10 +92,11 @@ sub run {
     my $self     = shift;
     my $RepoUrl  = shift // 'http://pentoo.googlecode.com/svn/portage/trunk';
     my $refactor = $self->{'refactor'} // 'pentoo';
+    my @ignores;
     my $temp     = $self->{'temp'} // '/var/tmp/spike-trunk';
     my $refactor_target = $self->{'refactor_target'} // 'spike';
-    my @ignores         = <DATA>;
-    chomp(@ignores);
+    my $add = $self->{'ignore'}? 1:0;
+    tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     my $flatten = join( "|", @ignores );
     my $l_r     = lc($refactor);
     my $u_r     = uc($refactor);
@@ -156,7 +163,6 @@ sub run {
                 open FILE, ">$new_pos";
                 print FILE @LINES;
                 close FILE;
-  
 
             }
             else {
@@ -176,38 +182,10 @@ sub run {
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
 
     system( "rsync --ignore-existing -avp " . $temp . "/* $dir\/" );
-    unlink($dir.'/.svn');
-    return if(!$self->{install});
-    test_untracked($dir);
+    unlink( $dir . '/.svn' );
+    return if ( !$self->{install} );
+    test_untracked($dir,$add);
     exit;
 }
 
-
 1;
-__DATA__
-pentoo-sources
-pentoo
-updates
-xf86-input-tslib
-zero-system
-tribe
-firefox-bookmarks
-x11-drivers
-sys-kernel
-linux-live
-profiles
-prism54
-compat-drivers
-acpid
-layout\.conf
-linux-sources
-genmenu
-nvidia-drivers
-ati-drivers
-openrc
-mkxf86config
-genkernel
-app-admin
-eclass
-gnome-base
-compat\-wireless

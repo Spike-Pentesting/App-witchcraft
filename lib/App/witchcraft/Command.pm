@@ -52,6 +52,8 @@ help (--help for full)
                     "r|root=s",  Set root of the git repository
                     "t|temp=s",  Temp directory for the svn checkout
                     "i|install", Try to install them, output the file that passed
+                    "a|add", It asks to add the failed installed packages to ignore list
+
 
 --> List repository packages
 *    l|--list [repository]     
