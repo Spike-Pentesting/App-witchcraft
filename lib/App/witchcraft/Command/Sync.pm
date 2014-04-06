@@ -123,6 +123,9 @@ sub run {
 1;
 __DATA__
 compat-wireless
+compat-wireless-builder
+x11-drivers
+sys-kernel
 linux-live
 profiles
 prism54
@@ -136,3 +139,6 @@ ati-drivers
 openrc
 mkxf86config
 genkernel
+app-admin
+eclass
+gnome-base
