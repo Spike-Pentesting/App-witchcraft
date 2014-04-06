@@ -42,7 +42,7 @@ help (--help for full)
                     "u|update" , Add it to the git repository
                     "r|root"   , Set root of the git repository
                     "m|manifest", Manifest each ebuild found
-                    "i|install", Also Install & Merge it
+                    "i|install", Also Install it
                     "g|git"    , Stages git add and commit for each ebuild
 
 --> Checkout a repository and filter the ebuilds and add to the git repository
