@@ -7,12 +7,14 @@ use strict;
 use File::Find;
 use File::Copy;
 use Regexp::Common qw/URI/;
+use File::Xcopy;
 
 sub options {
     (   "r|refactor=s"       => "refactor",          #Who is to refactor?
         "t|refactortarget=s" => 'refactor_target',   #Who is the substitution?
         "u|update" => "update",    #Wanna transfer directly the new files?
         "r|root=s" => "root",      #where is the git repository?
+        "i|install" => "install",
         "t|temp=s" => "temp"       #temp directory for the svn checkout
     );
 }
@@ -33,6 +35,8 @@ sub run {
     my $u_t     = uc($refactor_target);
     my $m_t     = uc( substr( $refactor_target, 0, 1 ) )
         . substr( $refactor_target, 1 );
+
+    my @Installed;
 
     system( "svn checkout $RepoUrl " . $temp );
     finddepth(
@@ -89,7 +93,16 @@ sub run {
                 open FILE, ">$new_pos";
                 print FILE @LINES;
                 close FILE;
-                system("ebuild $new_pos manifest");
+                if(system("ebuild $new_pos manifest")==0){
+                    info "created manifest for ".$new_pos;
+                    if($self->{install}){
+                        if(system("ebuild $new_pos install") == 0){
+                            info ("Installation OK");
+                            push(@Installed,$new_pos);
+                        }
+                    }
+                }
+
             }
             else {
                 #   info "$file ignored";
@@ -98,6 +111,7 @@ sub run {
         },
         $temp
     );
+
     #unlink( $temp . "/.svn" );
     return if ( !$self->{update} );
     info "Copying content to git directory";
@@ -105,7 +119,17 @@ sub run {
         = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
-    system( "rsync -avp " . $temp . "/* $dir\/" );
+
+    # system( "rsync -avp " . $temp . "/* $dir\/" );
+    my $fx = new File::Xcopy;
+    $fx->from_dir($temp);
+    $fx->to_dir($dir);
+    $fx->param( 's',        1 );              # search recursively to sub dirs
+    $fx->param( 'verbose',  1 );              # search recursively to sub dirs
+    $fx->param( 'log_file', './xcopy.log' );
+    $fx->xcopy;
+    info("Those files where correctly installed, maybe you wanna check them: ");
+    notice $_ for (map { s/${temp}/${dir}/g; } @Installed);
     exit;
 }
 

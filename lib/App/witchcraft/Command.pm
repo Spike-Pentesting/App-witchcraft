@@ -49,6 +49,7 @@ help (--help for full)
                     "t|refactortarget=s", Modify the target of the refactoring
                     "r|root=s",  Set root of the git repository
                     "t|temp=s",  Temp directory for the svn checkout
+                    "i|install", Try to install them, output the file that passed
 
 *    l|--list [repository]     list repository packages
 END

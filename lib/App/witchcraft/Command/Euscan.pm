@@ -27,15 +27,18 @@ sub run {
     chomp(@Packages);
     my @Updates;
     my @Added;
+    my $c = 1;
     foreach my $Package (@Packages) {
-        notice $Package if $self->{verbose};
+        notice "[$c/" . scalar(@Packages) . "] " . $Package
+            if $self->{verbose};
         my @temp = `euscan -q -C $Package`;
         chomp(@temp);
         if ( !$self->{quiet} ) {
-            info "\t" . $_, for @temp;
+            info "** \n" . $_, for @temp;
         }
         push( @Updates, @temp );
         push( @Added, $self->update( $Package, @temp ) ) if ( @temp > 0 );
+        $c++;
     }
     info git::push;
     if ( @Updates > 0 ) {
@@ -60,7 +63,8 @@ sub update {
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
     info '|| - repository doesn\'t have that atom (' . $atom . ')'
-        and error "|===================================================/" and return undef
+        and error "|===================================================/"
+        and return undef
         if ( !-d $atom );
     notice '|| - opening ' . $atom;
     opendir( DH, $atom );
@@ -68,6 +72,16 @@ sub update {
         sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
         grep { -f join( '/', $atom, $_ ) } readdir(DH);
     closedir(DH);
+
+    my @Temp = @temp[    #natural sort order for strings containing numbers
+        map { unpack "N", substr( $_, -4 ) }
+        sort
+        map {
+            my $key = $temp[$_];
+            $key =~ s[(\d+)][ pack "N", $1 ]ge;
+            $key . pack "CNN", 0, 0, $_
+        } 0 .. $#temp
+    ];
     my $pack = shift @temp;
 
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;
@@ -75,7 +89,9 @@ sub update {
     info "|| - Searching for $pack";
 
     if ( !-f $updated ) {
-        error "|===================================================/" and return undef if ( $self->{check} and -f $updated );
+        error "|===================================================/"
+            and return undef
+            if ( $self->{check} and -f $updated );
         my $last = shift @files;
         my $source = join( '/', $atom, $last );
         notice "|| - " . $last
@@ -86,10 +102,14 @@ sub update {
     else {
         info "|| - Update to $Package already exists";
     }
-    error "|===================================================/" and return undef if ( !$self->{manifest} );
+    error "|===================================================/"
+        and return undef
+        if ( !$self->{manifest} );
     if ( system("ebuild $updated manifest") == 0 ) {
         notice '|| - Manifest created successfully';
-        error "|===================================================/" and return undef if ( !$self->{install} );
+        error "|===================================================/"
+            and return undef
+            if ( !$self->{install} );
         if ( system("ebuild $updated install") == 0 ) {
             info '|| - Installation OK';
             chdir($atom);
