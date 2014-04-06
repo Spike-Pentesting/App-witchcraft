@@ -121,7 +121,12 @@ sub run {
 
 1;
 __DATA__
-net\-wireless\/compat
+pentoo-sources
+pentoo
+updates
+xf86-input-tslib
+zero-system
+tribe
 firefox-bookmarks
 x11-drivers
 sys-kernel
@@ -141,3 +146,4 @@ genkernel
 app-admin
 eclass
 gnome-base
+compat\-wireless
