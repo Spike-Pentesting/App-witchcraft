@@ -7,13 +7,79 @@ use App::witchcraft::Utils;
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit);
+=encoding utf-8
+
+=head1 NAME
+
+App::witchcraft::Command::Euscan - Euscan entropy repository packages
+
+=head1 SYNOPSIS
+
+  $ witchcraft euscan
+  $ witchcraft e [-v|--verbose] [-q|--quiet] [-c|--check] [-u|--update] [-m|--manifest] [-g|--git] [-i|--install] [-r git_repository] <repo>
+
+=head1 DESCRIPTION
+
+Euscan entropy repository packages.
+
+=head1 ARGUMENTS
+
+=over 4
+
+=item C<-u|--update> 
+
+it saves new ebuilds in to the current git_repository.
+
+=item C<-i|--install> 
+
+it runs C<ebuild <name> install> against the ebuild.
+
+=item C<-c|--check> 
+
+only performs scan of the new packages and return the list
+
+=item C<-m|--manifest> 
+
+it runs C<ebuild <name> manifest> against the ebuild
+
+=item C<-g|--git> 
+
+it add the ebuild into the git index of the repository and commit with the "added ${P}"
+
+=item C<-r|--root <REPOSITORY_DIRECTORY>> 
+
+provided perform the git changes on C<<REPOSITORY_DIRECTORY>>
+
+=item C<--help>
+
+it prints the POD help.
+
+=back
+
+=head1 AUTHOR
+
+mudler E<lt>mudler@dark-lab.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2014- mudler
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+L<App::witchcraft>, L<App::witchcraft::Command::Sync>
+
+=cut
 
 sub options {
     (   "v|verbose"  => "verbose",
         "q|quiet"    => "quiet",
         "c|check"    => "check",
         "u|update"   => "update",
-        "r|root"     => "root",
+        "r|root=s"     => "root",
         "m|manifest" => "manifest",
         "i|install"  => "install",
         "g|git"      => "git"

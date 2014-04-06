@@ -8,6 +8,70 @@ use File::Find;
 use File::Copy;
 use Regexp::Common qw/URI/;
 
+=encoding utf-8
+
+=head1 NAME
+
+App::witchcraft::Command::Sync - Synchronize from a remote repository, perform changes and add new ebuilds to the local repository
+
+=head1 SYNOPSIS
+
+  $ witchcraft sync
+  $ witchcraft s [--help] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] <remote_repository>
+
+=head1 DESCRIPTION
+
+Euscan entropy repository packages.
+
+=head1 ARGUMENTS
+
+=over 4
+
+=item C<-t|refactortarget <term>> 
+
+if given C<<term>> the substitution will search for that.
+
+=item C<-u|--update> 
+
+it saves new ebuilds in to the current git_repository.
+
+=item C<-i|--install> 
+
+it runs C<ebuild <name> install> against the ebuild.
+
+=item C<-r|--root <git_root>> 
+
+you can specify the git repository(C<-r|--root <git_root>>) directory where the modifications will be copied.
+
+=item C<-t|--temp <temp_dir>> 
+
+allow to set a different temporary checkout directory.
+
+=item C<--help>
+
+it prints the POD help.
+
+=back
+
+=head1 AUTHOR
+
+mudler E<lt>mudler@dark-lab.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2014- mudler
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
+
+=cut
+
 sub options {
     (   "r|refactor=s"       => "refactor",          #Who is to refactor?
         "t|refactortarget=s" => 'refactor_target',   #Who is the substitution?

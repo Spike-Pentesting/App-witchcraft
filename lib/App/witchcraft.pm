@@ -4,10 +4,6 @@ use strict;
 use 5.008_005;
 use App::CLI;
 our $VERSION = '0.01';
-
-1;
-__END__
-
 =encoding utf-8
 
 =head1 NAME
@@ -64,5 +60,9 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =head1 SEE ALSO
+L<App::witchcraft::Command::Euscan>, L<App::witchcraft::Command::Sync>
 
 =cut
+
+1;
+

@@ -15,5 +15,5 @@ $SIG{INT} = sub {
     exit;
 };
 App::witchcraft::Command->global_help and exit if (defined $act and $act eq "--help");
-App::witchcraft::Command->invoke( ($act || 'help') , @ARGV );
+App::witchcraft::Command->invoke( ($act) , @ARGV );
 exit;

@@ -2,7 +2,7 @@ package App::witchcraft::Command;
 use App::witchcraft;
 use base qw(App::CLI::Command App::CLI);
 
-use constant global_options => ( 'help' => 'help' );
+use constant global_options => ( 'h|help' => 'help' );
 
 sub alias {
     (   "l" => "list",
@@ -16,15 +16,15 @@ sub alias {
 sub invoke {
     my ( $pkg, $cmd, @args ) = @_;
     local *ARGV = [ $cmd, @args ];
-    my $ret = eval { $pkg->dispatch(); };
-    if ($@) {
-        warn $@;
+    if ( @args > 0 or defined $cmd ) {
+        my $ret = eval { $pkg->dispatch(); };
+        if ($@) {
+            warn $@;
+        }
     }
-}
-
-sub run() {
-    my $self = shift;
-    $self->global_help if ( $self->{help} );
+    else {
+        &global_help;
+    }
 }
 
 sub global_help {
@@ -62,6 +62,7 @@ help (--help for full)
 --> Clean all untracked files from the given repository
 *    c|--clean [repository dir]
 
+You can inspect further doing "witchcraft help <command>"
 
 END
 }
