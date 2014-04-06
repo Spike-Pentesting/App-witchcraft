@@ -4,8 +4,9 @@ use utf8;
 use warnings;
 use constant debug => $ENV{DEBUG};
 use App::witchcraft::Command;
+use File::Path qw(make_path remove_tree);
 
-$|=1;
+$| = 1;
 
 binmode STDOUT, ':utf8';
 
@@ -14,6 +15,8 @@ my $act = shift;
 $SIG{INT} = sub {
     exit;
 };
-App::witchcraft::Command->global_help and exit if (defined $act and $act eq "--help");
-App::witchcraft::Command->invoke( ($act) , @ARGV );
+make_path ${App::witchcraft::HOME} unless ( -d ${App::witchcraft::IGNORE} );
+App::witchcraft::Command->global_help and exit
+    if ( defined $act and $act eq "--help" );
+App::witchcraft::Command->invoke( ($act), @ARGV );
 exit;
