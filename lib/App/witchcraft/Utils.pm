@@ -12,10 +12,18 @@ our @EXPORT = qw(_debug
     notice
     print_list
     test_untracked
+    clean_untracked
 );
 
 sub _debug {
     print STDERR @_, "\n" if debug;
+}
+
+sub clean_untracked {
+    my $dir = shift;
+    my @Installed;
+    chdir($dir);
+    system("git ls-files --others --exclude-standard | xargs rm -rfv");
 }
 
 sub test_untracked {
@@ -36,16 +44,17 @@ sub test_untracked {
         }
     }
 
-    if(@Installed>0){
-    &info(
-        "Those files where correctly installed, maybe you wanna check them: "
-    );
-    my $result;
-    &notice($_) and $result .= " " . $_ for (@Installed);
-    &info("Generating the command for git add");
+    if ( @Installed > 0 ) {
+        &info(
+            "Those files where correctly installed, maybe you wanna check them: "
+        );
+        my $result;
+        &notice($_) and $result .= " " . $_ for (@Installed);
+        &info("Generating the command for git add");
 
-    &notice("git add $result");
-    } else {
+        &notice("git add $result");
+    }
+    else {
         &info("No files where tested, there weren't untracked files");
     }
 }
@@ -123,28 +132,28 @@ sub print_list {
 sub error {
     my @msg = @_;
     print STDERR color 'red';
-    print STDERR '@@@@WitchCraft@@@@ '.join( "\n", @msg ), "\n";
+    print STDERR '@@@@WitchCraft@@@@ ' . join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR '<WitchCraft> '.join( "\n", @msg ), "\n";
+    print STDERR '<WitchCraft> ' . join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub notice {
     my @msg = @_;
     print STDERR color 'bold yellow';
-    print STDERR '!WitchCraft! '.join( "\n", @msg ), "\n";
+    print STDERR '!WitchCraft! ' . join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub dialog_yes_default {
     my $msg = shift;
     local $|;
-    print STDERR '! WitchCraft-> '.$msg;
+    print STDERR '! WitchCraft-> ' . $msg;
     print STDERR ' (Y/n) ';
 
     my $a = <STDIN>;

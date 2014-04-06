@@ -8,7 +8,8 @@ sub alias {
     (   "l" => "list",
         "s" => "sync",
         "e" => "euscan",
-        "t" => "test"
+        "t" => "test",
+        "c" => "clean"
     );
 }
 
@@ -52,9 +53,16 @@ help (--help for full)
                     "t|temp=s",  Temp directory for the svn checkout
                     "i|install", Try to install them, output the file that passed
 
-*    l|--list [repository]     list repository packages
+--> List repository packages
+*    l|--list [repository]     
 
-*    t|--test [repository dir] manifest & install untracked files, giving a report of what packages succedeed
+--> Manifest & install untracked files, giving a report of what packages succedeed
+*    t|--test [repository dir] 
+
+--> Clean all untracked files from the given repository
+*    c|--clean [repository dir]
+
+
 END
 }
 
