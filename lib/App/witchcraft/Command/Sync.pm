@@ -122,8 +122,8 @@ sub run {
 
 1;
 __DATA__
-compat-wireless
-compat-wireless-builder
+compat\-wireless
+compat\-wireless\-builder
 x11-drivers
 sys-kernel
 linux-live
@@ -131,7 +131,7 @@ profiles
 prism54
 compat-drivers
 acpid
-layout.conf
+layout\.conf
 linux-sources
 genmenu
 nvidia-drivers
