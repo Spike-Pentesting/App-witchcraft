@@ -7,7 +7,8 @@ use constant global_options => ( 'help' => 'help' );
 sub alias {
     (   "l" => "list",
         "s" => "sync",
-        "e" => "euscan"
+        "e" => "euscan",
+        "t" => "test"
     );
 }
 
@@ -52,6 +53,8 @@ help (--help for full)
                     "i|install", Try to install them, output the file that passed
 
 *    l|--list [repository]     list repository packages
+
+*    t|--test [repository dir] manifest & install untracked files, giving a report of what packages succedeed
 END
 }
 

@@ -4,18 +4,47 @@ use strict;
 use base qw(Exporter);
 use Term::ANSIColor;
 use constant debug => $ENV{DEBUG};
+use Git::Sub;
 
 our @EXPORT = qw(_debug
     info
     error
     notice
     print_list
+    test_untracked
 );
 
 sub _debug {
     print STDERR @_, "\n" if debug;
 }
 
+sub test_untracked {
+    my $dir = shift;
+    my @Installed;
+    chdir($dir);
+    my @Untracked = git::ls_files '--others', '--exclude-standard';
+    @Untracked = grep {/\.ebuild$/} @Untracked;
+    foreach my $new_pos (@Untracked) {
+        if ( system("ebuild $new_pos manifest") == 0 ) {
+            &info( "created manifest for " . $new_pos );
+            if ( system("ebuild $new_pos install") == 0 ) {
+                $new_pos = s/(.*\/[\w-]*)\//$1/;
+                &info("Installation OK");
+                push( @Installed, $new_pos );
+            }
+
+        }
+    }
+
+    &info(
+        "Those files where correctly installed, maybe you wanna check them: "
+    );
+    my $result;
+    &notice($_) and $result .= " " . $_ for (@Installed);
+    &info("Generating the command for git add");
+
+    &notice("git add $result");
+}
 
 sub print_list {
     my @lines = @_;
