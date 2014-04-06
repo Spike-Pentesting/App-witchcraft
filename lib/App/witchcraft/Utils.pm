@@ -41,7 +41,7 @@ sub test_untracked {
 
         if ( system("ebuild $new_pos manifest") == 0 ) {
             &info( "created manifest for " . $new_pos );
-            if ( system("ebuild $new_pos install") == 0 ) {
+            if ( system("sudo ebuild $new_pos install") == 0 ) {
                 $new_pos = s/(.*\/[\w-]*)\//$1/;
                 &info("Installation OK");
                 push( @Installed, $new_pos );

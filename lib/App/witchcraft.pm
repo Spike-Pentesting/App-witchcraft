@@ -45,6 +45,7 @@ App::witchcraft - Helps the overlay mantainer doing is dirty job
 	                    "m|manifest", Manifest each ebuild found
 	                    "i|install", Also Install it
 	                    "g|git"    , Stages git add and commit for each ebuild
+                   		"f|force", Force the -i and -m also if the ebuild is already present
 
 	--> Checkout a repository and filter the ebuilds and add to the git repository
 	*    s|--sync       "u|update" , Add it to the git repository

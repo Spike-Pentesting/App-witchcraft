@@ -16,7 +16,7 @@ App::witchcraft::Command::Euscan - Euscan entropy repository packages
 =head1 SYNOPSIS
 
   $ witchcraft euscan
-  $ witchcraft e [-v|--verbose] [-q|--quiet] [-c|--check] [-u|--update] [-m|--manifest] [-g|--git] [-i|--install] [-r git_repository] <repo>
+  $ witchcraft e [-v|--verbose] [-q|--quiet] [-c|--check] [-u|--update] [-m|--manifest] [-f|--force] [-g|--git] [-i|--install] [-r git_repository] <repo>
 
 =head1 DESCRIPTION
 
@@ -29,6 +29,11 @@ Euscan entropy repository packages.
 =item C<-u|--update> 
 
 it saves new ebuilds in to the current git_repository.
+
+=item C<-f|--force> 
+
+-m and -i will have effect also on ebuilds that are marked as "to update" but already are in the repository.
+This is useful when you want to re-ebuild all the new found.
 
 =item C<-i|--install> 
 
@@ -82,6 +87,7 @@ sub options {
         "r|root=s"     => "root",
         "m|manifest" => "manifest",
         "i|install"  => "install",
+        "f|force"    => "force",
         "g|git"      => "git"
     );
 }
@@ -89,7 +95,7 @@ sub options {
 sub run {
     my $self     = shift;
     my $Repo     = shift // "spike";
-    my @Packages = `equo query list available $Repo -q`;
+    my @Packages = `sudo equo query list available $Repo -q`; #sudo is not needed, but so i have temporary rights
     chomp(@Packages);
     my @Updates;
     my @Added;
@@ -100,7 +106,7 @@ sub run {
         my @temp = `euscan -q -C $Package`;
         chomp(@temp);
         if ( !$self->{quiet} ) {
-            info "** \n" . $_, for @temp;
+            info "\n** " . $_, for @temp;
         }
         push( @Updates, @temp );
         push( @Added, $self->update( $Package, @temp ) ) if ( @temp > 0 );
@@ -121,14 +127,13 @@ sub update {
     my $Package = shift;
     my @temp    = @_;
     return undef if ( !$self->{update} and !$self->{check} );
-    error "\n";
     error "|===================================================\\";
     my $dir
         = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
-    info '|| - repository doesn\'t have that atom (' . $atom . ')'
+    info '    || - repository doesn\'t have that atom (' . $atom . ')'
         and error "|===================================================/"
         and return undef
         if ( !-d $atom );
@@ -167,6 +172,7 @@ sub update {
     }
     else {
         info "|| - Update to $Package already exists";
+        return undef if(!$self->{force});
     }
     error "|===================================================/"
         and return undef
