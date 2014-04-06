@@ -122,8 +122,8 @@ sub run {
 
 1;
 __DATA__
-compat\-wireless
-compat\-wireless\-builder
+net\-wireless\/compat
+firefox-bookmarks
 x11-drivers
 sys-kernel
 linux-live
