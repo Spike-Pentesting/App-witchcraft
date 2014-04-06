@@ -36,6 +36,7 @@ sub test_untracked {
         }
     }
 
+    if(@Installed>0){
     &info(
         "Those files where correctly installed, maybe you wanna check them: "
     );
@@ -44,6 +45,9 @@ sub test_untracked {
     &info("Generating the command for git add");
 
     &notice("git add $result");
+    } else {
+        &info("No files where tested, there weren't untracked files");
+    }
 }
 
 sub print_list {
