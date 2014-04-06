@@ -119,28 +119,28 @@ sub print_list {
 sub error {
     my @msg = @_;
     print STDERR color 'red';
-    print STDERR join( "\n", @msg ), "\n";
+    print STDERR '@@@@WitchCraft@@@@ '.join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR join( "\n", @msg ), "\n";
+    print STDERR '<WitchCraft> '.join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub notice {
     my @msg = @_;
     print STDERR color 'bold yellow';
-    print STDERR join( "\n", @msg ), "\n";
+    print STDERR '!WitchCraft! '.join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub dialog_yes_default {
     my $msg = shift;
     local $|;
-    print STDERR $msg;
+    print STDERR '! WitchCraft-> '.$msg;
     print STDERR ' (Y/n) ';
 
     my $a = <STDIN>;

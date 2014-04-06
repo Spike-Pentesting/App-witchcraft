@@ -17,6 +17,7 @@ sub run {
         = shift // -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
+        info 'Manifest & Install of the untracked files in '.$dir;
     test_untracked($dir);
     exit;
 }
