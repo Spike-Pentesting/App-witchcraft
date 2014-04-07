@@ -94,10 +94,11 @@ sub options {
 }
 
 sub run {
-    my $self     = shift;
-    my $Repo     = shift // "spike";
-    my @Packages = `sudo equo query list available $Repo -q`
-        ;    #sudo is not needed, but so i have temporary rights
+    my $self = shift;
+    my $Repo = shift // "spike";
+
+    my $password = password_dialog();
+    my @Packages = `equo query list available $Repo -q`;
     chomp(@Packages);
     my @Updates;
     my @Added;
@@ -111,7 +112,8 @@ sub run {
             info "\n** " . $_, for @temp;
         }
         push( @Updates, @temp );
-        push( @Added, $self->update( $Package, @temp ) ) if ( @temp > 0 );
+        push( @Added, $self->update( $Package, $password, @temp ) )
+            if ( @temp > 0 );
         $c++;
     }
     info git::push;
@@ -125,9 +127,11 @@ sub run {
 }
 
 sub update {
-    my $self    = shift;
-    my $Package = shift;
-    my @temp    = @_;
+    my $self     = shift;
+    my $Package  = shift;
+    my $password = shift;
+
+    my @temp = @_;
     return undef if ( !$self->{update} and !$self->{check} );
     error "|===================================================\\";
     my $dir
@@ -135,11 +139,11 @@ sub update {
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     my $atom = join( '/', $dir, $Package );
-    info '    || - repository doesn\'t have that atom (' . $atom . ')'
+    info 'repository doesn\'t have that atom (' . $atom . ')'
         and error "|===================================================/"
         and return undef
         if ( !-d $atom );
-    notice '|| - opening ' . $atom;
+    notice 'opening ' . $atom;
     opendir( DH, $atom );
     my @files = grep {/\.ebuild$/}
         sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
@@ -159,7 +163,7 @@ sub update {
 
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;
     my $updated = join( '/', $atom, $pack . '.ebuild' );
-    info "|| - Searching for $pack";
+    info "Searching for $pack";
 
     if ( !-f $updated ) {
         error "|===================================================/"
@@ -167,13 +171,12 @@ sub update {
             if ( $self->{check} and -f $updated );
         my $last = shift @files;
         my $source = join( '/', $atom, $last );
-        notice "|| - " . $last
-            . ' was chosen to be the source of the new version';
-        notice "|| - " . $updated . " updated"
+        notice $last . ' was chosen to be the source of the new version';
+        notice $updated . " updated"
             if defined $last and copy( $source, $updated );
     }
     else {
-        info "|| - Update to $Package already exists";
+        info "Update to $Package already exists";
         return undef if ( !$self->{force} );
     }
     error "|===================================================/"
@@ -183,15 +186,14 @@ sub update {
         if ( $self->{git} ) {
             chdir($atom);
             notice git::add './';
-            info '|| - Added to git index of the repository';
+            info 'Added to git index of the repository';
             notice git::commit -m => 'added ' . $pack;
-            info '|| - Committed with "' . 'added ' . $pack . "'";
+            info 'Committed with "' . 'added ' . $pack . "'";
         }
     }
     else {
         return undef;
     }
-    error "||\n";
     error "|===================================================/";
     return join( "/", $Package, $pack );
 

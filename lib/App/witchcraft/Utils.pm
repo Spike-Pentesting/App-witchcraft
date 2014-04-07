@@ -6,6 +6,7 @@ use Term::ANSIColor;
 use constant debug => $ENV{DEBUG};
 use Git::Sub;
 use Tie::File;
+use Term::ReadKey;
 
 our @EXPORT = qw(_debug
     info
@@ -15,10 +16,21 @@ our @EXPORT = qw(_debug
     test_untracked
     clean_untracked
     test_ebuild
+    password_dialog
 );
 
 sub _debug {
     print STDERR @_, "\n" if debug;
+}
+
+sub password_dialog {
+    &info("Password: ");
+    ReadMode('noecho');    # don't echo
+    chomp( my $password = <STDIN> );
+    ReadMode(0);           # back to normal
+    &notice("Note: ensure to give the right password, or install tests would fail");
+    $password=&password_dialog unless ( system('echo '.$password. ' | sudo -S echo Password OK') ==0);
+    return $password;
 }
 
 sub clean_untracked {
@@ -32,12 +44,16 @@ sub test_ebuild {
     my $ebuild   = shift;
     my $manifest = shift || undef;
     my $install  = shift || undef;
+    my $password = shift || undef;
+    $password = $password ? "echo $password | sudo -S " : "sudo";
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
         &notice('|| - Manifest created successfully');
         &error("|===================================================/")
             and return 1
             if ( defined $manifest and !defined $install );
-        if ( defined $install and system("sudo ebuild $ebuild install") == 0 )
+        &notice("Starting installation");
+        if ( defined $install
+            and system( $password. "ebuild $ebuild install" ) == 0 )
         {
             &info('|| - Installation OK');
             return 1;
@@ -48,8 +64,9 @@ sub test_ebuild {
 }
 
 sub test_untracked {
-    my $dir = shift;
-    my $ignore = shift || 0;
+    my $dir      = shift;
+    my $ignore   = shift || 0;
+    my $password = shift || undef;
     my @Installed;
     chdir($dir);
     my @Failed;
@@ -58,7 +75,7 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
 
     foreach my $new_pos (@Untracked) {
-        my $result = &test_ebuild( $new_pos, 1, 1 );
+        my $result = &test_ebuild( $new_pos, 1, 1, $password );
         $new_pos = s/(.*\/[\w-]*)\//$1/;
         if ( $result == 1 ) {
             push( @Installed, $new_pos );
@@ -175,7 +192,7 @@ sub error {
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR join( "\n", '->',@msg ), "\n";
+    print STDERR join( "\n", '|| - ', @msg ), "\n";
     print STDERR color 'reset';
 }
 

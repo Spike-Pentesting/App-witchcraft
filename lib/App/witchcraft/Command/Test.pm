@@ -37,14 +37,15 @@ it under the same terms as Perl itself.
 L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 
 =cut
+
 sub run {
     my $self = shift;
     my $dir
         = shift // -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
-        info 'Manifest & Install of the untracked files in '.$dir;
-    test_untracked($dir);
+    info 'Manifest & Install of the untracked files in ' . $dir;
+    test_untracked( $dir, 0, password_dialog());
     exit;
 }
 

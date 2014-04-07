@@ -83,7 +83,7 @@ sub options {
         "u|update"  => "update",    #Wanna transfer directly the new files?
         "r|root=s"  => "root",      #where is the git repository?
         "i|install" => "install",
-        "t|temp=s"  => "temp",       #temp directory for the svn checkout
+        "t|temp=s"  => "temp",      #temp directory for the svn checkout
         "a|add"     => "ignore"
     );
 }
@@ -91,11 +91,13 @@ sub options {
 sub run {
     my $self     = shift;
     my $RepoUrl  = shift // 'http://pentoo.googlecode.com/svn/portage/trunk';
+    my $password = password_dialog();
+
     my $refactor = $self->{'refactor'} // 'pentoo';
     my @ignores;
-    my $temp     = $self->{'temp'} // '/var/tmp/spike-trunk';
+    my $temp = $self->{'temp'} // '/var/tmp/spike-trunk';
     my $refactor_target = $self->{'refactor_target'} // 'spike';
-    my $add = $self->{'ignore'}? 1:0;
+    my $add = $self->{'ignore'} ? 1 : 0;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     my $flatten = join( "|", @ignores );
     my $l_r     = lc($refactor);
@@ -184,7 +186,7 @@ sub run {
     system( "rsync --ignore-existing -avp " . $temp . "/* $dir\/" );
     unlink( $dir . '/.svn' );
     return if ( !$self->{install} );
-    test_untracked($dir,$add);
+    test_untracked( $dir, $add, $password );
     exit;
 }
 
