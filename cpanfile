@@ -7,6 +7,7 @@ requires 'File::Xcopy';
 requires 'Git::Sub';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
+requires 'Term::ReadKey';
 requires 'Test::More';
 requires 'perl', '5.008_005';
 
