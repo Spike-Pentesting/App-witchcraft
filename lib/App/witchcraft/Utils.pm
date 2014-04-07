@@ -28,8 +28,12 @@ sub password_dialog {
     ReadMode('noecho');    # don't echo
     chomp( my $password = <STDIN> );
     ReadMode(0);           # back to normal
-    &notice("Note: ensure to give the right password, or install tests would fail");
-    $password=&password_dialog unless ( system('echo '.$password. ' | sudo -S echo Password OK') ==0);
+    &notice(
+        "Note: ensure to give the right password, or install tests would fail"
+    );
+    $password = &password_dialog
+        unless (
+        system( 'echo ' . $password . ' | sudo -S echo Password OK' ) == 0 );
     return $password;
 }
 
@@ -38,7 +42,8 @@ sub clean_untracked {
     my @Installed;
     chdir($dir);
     system("git ls-files --others --exclude-standard | xargs rm -rfv");
-    &notice("Launch 'git stash' if you want to rid about all the modifications");
+    &notice(
+        "Launch 'git stash' if you want to rid about all the modifications");
 }
 
 sub test_ebuild {
@@ -54,7 +59,7 @@ sub test_ebuild {
             if ( defined $manifest and !defined $install );
         &notice("Starting installation");
         if ( defined $install
-            and system( $password. "ebuild $ebuild install" ) == 0 )
+            and system( $password. " ebuild $ebuild install" ) == 0 )
         {
             &info('|| - Installation OK');
             return 1;
@@ -76,12 +81,15 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
 
     foreach my $new_pos (@Untracked) {
+        &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
-        $new_pos = s/(.*\/[\w-]*)\//$1/;
+        $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
         if ( $result == 1 ) {
+            &info( $new_pos . " was correctly installed" );
             push( @Installed, $new_pos );
         }
         else {
+            &error( $new_pos . " installation failed" );
             push( @Failed, $new_pos );
         }
     }

@@ -96,7 +96,7 @@ sub options {
 sub run {
     my $self = shift;
     my $Repo = shift // "spike";
-
+    info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     my @Packages = `equo query list available $Repo -q`;
     chomp(@Packages);
