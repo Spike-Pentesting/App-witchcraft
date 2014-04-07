@@ -64,9 +64,9 @@ sub test_ebuild {
             &info('|| - Installation OK');
             return 1;
         }
-        else { return 0; }
+        else { &error("Installation failed") and return 0; }
     }
-    else { return 0; }
+    else { &error("Manifest failed") and return 0; }
 }
 
 sub test_untracked {
@@ -85,11 +85,11 @@ sub test_untracked {
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
         $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
         if ( $result == 1 ) {
-            &info( $new_pos . " was correctly installed" );
+          #  &info( $new_pos . " was correctly installed" );
             push( @Installed, $new_pos );
         }
         else {
-            &error( $new_pos . " installation failed" );
+           # &error( $new_pos . " installation failed" );
             push( @Failed, $new_pos );
         }
     }

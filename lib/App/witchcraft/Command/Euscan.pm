@@ -182,7 +182,7 @@ sub update {
     error "|===================================================/"
         and return undef
         if ( !$self->{manifest} );
-    if ( test_ebuild( $updated, $self->{manifest}, $self->{install} ) ) {
+    if ( test_ebuild( $updated, $self->{manifest}, $self->{install} ,$password) ) {
         if ( $self->{git} ) {
             chdir($atom);
             notice git::add './';
