@@ -109,7 +109,7 @@ sub run {
         my @temp = `euscan -q -C $Package`;
         chomp(@temp);
         if ( !$self->{quiet} ) {
-            info "\n** " . $_, for @temp;
+            info "** " . $_ for @temp;
         }
         push( @Updates, @temp );
         push( @Added, $self->update( $Package, $password, @temp ) )
