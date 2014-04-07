@@ -38,6 +38,7 @@ sub clean_untracked {
     my @Installed;
     chdir($dir);
     system("git ls-files --others --exclude-standard | xargs rm -rfv");
+    &notice("Launch 'git stash' if you want to rid about all the modifications");
 }
 
 sub test_ebuild {
