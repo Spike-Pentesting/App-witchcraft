@@ -14,6 +14,7 @@ our @EXPORT = qw(_debug
     print_list
     test_untracked
     clean_untracked
+    test_ebuild
 );
 
 sub _debug {
@@ -27,6 +28,25 @@ sub clean_untracked {
     system("git ls-files --others --exclude-standard | xargs rm -rfv");
 }
 
+sub test_ebuild {
+    my $ebuild   = shift;
+    my $manifest = shift || undef;
+    my $install  = shift || undef;
+    if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
+        &notice('|| - Manifest created successfully');
+        &error("|===================================================/")
+            and return 1
+            if ( defined $manifest and !defined $install );
+        if ( defined $install and system("sudo ebuild $ebuild install") == 0 )
+        {
+            &info('|| - Installation OK');
+            return 1;
+        }
+        else { return 0; }
+    }
+    else { return 0; }
+}
+
 sub test_untracked {
     my $dir = shift;
     my $ignore = shift || 0;
@@ -38,18 +58,10 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
 
     foreach my $new_pos (@Untracked) {
-
-        if ( system("ebuild $new_pos manifest") == 0 ) {
-            &info( "created manifest for " . $new_pos );
-            if ( system("sudo ebuild $new_pos install") == 0 ) {
-                $new_pos = s/(.*\/[\w-]*)\//$1/;
-                &info("Installation OK");
-                push( @Installed, $new_pos );
-            }
-            else {
-                push( @Failed, $new_pos );
-            }
-
+        my $result = &test_ebuild( $new_pos, 1, 1 );
+        $new_pos = s/(.*\/[\w-]*)\//$1/;
+        if ( $result == 1 ) {
+            push( @Installed, $new_pos );
         }
         else {
             push( @Failed, $new_pos );
@@ -67,7 +79,6 @@ sub test_untracked {
                 );
         }
     }
-
     if ( @Installed > 0 ) {
         &info(
             "Those files where correctly installed, maybe you wanna check them: "
@@ -75,7 +86,6 @@ sub test_untracked {
         my $result;
         &notice($_) and $result .= " " . $_ for (@Installed);
         &info("Generating the command for git add");
-
         &notice("git add $result");
     }
     else {
@@ -165,7 +175,7 @@ sub error {
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR '<WitchCraft> ' . join( "\n", @msg ), "\n";
+    print STDERR join( "\n", '->',@msg ), "\n";
     print STDERR color 'reset';
 }
 
@@ -185,6 +195,7 @@ sub dialog_yes_default {
     print STDERR color 'reset';
     my $a = <STDIN>;
     chomp $a;
+
     if ( $a =~ /n/ ) {
         return 0;
     }

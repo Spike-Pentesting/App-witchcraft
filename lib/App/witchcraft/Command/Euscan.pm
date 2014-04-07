@@ -7,6 +7,7 @@ use App::witchcraft::Utils;
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit);
+
 =encoding utf-8
 
 =head1 NAME
@@ -84,7 +85,7 @@ sub options {
         "q|quiet"    => "quiet",
         "c|check"    => "check",
         "u|update"   => "update",
-        "r|root=s"     => "root",
+        "r|root=s"   => "root",
         "m|manifest" => "manifest",
         "i|install"  => "install",
         "f|force"    => "force",
@@ -95,7 +96,8 @@ sub options {
 sub run {
     my $self     = shift;
     my $Repo     = shift // "spike";
-    my @Packages = `sudo equo query list available $Repo -q`; #sudo is not needed, but so i have temporary rights
+    my @Packages = `sudo equo query list available $Repo -q`
+        ;    #sudo is not needed, but so i have temporary rights
     chomp(@Packages);
     my @Updates;
     my @Added;
@@ -172,26 +174,22 @@ sub update {
     }
     else {
         info "|| - Update to $Package already exists";
-        return undef if(!$self->{force});
+        return undef if ( !$self->{force} );
     }
     error "|===================================================/"
         and return undef
         if ( !$self->{manifest} );
-    if ( system("ebuild $updated manifest") == 0 ) {
-        notice '|| - Manifest created successfully';
-        error "|===================================================/"
-            and return undef
-            if ( !$self->{install} );
-        if ( system("ebuild $updated install") == 0 ) {
-            info '|| - Installation OK';
+    if ( test_ebuild( $updated, $self->{manifest}, $self->{install} ) ) {
+        if ( $self->{git} ) {
             chdir($atom);
-            if ( $self->{git} ) {
-                git::add './';
-                info '|| - Added to git index of the repository';
-                git::commit -m => 'added ' . $pack;
-                info '|| - Committed with "' . 'added ' . $pack . "'";
-            }
+            notice git::add './';
+            info '|| - Added to git index of the repository';
+            notice git::commit -m => 'added ' . $pack;
+            info '|| - Committed with "' . 'added ' . $pack . "'";
         }
+    }
+    else {
+        return undef;
     }
     error "||\n";
     error "|===================================================/";
