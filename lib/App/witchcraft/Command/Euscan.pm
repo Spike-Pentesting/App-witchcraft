@@ -103,6 +103,7 @@ sub run {
     my @Updates;
     my @Added;
     my $c = 1;
+
     foreach my $Package (@Packages) {
         notice "[$c/" . scalar(@Packages) . "] " . $Package
             if $self->{verbose};
@@ -145,9 +146,9 @@ sub update {
         if ( !-d $atom );
     notice 'opening ' . $atom;
     opendir( DH, $atom );
-    my @files = grep {/\.ebuild$/}
-        sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
-        grep { -f join( '/', $atom, $_ ) } readdir(DH);
+    my @files
+        = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
+        grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
     closedir(DH);
 
     my @Temp = @temp[    #natural sort order for strings containing numbers
@@ -182,13 +183,29 @@ sub update {
     error "|===================================================/"
         and return undef
         if ( !$self->{manifest} );
-    if ( test_ebuild( $updated, $self->{manifest}, $self->{install} ,$password) ) {
+    if (test_ebuild(
+            $updated, $self->{manifest}, $self->{install}, $password
+        )
+        )
+    {
         if ( $self->{git} ) {
             chdir($atom);
-            notice git::add './';
-            info 'Added to git index of the repository';
-            notice git::commit -m => 'added ' . $pack;
-            info 'Committed with "' . 'added ' . $pack . "'";
+            eval{
+		notice git::add './';
+	    };
+	    if($@){
+		error $@;
+            } else {
+            	info 'Added to git index of the repository';
+	    }		    
+	    eval {
+            	notice git::commit -m => 'added ' . $pack;
+	    };
+            if($@){
+		error $@;
+	    } else {
+       	    	info 'Committed with "' . 'added ' . $pack . "'";
+	    }	
         }
     }
     else {
