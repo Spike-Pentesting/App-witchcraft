@@ -5,7 +5,7 @@ use warnings;
 use constant debug => $ENV{DEBUG};
 use App::witchcraft::Command;
 use File::Path qw(make_path remove_tree);
-use Carp::Always;
+#use Carp::Always;
 
 
 $| = 1;
