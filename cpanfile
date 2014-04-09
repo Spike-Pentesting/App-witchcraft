@@ -1,6 +1,7 @@
 requires 'App::CLI';
 requires 'App::CLI::Command';
 requires 'App::CLI::Command::Help';
+requires 'Carp::Always';
 requires 'Config::Tiny';
 requires 'File::Path';
 requires 'File::Xcopy';
