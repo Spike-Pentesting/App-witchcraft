@@ -5,7 +5,6 @@ use App::witchcraft::Utils;
 use warnings;
 use strict;
 use File::Find;
-use File::Copy;
 use Regexp::Common qw/URI/;
 use Tie::File;
 
