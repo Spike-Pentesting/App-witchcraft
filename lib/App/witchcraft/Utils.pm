@@ -113,6 +113,9 @@ sub test_untracked {
         &notice($_) and $result .= " " . $_ for (@Installed);
         &info("Generating the command for git add");
         &notice("git add $result");
+        &notice("emerge -av $result");
+        &notice("eit add $result");
+        &notice("eit push");
     }
     else {
         &info(

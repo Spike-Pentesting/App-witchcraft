@@ -89,12 +89,11 @@ sub options {
 
 sub run {
     my $self     = shift;
-    my $RepoUrl  = shift // 'http://pentoo.googlecode.com/svn/portage/trunk';
+    my $RepoUrl  = shift || 'http://pentoo.googlecode.com/svn/portage/trunk';
     my $password = password_dialog();
-
-    my $refactor = $self->{'refactor'} // 'pentoo';
+    my $refactor = $self->{'refactor'} || 'pentoo';
     my @ignores;
-    my $temp = $self->{'temp'} // '/var/tmp/spike-trunk';
+    my $temp = $self->{'temp'} || '/var/tmp/spike-trunk';
     my $refactor_target = $self->{'refactor_target'} // 'spike';
     my $add = $self->{'ignore'} ? 1 : 0;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);

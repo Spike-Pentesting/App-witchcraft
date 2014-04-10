@@ -122,8 +122,13 @@ sub run {
         print $_ . "\n" for @Updates;
     }
     if ( $self->{git} ) {
-        system("layman -S")
-            && system( "emerge -av " . join( " ", @Added ) );
+        system( "echo " . $password . " | sudo -S eix-sync" )
+            && system( "echo "
+                . $password
+                . " | sudo -S emerge -av "
+                . join( " ", @Added ) )
+            && system( "echo " . $password . " | sudo -S eit commit" )
+            && system( "echo " . $password . " | sudo -S eit push" );
     }
 }
 
@@ -133,7 +138,7 @@ sub update {
     my $password = shift;
 
     my @temp = @_;
-    return undef if ( !$self->{update} and !$self->{check} );
+    return () if ( !$self->{update} and !$self->{check} );
     error "|===================================================\\";
     my $dir
         = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
@@ -142,7 +147,7 @@ sub update {
     my $atom = join( '/', $dir, $Package );
     info 'repository doesn\'t have that atom (' . $atom . ')'
         and error "|===================================================/"
-        and return undef
+        and return ()
         if ( !-d $atom );
     notice 'opening ' . $atom;
     opendir( DH, $atom );
@@ -168,7 +173,7 @@ sub update {
 
     if ( !-f $updated ) {
         error "|===================================================/"
-            and return undef
+            and return ()
             if ( $self->{check} and -f $updated );
         my $last = shift @files;
         my $source = join( '/', $atom, $last );
@@ -178,10 +183,10 @@ sub update {
     }
     else {
         info "Update to $Package already exists";
-        return undef if ( !$self->{force} );
+        return () if ( !$self->{force} );
     }
     error "|===================================================/"
-        and return undef
+        and return ()
         if ( !$self->{manifest} );
     if (test_ebuild(
             $updated, $self->{manifest}, $self->{install}, $password
@@ -190,26 +195,24 @@ sub update {
     {
         if ( $self->{git} ) {
             chdir($atom);
-            eval{
-		notice git::add './';
-	    };
-	    if($@){
-		error $@;
-            } else {
-            	info 'Added to git index of the repository';
-	    }		    
-	    eval {
-            	notice git::commit -m => 'added ' . $pack;
-	    };
-            if($@){
-		error $@;
-	    } else {
-       	    	info 'Committed with "' . 'added ' . $pack . "'";
-	    }	
+            eval { notice git::add './'; };
+            if ($@) {
+                error $@;
+            }
+            else {
+                info 'Added to git index of the repository';
+            }
+            eval { notice git::commit -m => 'added ' . $pack; };
+            if ($@) {
+                error $@;
+            }
+            else {
+                info 'Committed with "' . 'added ' . $pack . "'";
+            }
         }
     }
     else {
-        return undef;
+        return ();
     }
     error "|===================================================/";
     return join( "/", $Package, $pack );
