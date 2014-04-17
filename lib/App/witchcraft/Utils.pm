@@ -114,7 +114,7 @@ sub test_untracked {
             "Those files where correctly installed, maybe you wanna check them: "
         );
         my $result;
-        &notice($_) and $result .= " " . $_ for (&uniq(@Installed);
+        &notice($_) and $result .= " " . $_ for (&uniq(@Installed));
         &info("Generating the command for git add");
         &notice("git add $result");
         &notice("eix-sync");
