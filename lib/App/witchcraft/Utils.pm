@@ -16,6 +16,7 @@ our @EXPORT = qw(_debug
     test_untracked
     clean_untracked
     test_ebuild
+    uniq
     password_dialog
 );
 
@@ -45,7 +46,9 @@ sub clean_untracked {
     &notice(
         "Launch 'git stash' if you want to rid about all the modifications");
 }
-
+sub uniq {
+    return keys %{{ map { $_ => 1 } @_ }};
+}
 sub test_ebuild {
     my $ebuild   = shift;
     my $manifest = shift || undef;
@@ -111,9 +114,10 @@ sub test_untracked {
             "Those files where correctly installed, maybe you wanna check them: "
         );
         my $result;
-        &notice($_) and $result .= " " . $_ for (@Installed);
+        &notice($_) and $result .= " " . $_ for (&uniq(@Installed);
         &info("Generating the command for git add");
         &notice("git add $result");
+        &notice("eix-sync");
         &notice("emerge -av $result");
         &notice("eit add $result");
         &notice("eit push");
