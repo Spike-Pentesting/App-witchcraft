@@ -209,7 +209,7 @@ sub error {
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR join( "\n", '|| - ', @msg ), "\n";
+    print STDERR '|| --> '.join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
