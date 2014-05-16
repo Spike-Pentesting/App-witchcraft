@@ -57,10 +57,11 @@ help (--help for full)
 
 
 --> List repository packages
-*    l|--list [repository]     
+*    l|--list [repository]
 
 --> Manifest & install untracked files, giving a report of what packages succedeed
-*    t|--test [repository dir] 
+*    t|--test [repository dir]
+                     "a|add", It asks to add the failed installed packages to ignore list
 
 --> Clean all untracked files from the given repository
 *    c|--clean [repository dir]

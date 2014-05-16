@@ -15,10 +15,11 @@ App::witchcraft::Command::Test - Test untracked files
 
   $ witchcraft test
   $ witchcraft t <git_repository>
+  $ witchcraft t  --add <git_repository>
 
 =head1 DESCRIPTION
 
-Takes all the untracked ebuilds and manifest & install them
+Takes all the untracked ebuilds and manifest & install them, with the --add flag you will be prompted for failed tests to be added in the ignore list
 
 =head1 AUTHOR
 
@@ -38,14 +39,19 @@ L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 
 =cut
 
+sub options {
+    ( "a|add" => "ignore" );
+}
+
 sub run {
     my $self = shift;
+    my $add = $self->{'ignore'} ? 1 : 0;
     my $dir
         = shift // -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
     info 'Manifest & Install of the untracked files in ' . $dir;
-    test_untracked( $dir, 0, password_dialog());
+    test_untracked( $dir, $add, password_dialog() );
     exit;
 }
 

@@ -27,32 +27,32 @@ Euscan entropy repository packages.
 
 =over 4
 
-=item C<-u|--update> 
+=item C<-u|--update>
 
 it saves new ebuilds in to the current git_repository.
 
-=item C<-f|--force> 
+=item C<-f|--force>
 
 -m and -i will have effect also on ebuilds that are marked as "to update" but already are in the repository.
 This is useful when you want to re-ebuild all the new found.
 
-=item C<-i|--install> 
+=item C<-i|--install>
 
 it runs C<ebuild <name> install> against the ebuild.
 
-=item C<-c|--check> 
+=item C<-c|--check>
 
 only performs scan of the new packages and return the list
 
-=item C<-m|--manifest> 
+=item C<-m|--manifest>
 
 it runs C<ebuild <name> manifest> against the ebuild
 
-=item C<-g|--git> 
+=item C<-g|--git>
 
 it add the ebuild into the git index of the repository and commit with the "added ${P}"
 
-=item C<-r|--root <REPOSITORY_DIRECTORY>> 
+=item C<-r|--root <REPOSITORY_DIRECTORY>>
 
 provided perform the git changes on C<<REPOSITORY_DIRECTORY>>
 
@@ -157,11 +157,11 @@ sub update {
     closedir(DH);
 
     my @Temp = @temp[    #natural sort order for strings containing numbers
-        map { unpack "N", substr( $_, -4 ) }
+        map { unpack "N", substr( $_, -4 ) } #going back to normal representation
         sort
         map {
             my $key = $temp[$_];
-            $key =~ s[(\d+)][ pack "N", $1 ]ge;
+            $key =~ s[(\d+)][ pack "N", $1 ]ge; #transforming all numbers in ascii representation
             $key . pack "CNN", 0, 0, $_
         } 0 .. $#temp
     ];
