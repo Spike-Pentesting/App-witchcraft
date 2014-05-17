@@ -44,7 +44,7 @@ sub run {
     info 'Installing all dependencies for ' . $package . ' using equo';
     my $password = password_dialog();
     my @Packages = map { $_ =~ s/\[.*\]|\s//g; atom($_); $_ }
-        qx/equery -C -q g --depth=1 $package/;
+        qx/equery -C -q g --depth=0 $package/;
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
