@@ -50,7 +50,7 @@ sub run {
     my %packs = map { $_ => 1 } @Installed_Packages;
     my @to_install = uniq( grep( !defined $packs{$_}, @Packages ) );
     shift @to_install;
-    info "Installing $_" and notice qx/echo $password | sudo -S equo i $_/
+    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
         for @to_install;
     exit;
 }

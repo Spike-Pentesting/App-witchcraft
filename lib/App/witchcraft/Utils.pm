@@ -21,9 +21,7 @@ our @EXPORT = qw(_debug
     atom
 );
 
-sub atom{
-  s/-[0-9]{1,}.*$//;
-}
+sub atom { s/-[0-9]{1,}.*$//; }
 
 sub _debug {
     print STDERR @_, "\n" if debug;
@@ -51,9 +49,11 @@ sub clean_untracked {
     &notice(
         "Launch 'git stash' if you want to rid about all the modifications");
 }
+
 sub uniq {
-    return keys %{{ map { $_ => 1 } @_ }};
+    return keys %{ { map { $_ => 1 } @_ } };
 }
+
 sub test_ebuild {
     my $ebuild   = shift;
     my $manifest = shift || undef;
@@ -119,7 +119,7 @@ sub test_untracked {
             "Those files where correctly installed, maybe you wanna check them: "
         );
         my $result;
-        &notice($_) and $result .= " " . $_ for (&uniq(@Installed));
+        &notice($_) and $result .= " " . $_ for ( &uniq(@Installed) );
         &info("Generating the command for git add");
         &notice("git add $result");
         &notice("eix-sync");
@@ -214,7 +214,7 @@ sub error {
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR '|| --> '.join( "\n", @msg ), "\n";
+    print STDERR '|| --> ' . join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
