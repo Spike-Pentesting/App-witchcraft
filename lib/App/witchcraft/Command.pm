@@ -9,7 +9,8 @@ sub alias {
         "s" => "sync",
         "e" => "euscan",
         "t" => "test",
-        "c" => "clean"
+        "c" => "clean",
+        "d" => "depinstall"
     );
 }
 
@@ -55,6 +56,8 @@ help (--help for full)
                     "i|install", Try to install them, output the file that passed
                     "a|add", It asks to add the failed installed packages to ignore list
 
+--> Install dependencies of a packages (if available) using equo
+*   d|--depinstall   [package]
 
 --> List repository packages
 *    l|--list [repository]

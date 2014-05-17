@@ -18,7 +18,12 @@ our @EXPORT = qw(_debug
     test_ebuild
     uniq
     password_dialog
+    atom
 );
+
+sub atom{
+  s/-[0-9]{1,}.*$//;
+}
 
 sub _debug {
     print STDERR @_, "\n" if debug;
@@ -202,7 +207,7 @@ sub print_list {
 sub error {
     my @msg = @_;
     print STDERR color 'red';
-    print STDERR '@@@@WitchCraft@@@@ ' . join( "\n", @msg ), "\n";
+    print STDERR '@@@ ' . join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
@@ -216,7 +221,7 @@ sub info {
 sub notice {
     my @msg = @_;
     print STDERR color 'bold yellow';
-    print STDERR '!WitchCraft! ' . join( "\n", @msg ), "\n";
+    print STDERR '/!\ ' . join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
@@ -224,7 +229,7 @@ sub dialog_yes_default {
     my $msg = shift;
     local $|;
     print STDERR color 'bold blue';
-    print STDERR '! WitchCraft-> ' . $msg;
+    print STDERR '~~> ' . $msg;
     print STDERR ' (Y/n) ';
     print STDERR color 'reset';
     my $a = <STDIN>;
