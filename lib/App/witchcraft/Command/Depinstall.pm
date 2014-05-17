@@ -42,15 +42,18 @@ sub run {
     my $package = shift;
     error "You must supply a package" and exit 1 if ( !$package );
     info 'Installing all dependencies for ' . $package . ' using equo';
-    my $password = password_dialog();
+    my $password = password_dialog;
     my @Packages = map { $_ =~ s/\[.*\]|\s//g; atom($_); $_ }
-        qx/equery -C -q g --depth=0 $package/;
+        qx/equery -C -q g --depth=1 $package/; #depth=0 it's all
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
     my @to_install = uniq( grep( !defined $packs{$_}, @Packages ) );
     shift @to_install;
-    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
-        for @to_install;
+    my $Installs = join(" ",@to_install);
+    info "Installing $Installs";
+    system("echo $password | sudo -S equo i -q $Installs");
+#    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
+#      for @to_install;
     exit;
 }
