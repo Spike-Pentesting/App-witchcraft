@@ -56,7 +56,6 @@ sub run {
         . ' with depth '
         . $depth
         . ' using equo';
-    my $password = password_dialog;
     info 'Retrieving dependencies';
     my @Packages = map { $_ =~ s/\[.*\]|\s//g; atom($_); $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
@@ -71,7 +70,7 @@ sub run {
     my $Installs = join( " ", @to_install );
     info "Installing: ";
     notice $_. "\t" for @to_install;
-    exec("echo $password | sudo -S equo i -q $Installs");
+    exec("sudo equo i -q $Installs");
  #    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
  #      for @to_install;
     exit;
