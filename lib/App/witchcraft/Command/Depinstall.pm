@@ -52,7 +52,7 @@ sub run {
     shift @to_install;
     my $Installs = join(" ",@to_install);
     info "Installing $Installs";
-    system("echo $password | sudo -S equo i -q $Installs");
+    exec("echo $password | sudo -S equo i -q $Installs");
 #    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
 #      for @to_install;
     exit;
