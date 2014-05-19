@@ -43,7 +43,7 @@ L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub options {
-    ( "d|depth" => "depth" );
+    ( "d|depth=s" => "depth" );
 }
 
 sub run {
