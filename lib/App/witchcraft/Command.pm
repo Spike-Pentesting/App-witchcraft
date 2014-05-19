@@ -58,6 +58,7 @@ help (--help for full)
 
 --> Install dependencies of a packages (if available) using equo
 *   d|--depinstall   [package]
+                    "d|depth=i", define the deepness of the depdence tree, 0 to take all dependencies
 
 --> List repository packages
 *    l|--list [repository]
