@@ -71,13 +71,14 @@ sub run {
         . $cfg->param('OVERLAY_NAME')
         . ' every '
         . $cfg->param('SLEEP_TIME') . ' s';
-    system("/etc/init.d/postfix restart");
+    system("systemctl restart postfix");
     &daemonize if $self->{daemon};
     &send_report("I'm up!");
 
     while ( 1 ) {
         info "Checking for updates, and merging up!";
         if ( system("layman -S") == 0 ) {    #Launch layman -S first.
+            system("eix-sync");
             &update( $cfg->param('OVERLAY_PATH'),
                 $cfg->param('GIT_MASTER_FILE') );
             &manual_update( $cfg->param('OVERLAY_PATH') );
