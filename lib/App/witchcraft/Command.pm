@@ -10,7 +10,8 @@ sub alias {
         "e" => "euscan",
         "t" => "test",
         "c" => "clean",
-        "d" => "depinstall"
+        "d" => "depinstall",
+        "w" => "watch"
     );
 }
 
@@ -62,6 +63,10 @@ help (--help for full)
 
 --> List repository packages
 *    l|--list [repository]
+
+--> Watch for ebuild change in the configured overlay
+*    w|watch
+                     "d|daemon", daemonize
 
 --> Manifest & install untracked files, giving a report of what packages succedeed
 *    t|--test [repository dir]

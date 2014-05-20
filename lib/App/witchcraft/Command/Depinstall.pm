@@ -51,6 +51,8 @@ sub run {
     my $package = shift;
     my $depth   = $self->{depth} // 1;
     error "You must supply a package" and exit 1 if ( !$package );
+    error 'You must run it with root permissions' and exit 1 if $> != 0;
+
     info 'Installing all dependencies for '
         . $package
         . ' with depth '
@@ -71,6 +73,7 @@ sub run {
     info "Installing: ";
     notice $_. "\t" for @to_install;
     exec("sudo equo i -q $Installs");
+
  #    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
  #      for @to_install;
     exit;
