@@ -112,7 +112,7 @@ sub test_untracked {
     my @Untracked = git::ls_files '--others', '--exclude-standard';
     push(@Untracked,git::diff_files '--name-only');
     @Untracked = grep {/\.ebuild$/} @Untracked;
-
+    &info("Those are the file that would be tested: ".join(" ",@Untracked));
     foreach my $new_pos (@Untracked) {
         &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
