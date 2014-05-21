@@ -258,7 +258,7 @@ sub process() {
                     send_report(
                         "Pacchetti compilati",
                         "Pacchetti correttamente compilati:\n####################\n"
-                            . join( "\n", @DIFFS )
+                            . join( "", @DIFFS )
                     );
                     if ( $use == 0 ) {
                         save_compiled_commit($commit);
@@ -277,14 +277,14 @@ sub process() {
             else {
                 my @LOGS = find_logs();
                 send_report( "Errore nella compressione dei pacchetti",
-                    join( "\n", @LOGS ) );
+                    join( " ", @LOGS ) );
             }
         }
         else {
             my @LOGS = find_logs();
             send_report(
                 "Errore nel merge dei pacchetti: " . join( " ", @TO_EMERGE ),
-                join( "\n", @LOGS )
+                join( " ", @LOGS )
             );
         }
     }
