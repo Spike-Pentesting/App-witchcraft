@@ -202,7 +202,7 @@ sub update {
             else {
                 info 'Added to git index of the repository';
             }
-            eval { notice git::commit -m => 'added ' . $pack; };
+            eval { notice git::commit -m => 'witchcraft: automatically updated ' . $pack; };
             if ($@) {
                 error $@;
             }
