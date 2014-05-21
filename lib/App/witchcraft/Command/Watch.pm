@@ -3,6 +3,7 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils;
+use App::Nopaste 'nopaste';
 use warnings;
 use strict;
 use File::Find;
@@ -10,6 +11,9 @@ use Regexp::Common qw/URI/;
 use Tie::File;
 use Expect;
 use Digest::MD5;
+
+use HTTP::Request::Common qw(POST);
+use LWP::UserAgent;
 
 =encoding utf-8
 
@@ -74,7 +78,7 @@ sub run {
     &daemonize if $self->{daemon};
     &send_report("I'm up!");
 
-    while ( 1 ) {
+    while (1) {
         info "Checking for updates, and merging up!";
         if ( system("layman -S") == 0 ) {    #Launch layman -S first.
             system("eix-sync");
@@ -85,7 +89,7 @@ sub run {
         else {
             &send_report( "Layman coudn't sync", "Executing : layman -S " );
         }
-     sleep $cfg->param('SLEEP_TIME');
+        sleep $cfg->param('SLEEP_TIME');
     }
 
 }
@@ -248,14 +252,13 @@ sub process() {
                     $exp->soft_close();
                 }
             );
-            if ( !$Expect->exitstatus()  or $Expect->exitstatus() == 0  ) {
+            if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
                 if ( system("eit push --quick") == 0 ) {
                     info(
                         "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
                     );
-                    send_report("Tutto ok, ultimo commit compilato:$commit");
                     send_report(
-                        "Pacchetti compilati",
+                        "Pacchetti compilati, commit $commit",
                         "Pacchetti correttamente compilati:\n####################\n"
                             . join( "", @DIFFS )
                     );
@@ -291,22 +294,55 @@ sub process() {
 
 sub send_report {
     my $message = shift;
+    my $ua      = LWP::UserAgent->new;
     info 'Sending ' . $message;
-    my $hostname   = $App::witchcraft::HOSTNAME;
-    my @MAIL_ALERT = App::witchcraft::Config->param('ALERT_EMAIL');
+    my $hostname = $App::witchcraft::HOSTNAME;
+    my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
     if ( my $log = shift ) {
         notice 'Attachment ' . $log;
-        open my $FILE, ">/tmp/report.log";
-        print $FILE $log;
-        close $FILE;
-        system(
-            "echo \"$message\" | mutt -s '$hostname - Report from SpikeMate' '$_' -a '/tmp/report.log'"
-        ) for @MAIL_ALERT;
+        my $url = nopaste(
+            text    => $log,
+            private => 1,      # default: 0
+
+           # this is the default, but maybe you want to do something different
+            error_handler => sub {
+                my ( $error, $service ) = @_;
+                warn "$service: $error";
+            },
+
+            warn_handler => sub {
+                my ( $warning, $service ) = @_;
+                warn "$service: $warning";
+            },
+
+            # you may specify the services to use - but you don't have to
+        #    services => [ "Shadowcat" ],
+        );
+
+        foreach my $BULL (@BULLET) {
+            my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                [
+                type  => 'link',
+                title => 'Witchcraft message from ' . $hostname,
+                url   => $url
+                ];
+            $req->authorization_basic($BULL);
+            notice $ua->request($req)->as_string;
+        }
     }
     else {
-        system(
-            "echo \"$message\" | mutt -s '$hostname - Good news from SpikeMate' '$_'"
-        ) for @MAIL_ALERT;
+        info 'WOOOW BULLETS!';
+        foreach my $BULL (@BULLET) {
+            my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                [
+                type  => 'note',
+                title => 'Witchcraft message from ' . $hostname,
+                body  => $message
+                ];
+            $req->authorization_basic($BULL);
+            notice $ua->request($req)->as_string;
+        }
+
     }
 }
 
