@@ -56,6 +56,7 @@ help (--help for full)
                     "t|temp=s",  Temp directory for the svn checkout
                     "i|install", Try to install them, output the file that passed
                     "a|add", It asks to add the failed installed packages to ignore list
+                    "-x|--ignore-existing", ignore existing files from rsync copy to the git overlay.
 
 --> Install dependencies of a packages (if available) using equo
 *   d|--depinstall   [package]

@@ -43,6 +43,10 @@ it saves new ebuilds in to the current git_repository.
 
 it runs C<ebuild <name> install> against the ebuild.
 
+=item C<-x|--ignore-existing>
+
+ignore existing files from rsync copy to the git overlay.
+
 =item C<-r|--root <git_root>>
 
 you can specify the git repository(C<-r|--root <git_root>>) directory where the modifications will be copied.
@@ -83,7 +87,8 @@ sub options {
         "r|root=s"  => "root",      #where is the git repository?
         "i|install" => "install",
         "t|temp=s"  => "temp",      #temp directory for the svn checkout
-        "a|add"     => "ignore"
+        "a|add"     => "ignore",
+        "x|ignore-existing" => "ignore-existing"
     );
 }
 
@@ -166,7 +171,7 @@ sub run {
 
             }
             else {
-                   notice "$file ignored";
+                notice "$file ignored";
             }
 
         },
@@ -181,7 +186,9 @@ sub run {
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
 
-    system( "rsync --progress -avp " . $temp . "/* $dir\/" );
+    system( $self->{'ignore-existing'}
+        ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
+        : "rsync --progress -avp " . $temp . "/* $dir\/" );
     unlink( $dir . '/.svn' );
     return if ( !$self->{install} );
     test_untracked( $dir, $add, $password );
