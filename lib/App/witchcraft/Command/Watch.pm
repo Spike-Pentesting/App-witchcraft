@@ -71,7 +71,6 @@ sub run {
         . $cfg->param('OVERLAY_NAME')
         . ' every '
         . $cfg->param('SLEEP_TIME') . ' s';
-    system("systemctl restart postfix");
     &daemonize if $self->{daemon};
     &send_report("I'm up!");
 
