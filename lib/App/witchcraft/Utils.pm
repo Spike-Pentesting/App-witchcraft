@@ -110,6 +110,7 @@ sub test_untracked {
     my @Failed;
     my @ignores;
     my @Untracked = git::ls_files '--others', '--exclude-standard';
+    push(@Untracked,git::diff_files '--name-only');
     @Untracked = grep {/\.ebuild$/} @Untracked;
 
     foreach my $new_pos (@Untracked) {

@@ -27,27 +27,27 @@ Euscan entropy repository packages.
 
 =over 4
 
-=item C<-t|refactortarget <term>> 
+=item C<-t|refactortarget <term>>
 
 if given C<<term>> the substitution will search for that.
 
-=item C<-a|--add> 
+=item C<-a|--add>
 
 It asks to add the failed installed packages to ignore list
 
-=item C<-u|--update> 
+=item C<-u|--update>
 
 it saves new ebuilds in to the current git_repository.
 
-=item C<-i|--install> 
+=item C<-i|--install>
 
 it runs C<ebuild <name> install> against the ebuild.
 
-=item C<-r|--root <git_root>> 
+=item C<-r|--root <git_root>>
 
 you can specify the git repository(C<-r|--root <git_root>>) directory where the modifications will be copied.
 
-=item C<-t|--temp <temp_dir>> 
+=item C<-t|--temp <temp_dir>>
 
 allow to set a different temporary checkout directory.
 
@@ -128,7 +128,7 @@ sub run {
             if ( -f $file
                 and $file_name =~ /\.ebuild$/ )
             {
-                info "[File] $file contains pentoo";
+                info "[File] analyzing $file ";
 
                 my $new_pos = $file;
 
@@ -166,7 +166,7 @@ sub run {
 
             }
             else {
-                #   info "$file ignored";
+                   notice "$file ignored";
             }
 
         },
@@ -181,7 +181,7 @@ sub run {
         ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
         : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
 
-    system( "rsync --ignore-existing -avp " . $temp . "/* $dir\/" );
+    system( "rsync --progress -avp " . $temp . "/* $dir\/" );
     unlink( $dir . '/.svn' );
     return if ( !$self->{install} );
     test_untracked( $dir, $add, $password );
