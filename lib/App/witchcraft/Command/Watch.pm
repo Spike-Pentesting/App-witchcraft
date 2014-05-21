@@ -249,7 +249,7 @@ sub process() {
                     $exp->soft_close();
                 }
             );
-            if ( $Expect->exitstatus() eq "" or $Expect->exitstatus() == 0  ) {
+            if ( !$Expect->exitstatus()  or $Expect->exitstatus() == 0  ) {
                 if ( system("eit push --quick") == 0 ) {
                     info(
                         "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
