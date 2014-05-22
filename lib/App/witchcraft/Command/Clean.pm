@@ -41,9 +41,8 @@ L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 sub run {
     my $self = shift;
     my $dir
-        = shift // -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
+        = shift //  App::witchcraft->Config->param('GIT_REPOSITORY');
+    error 'No GIT_REPOSITORY defined, or --root given' and exit 1 if(!$dir);
         info 'Cleaning all the untracked files in '.$dir;
     clean_untracked($dir);
     exit;

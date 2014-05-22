@@ -46,10 +46,9 @@ sub options {
 sub run {
     my $self = shift;
     my $add = $self->{'ignore'} ? 1 : 0;
-    my $dir
-        = shift // -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
+   my $dir
+        = shift //  App::witchcraft->Config->param('GIT_REPOSITORY');
+    error 'No GIT_REPOSITORY defined, or --root given' and exit 1 if(!$dir);
     info 'Manifest & Install of the untracked files in ' . $dir;
     test_untracked( $dir, $add, password_dialog() );
     exit;

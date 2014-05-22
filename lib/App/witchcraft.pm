@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 1.0;
+our $VERSION              = 0.003;
 our $CONFIG_FILE          = "witchcraft.conf";
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";

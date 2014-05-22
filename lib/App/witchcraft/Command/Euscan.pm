@@ -141,9 +141,8 @@ sub update {
     return () if ( !$self->{update} and !$self->{check} );
     error "|===================================================\\";
     my $dir
-        = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
+        = $self->{root} //  App::witchcraft->Config->param('GIT_REPOSITORY');
+    error 'No GIT_REPOSITORY defined, or --root given' and exit 1 if(!$dir);
     my $atom = join( '/', $dir, $Package );
     info 'repository doesn\'t have that atom (' . $atom . ')'
         and error "|===================================================/"

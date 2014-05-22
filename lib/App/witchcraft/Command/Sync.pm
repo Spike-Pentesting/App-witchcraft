@@ -7,6 +7,7 @@ use strict;
 use File::Find;
 use Regexp::Common qw/URI/;
 use Tie::File;
+use Git::Sub;
 
 =encoding utf-8
 
@@ -94,12 +95,14 @@ sub options {
 
 sub run {
     my $self     = shift;
-    my $RepoUrl  = shift || 'http://pentoo.googlecode.com/svn/portage/trunk';
+    my $RepoUrl  = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
     my $password = password_dialog();
-    my $refactor = $self->{'refactor'} || 'pentoo';
+    my $refactor = $self->{'refactor'}
+        // App::witchcraft->Config->param('REFACTOR');
     my @ignores;
-    my $temp = $self->{'temp'} || '/var/tmp/spike-trunk';
-    my $refactor_target = $self->{'refactor_target'} // 'spike';
+    my $temp = $self->{'temp'} // App::witchcraft->Config->param('CVS_TMP');
+    my $refactor_target = $self->{'refactor_target'}
+        // App::witchcraft->Config->param('REFACTOR_TO');
     my $add = $self->{'ignore'} ? 1 : 0;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     my $flatten = join( "|", @ignores );
@@ -110,10 +113,15 @@ sub run {
     my $u_t     = uc($refactor_target);
     my $m_t     = uc( substr( $refactor_target, 0, 1 ) )
         . substr( $refactor_target, 1 );
-
     my @Installed;
-
-    system( "svn checkout $RepoUrl " . $temp );
+    if ( system("git ls-remote $RepoUrl") == 0 ) {
+        info 'The repository is a git one!';
+        notice git::clone $RepoUrl, $temp;
+    }
+    else {
+        info 'This is a svn repository!';
+        system( "svn checkout $RepoUrl " . $temp );
+    }
     finddepth(
         sub {
             my $file      = $File::Find::name;
@@ -182,13 +190,14 @@ sub run {
     return if ( !$self->{update} );
     info "Copying content to git directory";
     my $dir
-        = $self->{root} || -d "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        ? "/home/" . $ENV{USER} . "/_git/gentoo-overlay"
-        : "/home/" . $ENV{USER} . "/git/gentoo-overlay";
+        = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+    error 'No GIT_REPOSITORY defined, or --root given' and exit 1
+        if ( !$dir );
 
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
-        : "rsync --progress -avp " . $temp . "/* $dir\/" );
+        : "rsync --progress -avp " . $temp . "/* $dir\/"
+    );
     unlink( $dir . '/.svn' );
     return if ( !$self->{install} );
     test_untracked( $dir, $add, $password );
