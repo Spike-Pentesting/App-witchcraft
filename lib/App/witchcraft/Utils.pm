@@ -145,7 +145,7 @@ sub test_untracked {
         );
         my $result;
         &notice($_) and $result .= " " . $_ for ( &uniq(@Installed) );
-        &info("Generating the command for git add");
+        &info("Generating the command for maintenance");
         &notice("git add $result");
         &notice("eix-sync");
         &notice("emerge -av $result");
