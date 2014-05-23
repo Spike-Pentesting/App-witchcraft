@@ -77,9 +77,9 @@ sub run {
         . $cfg->param('SLEEP_TIME') . ' s';
     &daemonize if $self->{daemon};
     &send_report("I'm up!");
-
     while (1) {
         info "Checking for updates, and merging up!";
+        system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv"); #spring cleaning!
         if ( system("layman -S") == 0 ) {    #Launch layman -S first.
             system("eix-sync");
             &update( $cfg->param('OVERLAY_PATH'),
