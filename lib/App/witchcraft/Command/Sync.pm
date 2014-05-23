@@ -114,6 +114,7 @@ sub run {
     my $m_t     = uc( substr( $refactor_target, 0, 1 ) )
         . substr( $refactor_target, 1 );
     my @Installed;
+    system("rm -rfv $temp");
     if ( system("git ls-remote $RepoUrl") == 0 ) {
         info 'The repository is a git one!';
         notice git::clone $RepoUrl, $temp;
