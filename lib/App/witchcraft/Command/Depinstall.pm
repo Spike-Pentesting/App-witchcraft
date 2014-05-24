@@ -71,3 +71,5 @@ sub run {
  #      for @to_install;
     exit;
 }
+
+1;
