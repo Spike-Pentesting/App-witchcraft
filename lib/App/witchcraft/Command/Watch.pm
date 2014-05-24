@@ -208,7 +208,7 @@ sub process() {
             "Cannot spawn equo conf update: $!\n"
             );
 
-        $exp->send("-5\n");
+        $Expect->send("-5\n");
         $Expect->soft_close();
         $Expect = Expect->new;
         if (system(
