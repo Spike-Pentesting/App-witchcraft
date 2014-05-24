@@ -123,7 +123,7 @@ sub manual_update($) {
             chomp(@DIFFS);
             send_report(
                 "Issued a manual packages compile, start compiling process",
-                join( "\n", @DIFFS ) );
+                @DIFFS );
             process( @DIFFS, $calculated_md5, 1 );
         }
         else {
@@ -158,9 +158,7 @@ sub update($$) {
         info(     "A total of "
                 . scalar(@DIFFS)
                 . " real changes were found, proceeding to compile them." );
-        send_report( "Working on "
-                . join( " ", @DIFFS )
-                . ", i'll be in touch: commit\n $line" );
+        send_report( "Emerge in progress for $line", @DIFFS );
         process( @DIFFS, $commit, 0 );  # 0 to use with git, 1 with manual use
     }
 }
