@@ -7,6 +7,7 @@ use constant debug => $ENV{DEBUG};
 use Git::Sub;
 use Tie::File;
 use Term::ReadKey;
+use App::Nopaste 'nopaste';
 use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
 
@@ -14,6 +15,7 @@ our @EXPORT = qw(_debug
     info
     error
     notice
+    send_report
     print_list
     test_untracked
     clean_untracked
@@ -23,6 +25,61 @@ our @EXPORT = qw(_debug
     atom
     daemonize
 );
+
+sub send_report {
+    my $message = shift;
+    my $ua      = LWP::UserAgent->new;
+    info 'Sending ' . $message;
+    my $hostname = $App::witchcraft::HOSTNAME;
+    my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
+    if ( my $log = shift ) {
+        notice 'Attachment ' . $log;
+        my $url = nopaste(
+            text    => $log,
+            private => 1,      # default: 0
+
+           # this is the default, but maybe you want to do something different
+            error_handler => sub {
+                my ( $error, $service ) = @_;
+                warn "$service: $error";
+            },
+
+            warn_handler => sub {
+                my ( $warning, $service ) = @_;
+                warn "$service: $warning";
+            },
+
+            # you may specify the services to use - but you don't have to
+        #    services => [ "Shadowcat" ],
+        );
+
+        foreach my $BULL (@BULLET) {
+            my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                [
+                type  => 'link',
+                title => 'Witchcraft message from ' . $hostname,
+                url   => $url
+                ];
+            $req->authorization_basic($BULL);
+            notice $ua->request($req)->as_string;
+        }
+    }
+    else {
+        info 'WOOOW BULLETS!';
+        foreach my $BULL (@BULLET) {
+            my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                [
+                type  => 'note',
+                title => 'Witchcraft message from ' . $hostname,
+                body  => $message
+                ];
+            $req->authorization_basic($BULL);
+            notice $ua->request($req)->as_string;
+        }
+
+    }
+}
+
 
 sub daemonize($) {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);

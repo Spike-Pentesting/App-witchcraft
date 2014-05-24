@@ -3,7 +3,6 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils;
-use App::Nopaste 'nopaste';
 use warnings;
 use strict;
 use File::Find;
@@ -164,8 +163,7 @@ sub update($$) {
         send_report(
             "Working on "
                 . join( " ", @DIFFS )
-                . ", i'll be in touch: commit\n $line",
-            "Compiling " . join( " ", @DIFFS ) . " for you.."
+                . ", i'll be in touch: commit\n $line"
         );
         process( @DIFFS, $commit, 0 );  # 0 to use with git, 1 with manual use
     }
@@ -292,59 +290,6 @@ sub process() {
     }
 }
 
-sub send_report {
-    my $message = shift;
-    my $ua      = LWP::UserAgent->new;
-    info 'Sending ' . $message;
-    my $hostname = $App::witchcraft::HOSTNAME;
-    my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
-    if ( my $log = shift ) {
-        notice 'Attachment ' . $log;
-        my $url = nopaste(
-            text    => $log,
-            private => 1,      # default: 0
-
-           # this is the default, but maybe you want to do something different
-            error_handler => sub {
-                my ( $error, $service ) = @_;
-                warn "$service: $error";
-            },
-
-            warn_handler => sub {
-                my ( $warning, $service ) = @_;
-                warn "$service: $warning";
-            },
-
-            # you may specify the services to use - but you don't have to
-        #    services => [ "Shadowcat" ],
-        );
-
-        foreach my $BULL (@BULLET) {
-            my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                [
-                type  => 'link',
-                title => 'Witchcraft message from ' . $hostname,
-                url   => $url
-                ];
-            $req->authorization_basic($BULL);
-            notice $ua->request($req)->as_string;
-        }
-    }
-    else {
-        info 'WOOOW BULLETS!';
-        foreach my $BULL (@BULLET) {
-            my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                [
-                type  => 'note',
-                title => 'Witchcraft message from ' . $hostname,
-                body  => $message
-                ];
-            $req->authorization_basic($BULL);
-            notice $ua->request($req)->as_string;
-        }
-
-    }
-}
 
 sub find_logs() {
     my @FINAL;
