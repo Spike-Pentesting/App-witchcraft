@@ -209,7 +209,7 @@ sub process() {
         my $DepInstall = App::witchcraft::Command::Depinstall->new;
         $DepInstall->run($_,1) for @TO_EMERGE; #installing all stuff that can be found thru equo
         &conf_update;#EXPECT per DISPATCH-CONF
-        $Expect = Expect->new;
+        my $Expect = Expect->new;
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
                     . join( " ", @TO_EMERGE )
