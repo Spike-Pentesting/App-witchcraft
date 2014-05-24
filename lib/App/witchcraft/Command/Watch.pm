@@ -11,8 +11,6 @@ use Tie::File;
 use Expect;
 use Digest::MD5;
 
-
-
 =encoding utf-8
 
 =head1 NAME
@@ -77,7 +75,8 @@ sub run {
     &send_report("I'm up!");
     while (1) {
         info "Checking for updates, and merging up!";
-        system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv"); #spring cleaning!
+        system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
+            ;    #spring cleaning!
         if ( system("layman -S") == 0 ) {    #Launch layman -S first.
             system("eix-sync");
             &update( $cfg->param('OVERLAY_PATH'),
@@ -124,7 +123,7 @@ sub manual_update($) {
             chomp(@DIFFS);
             send_report(
                 "Issued a manual packages compile, start compiling process",
-                @DIFFS );
+                join( "", @DIFFS ) );
             process( @DIFFS, $calculated_md5, 1 );
         }
         else {
@@ -159,26 +158,24 @@ sub update($$) {
         info(     "A total of "
                 . scalar(@DIFFS)
                 . " real changes were found, proceeding to compile them." );
-        send_report(
-            "Working on "
+        send_report( "Working on "
                 . join( " ", @DIFFS )
-                . ", i'll be in touch: commit\n $line"
-        );
+                . ", i'll be in touch: commit\n $line" );
         process( @DIFFS, $commit, 0 );  # 0 to use with git, 1 with manual use
     }
 }
 
-sub conf_update{
-            my $Expect = Expect->new;
-        $Expect->raw_pty(1);
-        $Expect->spawn("equo conf update")
-            or send_report(
-            "error executing equo conf update",
-            "Cannot spawn equo conf update: $!\n"
-            );
+sub conf_update {
+    my $Expect = Expect->new;
+    $Expect->raw_pty(1);
+    $Expect->spawn("equo conf update")
+        or send_report(
+        "error executing equo conf update",
+        "Cannot spawn equo conf update: $!\n"
+        );
 
-        $Expect->send("-5\n");
-        $Expect->soft_close();
+    $Expect->send("-5\n");
+    $Expect->soft_close();
 }
 
 #
@@ -287,7 +284,6 @@ sub process() {
     }
 }
 
-
 sub find_logs() {
     my @FINAL;
     my @LOGS = `find /var/tmp/portage/ | grep build.log`;
@@ -327,9 +323,6 @@ sub to_ebuild() {
     }
     return @TO_EMERGE;
 }
-
-
-
 
 #
 #  name: last_commit
@@ -415,6 +408,5 @@ sub find_diff() {
     chomp(@DIFFS);
     return ( uniq(@DIFFS) );
 }
-
 
 1;
