@@ -45,7 +45,7 @@ sub calculate_missing($$) {
 
 sub depgraph($$) {
     my $package = shift;
-    $depth = shift;
+    my $depth = shift;
     return
         map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
@@ -196,7 +196,6 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
     &info( "Those are the file that would be tested: "
             . join( " ", @Untracked ) );
-
     foreach my $new_pos (@Untracked) {
         &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
