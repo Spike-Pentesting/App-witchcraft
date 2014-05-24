@@ -202,20 +202,13 @@ sub process() {
         #EXPECT per DISPATCH-CONF
         my $Expect = Expect->new;
         $Expect->raw_pty(1);
-        $Expect->spawn("dispatch-conf")
+        $Expect->spawn("equo conf update")
             or send_report(
-            "error executing dispatch-conf",
-            "Cannot spawn dispatch-conf: $!\n"
+            "error executing equo conf update",
+            "Cannot spawn equo conf update: $!\n"
             );
-        $Expect->expect(
-            4,
-            [   qr/use-new/ => sub {
-                    my $exp = shift;
-                    $exp->send("u\n");
-                    }
-            ],
-            [ 'eof', sub { my $exp = shift; $exp->soft_close(); } ]
-        );
+
+        $exp->send("-5\n");
         $Expect->soft_close();
         $Expect = Expect->new;
         if (system(
