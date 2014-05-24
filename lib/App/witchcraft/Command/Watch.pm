@@ -168,6 +168,19 @@ sub update($$) {
     }
 }
 
+sub conf_update{
+            my $Expect = Expect->new;
+        $Expect->raw_pty(1);
+        $Expect->spawn("equo conf update")
+            or send_report(
+            "error executing equo conf update",
+            "Cannot spawn equo conf update: $!\n"
+            );
+
+        $Expect->send("-5\n");
+        $Expect->soft_close();
+}
+
 #
 #  name: process
 #  input: @DIFFS
@@ -200,16 +213,7 @@ sub process() {
         info( "Emerging... " . scalar(@TO_EMERGE) . " packages" );
 
         #EXPECT per DISPATCH-CONF
-        my $Expect = Expect->new;
-        $Expect->raw_pty(1);
-        $Expect->spawn("equo conf update")
-            or send_report(
-            "error executing equo conf update",
-            "Cannot spawn equo conf update: $!\n"
-            );
-
-        $Expect->send("-5\n");
-        $Expect->soft_close();
+        &conf_update;
         $Expect = Expect->new;
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
@@ -243,6 +247,7 @@ sub process() {
                 }
             );
             if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
+                &conf_update;
                 if ( system("eit push --quick") == 0 ) {
                     info(
                         "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
