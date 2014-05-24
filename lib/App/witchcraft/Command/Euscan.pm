@@ -117,7 +117,10 @@ sub run {
             if ( @temp > 0 );
         $c++;
     }
-    info git::push;
+    my $result = git::push;
+    send_report( "Git push result", $result );
+    notice $result;
+
     if ( @Updates > 0 ) {
         print $_ . "\n" for @Updates;
     }
@@ -128,7 +131,8 @@ sub run {
                 . " | sudo -S emerge -av "
                 . join( " ", @Added ) )
             && system( "echo " . $password . " | sudo -S eit commit" )
-            && system( "echo " . $password . " | sudo -S eit push" );
+            && system( "echo " . $password . " | sudo -S eit push" )
+            && send_report("Successfully committed to sabayon repository");
     }
 }
 
@@ -141,8 +145,9 @@ sub update {
     return () if ( !$self->{update} and !$self->{check} );
     error "|===================================================\\";
     my $dir
-        = $self->{root} //  App::witchcraft->Config->param('GIT_REPOSITORY');
-    error 'No GIT_REPOSITORY defined, or --root given' and exit 1 if(!$dir);
+        = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+    error 'No GIT_REPOSITORY defined, or --root given' and exit 1
+        if ( !$dir );
     my $atom = join( '/', $dir, $Package );
     info 'repository doesn\'t have that atom (' . $atom . ')'
         and error "|===================================================/"
@@ -160,7 +165,8 @@ sub update {
         sort
         map {
             my $key = $temp[$_];
-            $key =~ s[(\d+)][ pack "N", $1 ]ge; #transforming all numbers in ascii representation
+            $key =~ s[(\d+)][ pack "N", $1 ]ge
+                ;    #transforming all numbers in ascii representation
             $key . pack "CNN", 0, 0, $_
         } 0 .. $#temp
     ];
@@ -201,7 +207,13 @@ sub update {
             else {
                 info 'Added to git index of the repository';
             }
-            eval { notice git::commit -m => 'witchcraft: automatically updated ' . $pack; };
+            send_report(
+                "'witchcraft: automatically updated $pack to remote git repository"
+            );
+            eval {
+                notice git::commit -m => 'witchcraft: automatically updated '
+                    . $pack;
+            };
             if ($@) {
                 error $@;
             }

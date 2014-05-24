@@ -31,11 +31,12 @@ our @EXPORT = qw(_debug
 sub send_report {
     my $message = shift;
     my $ua      = LWP::UserAgent->new;
-    &info('Sending ' . $message);
+    &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
     my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
-    if ( my $log = shift ) {
-        &notice('Attachment ' . $log);
+    if (@_) {
+        my $log = join( "\n", @_ );
+        &notice( 'Attachment ' . $log );
         my $url = nopaste(
             text    => $log,
             private => 1,      # default: 0
@@ -52,7 +53,7 @@ sub send_report {
             },
 
             # you may specify the services to use - but you don't have to
-        #    services => [ "Shadowcat" ],
+            #    services => [ "Shadowcat" ],
         );
 
         foreach my $BULL (@BULLET) {
@@ -63,7 +64,7 @@ sub send_report {
                 url   => $url
                 ];
             $req->authorization_basic($BULL);
-            &notice($ua->request($req)->as_string);
+            &notice( $ua->request($req)->as_string );
         }
     }
     else {
@@ -76,12 +77,11 @@ sub send_report {
                 body  => $message
                 ];
             $req->authorization_basic($BULL);
-            &notice($ua->request($req)->as_string);
+            &notice( $ua->request($req)->as_string );
         }
 
     }
 }
-
 
 sub daemonize($) {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);
@@ -169,9 +169,11 @@ sub test_untracked {
     my @Failed;
     my @ignores;
     my @Untracked = git::ls_files '--others', '--exclude-standard';
-    push(@Untracked,git::diff_files '--name-only');
+    push( @Untracked, git::diff_files '--name-only' );
     @Untracked = grep {/\.ebuild$/} @Untracked;
-    &info("Those are the file that would be tested: ".join(" ",@Untracked));
+    &info( "Those are the file that would be tested: "
+            . join( " ", @Untracked ) );
+
     foreach my $new_pos (@Untracked) {
         &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
@@ -189,6 +191,8 @@ sub test_untracked {
     if ( $ignore == 1 and @Failed > 0 ) {
         tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
             or die( error $!);
+        &send_report(
+            "Witchcraft need your attention, i'm asking you few questions");
         foreach my $fail (@Failed) {
             push( @ignores, $fail )
                 if (
@@ -204,6 +208,7 @@ sub test_untracked {
         );
         my $result;
         &notice($_) and $result .= " " . $_ for ( &uniq(@Installed) );
+        &send_report("Those ebuilds where correctly installed: $result");
         &info("Generating the command for maintenance");
         &notice("git add $result");
         &notice("eix-sync");

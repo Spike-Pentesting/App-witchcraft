@@ -123,7 +123,7 @@ sub manual_update($) {
             chomp(@DIFFS);
             send_report(
                 "Issued a manual packages compile, start compiling process",
-                join( "", @DIFFS ) );
+                join( "\n", @DIFFS ) );
             process( @DIFFS, $calculated_md5, 1 );
         }
         else {
