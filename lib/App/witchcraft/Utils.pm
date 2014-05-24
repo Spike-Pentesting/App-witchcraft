@@ -166,6 +166,7 @@ sub test_ebuild {
     my $install  = shift || undef;
     my $password = shift || undef;
     $password = $password ? "echo $password | sudo -S " : "sudo";
+    system( $password. " ebuild $ebuild clean" ); #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
         &notice('|| - Manifest created successfully');
         &error("|===================================================/")
