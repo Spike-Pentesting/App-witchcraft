@@ -11,8 +11,7 @@ use Tie::File;
 use Expect;
 use Digest::MD5;
 
-use HTTP::Request::Common qw(POST);
-use LWP::UserAgent;
+
 
 =encoding utf-8
 

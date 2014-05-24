@@ -10,6 +10,8 @@ use Term::ReadKey;
 use App::Nopaste 'nopaste';
 use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
+use HTTP::Request::Common qw(POST);
+use LWP::UserAgent;
 
 our @EXPORT = qw(_debug
     info
