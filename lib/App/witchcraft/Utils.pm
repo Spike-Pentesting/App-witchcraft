@@ -29,11 +29,11 @@ our @EXPORT = qw(_debug
 sub send_report {
     my $message = shift;
     my $ua      = LWP::UserAgent->new;
-    &info 'Sending ' . $message;
+    &info('Sending ' . $message);
     my $hostname = $App::witchcraft::HOSTNAME;
     my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
     if ( my $log = shift ) {
-        &notice 'Attachment ' . $log;
+        &notice('Attachment ' . $log);
         my $url = nopaste(
             text    => $log,
             private => 1,      # default: 0
@@ -61,11 +61,11 @@ sub send_report {
                 url   => $url
                 ];
             $req->authorization_basic($BULL);
-            &notice $ua->request($req)->as_string;
+            &notice($ua->request($req)->as_string);
         }
     }
     else {
-        &info 'WOOOW BULLETS!';
+        &info('WOOOW BULLETS!');
         foreach my $BULL (@BULLET) {
             my $req = POST 'https://api.pushbullet.com/v2/pushes',
                 [
@@ -74,7 +74,7 @@ sub send_report {
                 body  => $message
                 ];
             $req->authorization_basic($BULL);
-            &notice $ua->request($req)->as_string;
+            &notice($ua->request($req)->as_string);
         }
 
     }
