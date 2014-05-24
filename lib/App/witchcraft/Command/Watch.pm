@@ -323,36 +323,9 @@ sub to_ebuild() {
     return @TO_EMERGE;
 }
 
-#
-#  name: save_compiled_commit
-#  input: $commit
-#  output: void
-#  Funzione che salva nel file indicato dalla variabile $save_last_commit l'argomento passato
-#
-sub save_compiled_commit() {
-    open FILE, ">" . App::witchcraft::Config->param('LAST_COMMIT');
-    print FILE shift;
-    close FILE;
-}
 
-sub save_compiled_packages() {
-    open FILE, ">" . App::witchcraft::Config->param('MD5_PACKAGES');
-    print FILE shift;
-    close FILE;
-}
 
-#
-#  name: compiled_commit
-#  input: none
-#  output: Ultimo commit
-#
-sub compiled_commit() {
-    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT');
-    my @LAST = <FILE>;
-    close FILE;
-    chomp(@LAST);
-    return $LAST[0];
-}
+
 
 #
 #  name: find_diff
@@ -378,34 +351,5 @@ sub find_diff() {
     return ( uniq(@DIFFS) );
 }
 
-#
-#  name: last_commit
-#  input: git_path_repository, master
-#  output: last_commit
-#  Data una path di una repository git e il suo master file, restituisce l'id dell'ultimo commit sulla repository git
-#
-sub last_commit() {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    open my $FH, "<" . $git_repository_path . "/" . $master;
-    my @FILE = <$FH>;
-    close $FH;
-    my ( $last_commit, $all ) = split( / /, $FILE[-1] );
-    return $last_commit, $all;
-}
 
-sub last_md5() {
-    open my $last,
-        "<"
-        . App::witchcraft::Config->param('MD5_PACKAGES')
-        or send_report(
-        "Errore nella lettura dell'ultimo md5 compilato",
-        'Can\'t open '
-            . App::witchcraft::Config->param('MD5_PACKAGES') . ' -> '
-            . $!
-        );
-    my $last_md5 = <$last>;
-    close $last;
-    return $last_md5;
-}
 1;
