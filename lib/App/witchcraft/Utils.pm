@@ -26,7 +26,30 @@ our @EXPORT = qw(_debug
     password_dialog
     atom
     daemonize
+    depgraph
+    calculate_missing
 );
+
+sub calculate_missing($$) {
+    my $package  = shift;
+    my $depth    = shift;
+    my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
+    &info( scalar(@Packages) . " dependencies found " );
+    my @Installed_Packages = qx/equo q -q list installed/;
+    chomp(@Installed_Packages);
+    my %packs = map { $_ => 1 } @Installed_Packages;
+    my @to_install = uniq( grep( !defined $packs{$_}, @Packages ) );
+    shift @to_install;
+    return @to_install;
+}
+
+sub depgraph($$) {
+    my $package = shift;
+    $depth = shift;
+    return
+        map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
+        qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
+}
 
 sub send_report {
     my $message = shift;

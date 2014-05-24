@@ -9,6 +9,7 @@ use File::Find;
 use Regexp::Common qw/URI/;
 use Tie::File;
 use Expect;
+use App::witchcraft::Command::Depinstall;
 use Digest::MD5;
 
 =encoding utf-8
@@ -203,12 +204,11 @@ sub process() {
         }
     }
     else {
-
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         info( "Emerging... " . scalar(@TO_EMERGE) . " packages" );
-
-        #EXPECT per DISPATCH-CONF
-        &conf_update;
+        my $DepInstall = App::witchcraft::Command::Depinstall->new;
+        $DepInstall->run($_,1) for @TO_EMERGE; #installing all stuff that can be found thru equo
+        &conf_update;#EXPECT per DISPATCH-CONF
         $Expect = Expect->new;
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
@@ -221,10 +221,7 @@ sub process() {
                     . " packages: "
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
-            my @CMD = @DIFFS;
-            unshift( @CMD, "add" );
-            push( @CMD, "--quick" );
-            $Expect->spawn( "eit", @CMD )
+            $Expect->spawn( "eit", "add","--quick", @DIFFS )
                 or send_report(
                 "Errore nell'esecuzione di eit add, devi intervenire!",
                 "Cannot spawn eit: $!\n" );

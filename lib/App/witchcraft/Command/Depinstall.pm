@@ -49,7 +49,7 @@ sub options {
 sub run {
     my $self    = shift;
     my $package = shift;
-    my $depth   = $self->{depth} // 1;
+    my $depth   = $sielf->{depth} // 1;
     error "You must supply a package" and exit 1 if ( !$package );
     error 'You must run it with root permissions' and exit 1 if $> != 0;
 
@@ -59,14 +59,7 @@ sub run {
         . $depth
         . ' using equo';
     info 'Retrieving dependencies';
-    my @Packages = map { $_ =~ s/\[.*\]|\s//g; atom($_); $_ }
-        qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
-    info scalar(@Packages) . " dependencies found ";
-    my @Installed_Packages = qx/equo q -q list installed/;
-    chomp(@Installed_Packages);
-    my %packs = map { $_ => 1 } @Installed_Packages;
-    my @to_install = uniq( grep( !defined $packs{$_}, @Packages ) );
-    shift @to_install;
+    my @to_install = calculate_missing($package,$depth);
     info scalar(@to_install)
         . " are not present in the systems and needs to be installed ";
     my $Installs = join( " ", @to_install );
