@@ -49,7 +49,7 @@ sub options {
 sub run {
     my $self    = shift;
     my $package = shift;
-    my $depth   = $sielf->{depth} // 1;
+    my $depth   = $self->{depth} // 1;
     error "You must supply a package" and exit 1 if ( !$package );
     error 'You must run it with root permissions' and exit 1 if $> != 0;
 
