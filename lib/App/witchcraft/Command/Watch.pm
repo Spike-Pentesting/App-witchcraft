@@ -100,7 +100,7 @@ sub manual_update($) {
     if ( -e $overlay . "/" . $overlay_to_compile_packages ) {
         open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
             or send_report(
-            "Cannot open $overlay/$overlay_to_compile_packages: $!" );
+            "Cannot open $overlay/$overlay_to_compile_packages: $!");
         binmode($fh);
         my $calculated_md5 = Digest::MD5->new->addfile($fh)
             ->hexdigest
@@ -226,9 +226,10 @@ sub process() {
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
             my $Expect = Expect->new;
-     #       unshift( @CMD, "add" );
-       #     push( @CMD, "--quick" );
-            $Expect->spawn( "eit", "add", @CMD ,"--quick")
+
+            #       unshift( @CMD, "add" );
+            #     push( @CMD, "--quick" );
+            $Expect->spawn( "eit", "add", @CMD, "--quick" )
                 or send_report(
                 "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
                 );
@@ -237,10 +238,11 @@ sub process() {
                 [   qr/missing dependencies have been found|nano/i => sub {
                         my $exp = shift;
                         $exp->send("\cX");
-                        exp_continue;
-                    },
-                    qr/\[.*?\/.*?\]/i => sub {
-                        my $exp = shift;
+                        $exp->send("\r");
+                        $exp->send("\r\n");
+                        $exp->send("\r");
+                        $exp->send("\r\n");
+                        $exp->send("\r");
                         $exp->send("\n");
                         exp_continue;
                     },
