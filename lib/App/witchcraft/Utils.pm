@@ -45,7 +45,7 @@ sub calculate_missing($$) {
 
 sub depgraph($$) {
     my $package = shift;
-    my $depth = shift;
+    my $depth   = shift;
     return
         map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
@@ -76,18 +76,26 @@ sub send_report {
             },
 
             # you may specify the services to use - but you don't have to
-            #    services => [ "Shadowcat" ],
+            #     services => [ "pastie" ],
         );
 
         foreach my $BULL (@BULLET) {
             my $req = POST 'https://api.pushbullet.com/v2/pushes',
                 [
                 type  => 'link',
-                title => 'Witchcraft message from ' . $hostname,
+                title => "Witchcraft\@$hostname: " . $message,
                 url   => $url
                 ];
             $req->authorization_basic($BULL);
-            &notice( $ua->request($req)->as_string );
+            my $res = $ua->request($req)->as_string;
+            if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+                &notice("Push sent correctly!");
+                return 1;
+            }
+            else {
+                &error("Error sending the push!");
+                return 0;
+            }
         }
     }
     else {
@@ -96,11 +104,19 @@ sub send_report {
             my $req = POST 'https://api.pushbullet.com/v2/pushes',
                 [
                 type  => 'note',
-                title => 'Witchcraft message from ' . $hostname,
+                title => 'Witchcraft@' . $hostname,
                 body  => $message
                 ];
             $req->authorization_basic($BULL);
-            &notice( $ua->request($req)->as_string );
+            my $res = $ua->request($req)->as_string;
+            if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+                &notice("Push sent correctly!");
+                return 1;
+            }
+            else {
+                &error("Error sending the push!");
+                return 0;
+            }
         }
 
     }
@@ -166,7 +182,8 @@ sub test_ebuild {
     my $install  = shift || undef;
     my $password = shift || undef;
     $password = $password ? "echo $password | sudo -S " : "sudo";
-    system( $password. " ebuild $ebuild clean" ); #Cleaning before! at least it fails :P
+    system( $password. " ebuild $ebuild clean" )
+        ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
         &notice('|| - Manifest created successfully');
         &error("|===================================================/")
@@ -197,6 +214,7 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
     &info( "Those are the file that would be tested: "
             . join( " ", @Untracked ) );
+
     foreach my $new_pos (@Untracked) {
         &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );

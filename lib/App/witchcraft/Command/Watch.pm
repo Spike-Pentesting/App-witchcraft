@@ -109,13 +109,17 @@ sub manual_update($) {
             ;    #Computing the md5 of the file containing the packages
         close $fh;
         my $last_md5 = last_md5();
-        info("Last md5 $last_md5 of $overlay/$overlay_to_compile_packages");
-        if ( $calculated_md5 ne $last_md5 )
+        info("Last md5 $last_md5 of $overlay/$overlay_to_compile_packages")
+            if defined $last_md5;
+        if ( !defined $last_md5 or ( $calculated_md5 ne $last_md5 ) )
         {        #If they are different, then proceed the compile them
             open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
-                or send_report(
-                "Errore nell'apertura dei file da compilare",
-                "Cannot open $overlay/$overlay_to_compile_packages: $!"
+                or (
+                send_report(
+                    "Errore nell'apertura dei file da compilare",
+                    "Cannot open $overlay/$overlay_to_compile_packages: $!"
+                )
+                and return
                 );
 
             my @DIFFS = <$fh>;
@@ -162,7 +166,8 @@ sub update($$) {
                 . " real changes were found, proceeding to compile them." );
         send_report( "Emerge in progress for $line", @DIFFS );
         my $overlay_name = $cfg->param('OVERLAY_NAME');
-        process( map { $_ . "::" . $overlay_name } @DIFFS, $commit, 0 )
+        my @EMERGING = map { $_ . "::" . $overlay_name } @DIFFS;
+        process( @EMERGING, $commit, 0 )
             ;    # 0 to use with git, 1 with manual use
     }
 }
@@ -188,12 +193,14 @@ sub conf_update {
 #  genera la lista che viene fatta compilare tramite emerge e poi aggiunta alla repository, ogni errore viene riportato
 #
 sub process() {
-    my $use          = pop(@_);
-    my $commit       = pop(@_);
-    my @DIFFS        = @_;
+    my $use    = pop(@_);
+    my $commit = pop(@_);
+    my @DIFFS  = @_;
+    notice( "Processing " . join( " ", @DIFFS ) );
     my $cfg          = App::witchcraft->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
-    my @ebuilds      = to_ebuild(@DIFFS);
+    my @CMD          = map { s/\:\:.*//g; $_ } @DIFFS;
+    my @ebuilds      = to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
         send_report("Packages removed, saving diffs.");
@@ -208,6 +215,8 @@ sub process() {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         info( "Emerging... " . scalar(@DIFFS) . " packages" );
         &conf_update;    #EXPECT per DISPATCH-CONF
+        notice( "nice -20 emerge --color n -v --autounmask-write "
+                . join( " ", @DIFFS ) );
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
                     . join( " ", @DIFFS )
@@ -220,7 +229,6 @@ sub process() {
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
             my $Expect = Expect->new;
-            my @CMD = map { s/\:\:.*//g; $_ } @DIFFS;
             unshift( @CMD, "add" );
             push( @CMD, "--quick" );
             $Expect->spawn( "eit", @CMD )
@@ -275,8 +283,7 @@ sub process() {
             my @LOGS = find_logs();
             send_report(
                 "Errore nel merge dei pacchetti: " . join( " ", @DIFFS ),
-                join( " ", @LOGS )
-            );
+                join( " ", @LOGS ) );
         }
     }
 }
@@ -341,11 +348,14 @@ sub last_md5() {
     open my $last,
         "<"
         . App::witchcraft::Config->param('MD5_PACKAGES')
-        or send_report(
-        "Errore nella lettura dell'ultimo md5 compilato",
-        'Can\'t open '
-            . App::witchcraft::Config->param('MD5_PACKAGES') . ' -> '
-            . $!
+        or (
+        send_report(
+            "Errore nella lettura dell'ultimo md5 compilato",
+            'Can\'t open '
+                . App::witchcraft::Config->param('MD5_PACKAGES') . ' -> '
+                . $!
+        )
+        and return undef
         );
     my $last_md5 = <$last>;
     close $last;
