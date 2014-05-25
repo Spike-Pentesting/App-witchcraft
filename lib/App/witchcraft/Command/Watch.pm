@@ -206,11 +206,11 @@ sub process() {
     }
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
-        info( "Emerging... " . scalar(@TO_EMERGE) . " packages" );
+        info( "Emerging... " . scalar(@DIFFS) . " packages" );
         &conf_update;    #EXPECT per DISPATCH-CONF
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
-                    . join( " ", @TO_EMERGE )
+                    . join( " ", @DIFFS )
             ) == 0
             )
         {
@@ -219,9 +219,11 @@ sub process() {
                     . " packages: "
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
-                    my $Expect = Expect->new;
-
-            $Expect->spawn( "eit", "add", "--quick", @DIFFS )
+            my $Expect = Expect->new;
+            my @CMD = map { s/\:\:.*//g; $_ } @DIFFS;
+            unshift( @CMD, "add" );
+            push( @CMD, "--quick" );
+            $Expect->spawn( "eit", @CMD )
                 or send_report(
                 "Errore nell'esecuzione di eit add, devi intervenire!",
                 "Cannot spawn eit: $!\n" );
@@ -272,7 +274,7 @@ sub process() {
         else {
             my @LOGS = find_logs();
             send_report(
-                "Errore nel merge dei pacchetti: " . join( " ", @TO_EMERGE ),
+                "Errore nel merge dei pacchetti: " . join( " ", @DIFFS ),
                 join( " ", @LOGS )
             );
         }
