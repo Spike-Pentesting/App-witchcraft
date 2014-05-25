@@ -100,9 +100,7 @@ sub manual_update($) {
     if ( -e $overlay . "/" . $overlay_to_compile_packages ) {
         open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
             or send_report(
-            "Errore nell'apertura dei file da compilare",
-            "Cannot open $overlay/$overlay_to_compile_packages: $!"
-            );
+            "Cannot open $overlay/$overlay_to_compile_packages: $!" );
         binmode($fh);
         my $calculated_md5 = Digest::MD5->new->addfile($fh)
             ->hexdigest
@@ -116,7 +114,6 @@ sub manual_update($) {
             open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
                 or (
                 send_report(
-                    "Errore nell'apertura dei file da compilare",
                     "Cannot open $overlay/$overlay_to_compile_packages: $!"
                 )
                 and return
@@ -126,8 +123,8 @@ sub manual_update($) {
             close $fh;
             chomp(@DIFFS);
             send_report(
-                "Issued a manual packages compile, start compiling process",
-                @DIFFS );
+                "Issued a manual packages compile, start compiling process for : "
+                    . join( " ", @DIFFS ) );
             process( @DIFFS, $calculated_md5, 1 );
         }
         else {
@@ -229,24 +226,29 @@ sub process() {
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
             my $Expect = Expect->new;
-            unshift( @CMD, "add" );
-            push( @CMD, "--quick" );
-            $Expect->spawn( "eit", @CMD )
+     #       unshift( @CMD, "add" );
+       #     push( @CMD, "--quick" );
+            $Expect->spawn( "eit", "add", @CMD ,"--quick")
                 or send_report(
-                "Errore nell'esecuzione di eit add, devi intervenire!",
-                "Cannot spawn eit: $!\n" );
+                "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
+                );
             $Expect->expect(
-                '-re', 'nano',
-                sub {
-                    my $exp = shift;
-                    $exp->send("\cX");
-                    exp_continue;
-                },
-                'eof',
-                sub {
-                    my $exp = shift;
-                    $exp->soft_close();
-                }
+                undef,
+                [   qr/missing dependencies have been found|nano/i => sub {
+                        my $exp = shift;
+                        $exp->send("\cX");
+                        exp_continue;
+                    },
+                    qr/\[.*?\/.*?\]/i => sub {
+                        my $exp = shift;
+                        $exp->send("\n");
+                        exp_continue;
+                    },
+                    'eof' => sub {
+                        my $exp = shift;
+                        $exp->soft_close();
+                        }
+                ],
             );
             if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
                 &conf_update;
@@ -255,10 +257,8 @@ sub process() {
                         "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
                     );
                     send_report(
-                        "Pacchetti compilati, commit $commit",
-                        "Pacchetti correttamente compilati:\n####################\n"
-                            . join( "", @DIFFS )
-                    );
+                        "[$commit] Pacchetti correttamente compilati:\n####################\n"
+                            . join( "", @DIFFS ) );
                     if ( $use == 0 ) {
                         save_compiled_commit($commit);
                     }
@@ -268,7 +268,6 @@ sub process() {
                 }
                 else {
                     send_report(
-                        "Error pushing to sabayon repository",
                         "nice -20 eit sync --quick gave an error, check out!"
                     );
                 }
