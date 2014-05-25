@@ -143,6 +143,8 @@ sub manual_update($) {
 sub update($$) {
     my $overlay     = shift;
     my $master_file = shift;
+    my $cfg         = App::witchcraft->Config;
+
     my ( $commit, $line ) = last_commit( $overlay, $master_file );
     info("Last commit: $commit");
     my $compiled_commit = compiled_commit();
@@ -159,7 +161,9 @@ sub update($$) {
                 . scalar(@DIFFS)
                 . " real changes were found, proceeding to compile them." );
         send_report( "Emerge in progress for $line", @DIFFS );
-        process( @DIFFS, $commit, 0 );  # 0 to use with git, 1 with manual use
+        my $overlay_name = $cfg->param('OVERLAY_NAME');
+        process( map { $_ . "::" . $overlay_name } @DIFFS, $commit, 0 )
+            ;    # 0 to use with git, 1 with manual use
     }
 }
 
@@ -190,8 +194,6 @@ sub process() {
     my $cfg          = App::witchcraft->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @ebuilds      = to_ebuild(@DIFFS);
-    my @TO_EMERGE    = @DIFFS;
-    @TO_EMERGE = map { $_ . "::" . $overlay_name } @TO_EMERGE;
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
         send_report("Packages removed, saving diffs.");
@@ -205,7 +207,7 @@ sub process() {
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         info( "Emerging... " . scalar(@TO_EMERGE) . " packages" );
-        &conf_update;#EXPECT per DISPATCH-CONF
+        &conf_update;    #EXPECT per DISPATCH-CONF
         my $Expect = Expect->new;
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
@@ -218,7 +220,7 @@ sub process() {
                     . " packages: "
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
-            $Expect->spawn( "eit", "add","--quick", @DIFFS )
+            $Expect->spawn( "eit", "add", "--quick", @DIFFS )
                 or send_report(
                 "Errore nell'esecuzione di eit add, devi intervenire!",
                 "Cannot spawn eit: $!\n" );
