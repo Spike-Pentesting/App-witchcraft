@@ -208,7 +208,6 @@ sub process() {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         info( "Emerging... " . scalar(@TO_EMERGE) . " packages" );
         &conf_update;    #EXPECT per DISPATCH-CONF
-        my $Expect = Expect->new;
         if (system(
                 "nice -20 emerge --color n -v --autounmask-write "
                     . join( " ", @TO_EMERGE )
@@ -220,6 +219,8 @@ sub process() {
                     . " packages: "
                     . join( " ", @DIFFS ) );
             ##EXPECT PER EIT ADD
+                    my $Expect = Expect->new;
+
             $Expect->spawn( "eit", "add", "--quick", @DIFFS )
                 or send_report(
                 "Errore nell'esecuzione di eit add, devi intervenire!",
