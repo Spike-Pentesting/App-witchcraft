@@ -196,8 +196,9 @@ sub process() {
     notice( "Processing " . join( " ", @DIFFS ) );
     my $cfg          = App::witchcraft->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
-    my @CMD          = map { s/\:\:.*//g; $_ } @DIFFS;
-    my @ebuilds      = to_ebuild(@CMD);
+    my @CMD          = @DIFFS;
+    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    my @ebuilds = to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
         send_report("Packages removed, saving diffs.");
