@@ -117,10 +117,11 @@ sub run {
             if ( @temp > 0 );
         $c++;
     }
-    my $result = git::push;
-    send_report( "Git push result", $result );
-    notice $result;
-
+    eval { notice git::push; };
+    if ($@) {
+        error $@;
+        send_report("Error while pushing to git $@");
+    }
     if ( @Updates > 0 ) {
         print $_ . "\n" for @Updates;
     }
