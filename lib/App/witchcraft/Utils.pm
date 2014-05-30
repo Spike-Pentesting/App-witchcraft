@@ -57,6 +57,7 @@ sub send_report {
     &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
     my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
+    my $success  = 0;
     if (@_) {
         my $log = join( "\n", @_ );
         &notice( 'Attachment ' . $log );
@@ -90,11 +91,11 @@ sub send_report {
             my $res = $ua->request($req)->as_string;
             if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
                 &notice("Push sent correctly!");
-                return 1;
+                $success = 1;
             }
             else {
                 &error("Error sending the push!");
-                return 0;
+                $success = 0;
             }
         }
     }
@@ -111,15 +112,16 @@ sub send_report {
             my $res = $ua->request($req)->as_string;
             if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
                 &notice("Push sent correctly!");
-                return 1;
+                $success = 1;
             }
             else {
                 &error("Error sending the push!");
-                return 0;
+                $success = 0;
             }
         }
 
     }
+    return $success;
 }
 
 sub daemonize($) {
