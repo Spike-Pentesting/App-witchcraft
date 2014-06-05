@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 0.003;
+our $VERSION              = 0.004;
 our $CONFIG_FILE          = "witchcraft.conf";
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
@@ -38,23 +38,25 @@ App::witchcraft - Helps the overlay mantainer doing is dirty job
 
   $ witchcraft --help
   $ --> Scan new packages and add to the git repository:
-    *    e|--euscan     "v|verbose", Verbose mode
-                        "q|quiet"  , Quiet mode
-                        "c|check"  , Only check updates
-                        "u|update" , Add it to the git repository
-                        "r|root"   , Set root of the git repository
-                        "m|manifest", Manifest each ebuild found
-                        "i|install", Also Install it
-                        "g|git"    , Stages git add and commit for each ebuild
-                        "f|force", Force the -i and -m also if the ebuild is already present
+    *    e|--euscan  "v|verbose", Verbose mode
+                                "q|quiet"  , Quiet mode
+                                "c|check"  , Only check updates
+                                "u|update" , Add it to the git repository
+                                "r|root"   , Set root of the git repository
+                                "m|manifest", Manifest each ebuild found
+                                "i|install", Also Install it
+                                "g|git"    , Stages git add and commit for each ebuild
+                                "f|force", Force the -i and -m also if the ebuild is already present
 
-    --> Checkout a repository and filter the ebuilds and add to the git repository
+    --> Checkout a repository and filter the ebuilds and add to the git repository (supports multiple repository)
     *    s|--sync       "u|update" , Add it to the git repository
-                        "r|refactor=s", Modify the refactor term
-                        "t|refactortarget=s", Modify the target of the refactoring
-                        "r|root=s",  Set root of the git repository
-                        "t|temp=s",  Temp directory for the svn checkout
-                        "i|install", Try to install them, output the file that passed
+                                "r|refactor=s", Modify the refactor term
+                                "t|refactortarget=s", Modify the target of the refactoring
+                                "r|root=s",  Set root of the git repository
+                                "t|temp=s",  Temp directory for the svn checkout
+                                "i|install", Try to install them, output the file that passed
+                                "a|add", It asks to add the failed installed packages to ignore list
+                                "-x|--ignore-existing", ignore existing files from rsync copy to the git overlay.
 
     --> List repository packages
     *    l|--list [repository]
