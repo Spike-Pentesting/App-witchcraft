@@ -8,6 +8,7 @@ use File::Find;
 use Regexp::Common qw/URI/;
 use Tie::File;
 use Git::Sub;
+use File::Path qw(remove_tree);
 
 =encoding utf-8
 
@@ -94,27 +95,48 @@ sub options {
 }
 
 sub run {
-    my $self     = shift;
-    my $RepoUrl  = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
-    my $password = password_dialog();
-    my $refactor = $self->{'refactor'}
+    my $self      = shift;
+    my @REMOTES   = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
+    my $password  = password_dialog();
+    my @REFACTORS = $self->{'refactor'}
         // App::witchcraft->Config->param('REFACTOR');
     my @ignores;
     my $temp = $self->{'temp'} // App::witchcraft->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
         // App::witchcraft->Config->param('REFACTOR_TO');
-    my $add = $self->{'ignore'} ? 1 : 0;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
-    my $flatten = join( "|", @ignores );
-    my $l_r     = lc($refactor);
-    my $u_r     = uc($refactor);
-    my $m_r     = uc( substr( $refactor, 0, 1 ) ) . substr( $refactor, 1 );
-    my $l_t     = lc($refactor_target);
-    my $u_t     = uc($refactor_target);
-    my $m_t     = uc( substr( $refactor_target, 0, 1 ) )
+    system( "rm -rfv " . $temp . '*' );
+    my $i = 0;
+
+    foreach my $RepoUrl (@REMOTES) {
+        $self->synchronize( $REFACTORS[$i], $refactor_target, $RepoUrl,
+            $temp . int( rand(10000) ),
+            $password, @ignores );
+        $i++;
+    }
+
+    exit;
+}
+
+sub synchronize {
+    my $self            = shift;
+    my $refactor        = shift;
+    my $refactor_target = shift;
+    my $RepoUrl         = shift;
+    my $temp            = shift;
+    my $password        = shift;
+    my @ignores         = @_;
+    my $add             = $self->{'ignore'} ? 1 : 0;
+    my $flatten         = join( "|", @ignores );
+    my $l_r             = lc($refactor);
+    my $u_r             = uc($refactor);
+    my $m_r = uc( substr( $refactor, 0, 1 ) ) . substr( $refactor, 1 );
+    my $l_t = lc($refactor_target);
+    my $u_t = uc($refactor_target);
+    my $m_t = uc( substr( $refactor_target, 0, 1 ) )
         . substr( $refactor_target, 1 );
     my @Installed;
-    system("rm -rfv $temp");
+
     if ( system("git ls-remote $RepoUrl") == 0 ) {
         info 'The repository is a git one!';
         notice git::clone $RepoUrl, $temp;
@@ -188,21 +210,27 @@ sub run {
     );
 
     #unlink( $temp . "/.svn" );
+    remove_tree( $temp . '/.svn' );
+    remove_tree( $temp . '/.git' );
+
     return if ( !$self->{update} );
     info "Copying content to git directory";
     my $dir
         = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
-
+    info $self->{'ignore-existing'}
+        ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
+        : "rsync --progress -avp " . $temp . "/* $dir\/";
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
         : "rsync --progress -avp " . $temp . "/* $dir\/"
     );
-    unlink( $dir . '/.svn' );
+    notice 'Cleaning';
+    system( "rm -rfv " . $temp . '*' );
+
     return if ( !$self->{install} );
     test_untracked( $dir, $add, $password );
-    exit;
 }
 
 1;

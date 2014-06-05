@@ -136,8 +136,8 @@ sub daemonize($) {
     open( STDERR, ">&STDOUT" )
         or die("Couldn't redirect STDERR to STDOUT: $!\n");
     $| = 1; # Make output line-buffered so it will be flushed to syslog faster
-    chdir('/')
-        ; # Avoid the possibility of our working directory resulting in keeping an otherwise unused filesystem in use
+            # chdir('/')
+      #    ; # Avoid the possibility of our working directory resulting in keeping an otherwise unused filesystem in use
     exit if ( fork() );
     exit if ( fork() );
     sleep 1 until getppid() == 1;
@@ -152,6 +152,7 @@ sub _debug {
 }
 
 sub password_dialog {
+    return undef if $> == 0;
     &info("Password: ");
     ReadMode('noecho');    # don't echo
     chomp( my $password = <STDIN> );
@@ -183,7 +184,12 @@ sub test_ebuild {
     my $manifest = shift || undef;
     my $install  = shift || undef;
     my $password = shift || undef;
-    $password = $password ? "echo $password | sudo -S " : "sudo";
+    if ( $> != 0 ) {
+        $password = $password ? "echo $password | sudo -S " : "sudo";
+    }
+    else {
+        $password = "";
+    }
     system( $password. " ebuild $ebuild clean" )
         ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
@@ -192,8 +198,21 @@ sub test_ebuild {
             and return 1
             if ( defined $manifest and !defined $install );
         &notice("Starting installation");
-        if ( defined $install
-            and system( $password. " ebuild $ebuild install" ) == 0 )
+        $ebuild =~ s/\.ebuild//;
+        my @package=split(/\//,$ebuild);
+        $ebuild=$package[0]."/".$package[2];
+        $ebuild = "=" . $ebuild;
+        &info(    "PORTDIR_OVERLAY='"
+                . App::witchcraft::Config->param('GIT_REPOSITORY')
+                . "' emerge -n "
+                . $ebuild );
+        if (defined $install
+            and system( $password
+                    . " PORTDIR_OVERLAY='"
+                    . App::witchcraft::Config->param('GIT_REPOSITORY')
+                    . "' emerge -n $ebuild"
+            ) == 0
+            )
         {
             &info('|| - Installation OK');
             return 1;
