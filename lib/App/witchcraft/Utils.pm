@@ -97,6 +97,8 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
+            system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
+            ;    #spring cleaning!
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
     &notice( "nice -20 emerge --color n -v --autounmask-write "
@@ -218,7 +220,7 @@ sub to_ebuild(@) {
 sub last_commit($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    open my $FH, "<" . $git_repository_path . "/" . $master;
+    open my $FH, "<" . $git_repository_path . "/" . $master or (&error('Something is terribly wrong, cannot open '. $git_repository_path . "/" . $master) and exit 1);
     my @FILE = <$FH>;
     close $FH;
     my ( $last_commit, $all ) = split( / /, $FILE[-1] );
@@ -503,7 +505,8 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
     &info( "Those are the file that would be tested: "
             . join( " ", @Untracked ) );
-
+        system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
+            ;    #spring cleaning!
     foreach my $new_pos (@Untracked) {
         &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
