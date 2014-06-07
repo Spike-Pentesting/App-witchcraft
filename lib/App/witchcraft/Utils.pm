@@ -12,6 +12,8 @@ use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
+use Expect;
+use Digest::MD5;
 
 our @EXPORT = qw(_debug
     info
@@ -29,6 +31,260 @@ our @EXPORT = qw(_debug
     depgraph
     calculate_missing
 );
+
+our @EXPORT_OK= qw(conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit);
+
+sub conf_update {
+    my $Expect = Expect->new;
+    $Expect->raw_pty(1);
+    $Expect->spawn("equo conf update")
+        or send_report(
+        "error executing equo conf update",
+        "Cannot spawn equo conf update: $!\n"
+        );
+
+    $Expect->send("-5\n");
+    $Expect->soft_close();
+}
+
+#
+#  name: process
+#  input: @DIFFS
+#  output: void
+#  Questa funziona si occupa , da un array i quali elementi sono pacchetti di tipo: category/nomepacchetto
+#  genera la lista che viene fatta compilare tramite emerge e poi aggiunta alla repository, ogni errore viene riportato
+#
+sub process(@) {
+    my $use    = pop(@_);
+    my $commit = pop(@_);
+    my @DIFFS  = @_;
+    &notice( "Processing " . join( " ", @DIFFS ) );
+    my $cfg          = App::witchcraft->Config;
+    my $overlay_name = $cfg->param('OVERLAY_NAME');
+    my @CMD          = @DIFFS;
+    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    my @ebuilds = &to_ebuild(@CMD);
+
+    if ( scalar(@ebuilds) == 0 and $use == 0 ) {
+        &send_report("Packages removed, saving diffs.");
+        if ( $use == 0 ) {
+            &save_compiled_commit($commit);
+        }
+        elsif ( $use == 1 ) {
+            &save_compiled_packages($commit);
+        }
+    }
+    else {
+#at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
+        &send_report( "Emerge in progress for $commit", @DIFFS );
+        &info( "Emerging... " . scalar(@DIFFS) . " packages" );
+        &conf_update;    #EXPECT per DISPATCH-CONF
+        &notice( "nice -20 emerge --color n -v --autounmask-write "
+                . join( " ", @DIFFS ) );
+        if (system(
+                "nice -20 emerge --color n -v --autounmask-write "
+                    . join( " ", @DIFFS )
+            ) == 0
+            )
+        {
+            &info(     "Compressing "
+                    . scalar(@DIFFS)
+                    . " packages: "
+                    . join( " ", @DIFFS ) );
+            ##EXPECT PER EIT ADD
+            my $Expect = Expect->new;
+
+            #       unshift( @CMD, "add" );
+            #     push( @CMD, "--quick" );
+            $Expect->spawn( "eit", "add", @CMD, "--quick" )
+                or send_report(
+                "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
+                );
+            $Expect->expect(
+                undef,
+                [   qr/missing dependencies have been found|nano/i => sub {
+                        my $exp = shift;
+                        $exp->send("\cX");
+                        $exp->send("\r");
+                        $exp->send("\r\n");
+                        $exp->send("\r");
+                        $exp->send("\r\n");
+                        $exp->send("\r");
+                        $exp->send("\n");
+                        exp_continue;
+                    },
+                    'eof' => sub {
+                        my $exp = shift;
+                        $exp->soft_close();
+                        }
+                ],
+            );
+            if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
+                &conf_update;
+                if ( system("eit push --quick") == 0 ) {
+                    &info(
+                        "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
+                    );
+                    &send_report(
+                        "[$commit] Pacchetti correttamente compilati:\n####################\n"
+                            . join( "", @DIFFS ) );
+                    if ( $use == 0 ) {
+                        &save_compiled_commit($commit);
+                    }
+                    elsif ( $use == 1 ) {
+                       &save_compiled_packages($commit);
+                    }
+                }
+                else {
+                    &send_report(
+                        "nice -20 eit sync --quick gave an error, check out!"
+                    );
+                }
+            }
+            else {
+                my @LOGS = &find_logs();
+                &send_report( "Errore nella compressione dei pacchetti",
+                    join( " ", @LOGS ) );
+            }
+        }
+        else {
+            my @LOGS = &find_logs();
+            &send_report(
+                "Errore nel merge dei pacchetti: " . join( " ", @DIFFS ),
+                join( " ", @LOGS ) );
+        }
+    }
+}
+
+sub find_logs {
+    my @FINAL;
+    my @LOGS = `find /var/tmp/portage/ | grep build.log`;
+    foreach my $file (@LOGS) {
+        open FILE, "<$file";
+        my @CONTENTS = <FILE>;
+        close FILE;
+        @CONTENTS = map { $_ .= "\n"; } @CONTENTS;
+        unshift( @CONTENTS,
+            "======================= Error log: $file ======================= "
+        );
+        my $C = "@CONTENTS";
+        if ( $C =~ /Error|Failed/i ) {
+            push( @FINAL, @CONTENTS );
+        }
+        unlink($file);
+    }
+    return @FINAL;
+}
+
+#
+#  name: to_ebuild
+#  input:@DIFFS
+#  output:@TO_EMERGE
+#  Dato un'array contenente i pacchetti nel formato categoria/pacchetto, trova gli ebuild nell'overlay e genera un array
+#
+#.
+sub to_ebuild(@) {
+    my @DIFFS = @_;
+    my @TO_EMERGE;
+    my $overlay = App::witchcraft::Config->param('OVERLAY_PATH');
+    foreach my $file (@DIFFS) {
+        my @ebuild = <$overlay/$file/*>;
+        foreach my $e (@ebuild) {
+            push( @TO_EMERGE, $e ) if ( $e =~ /Manifest/i );
+        }
+    }
+    return @TO_EMERGE;
+}
+
+#
+#  name: last_commit
+#  input: git_path_repository, master
+#  output: last_commit
+#  Data una path di una repository git e il suo master file, restituisce l'id dell'ultimo commit sulla repository git
+#
+sub last_commit($$) {
+    my $git_repository_path = $_[0];
+    my $master              = $_[1];
+    open my $FH, "<" . $git_repository_path . "/" . $master;
+    my @FILE = <$FH>;
+    close $FH;
+    my ( $last_commit, $all ) = split( / /, $FILE[-1] );
+    return $last_commit, $all;
+}
+
+sub last_md5() {
+    open my $last,
+        "<"
+        . App::witchcraft::Config->param('MD5_PACKAGES')
+        or (
+        &send_report(
+            "Errore nella lettura dell'ultimo md5 compilato",
+            'Can\'t open '
+                . App::witchcraft::Config->param('MD5_PACKAGES') . ' -> '
+                . $!
+        )
+        and return undef
+        );
+    my $last_md5 = <$last>;
+    close $last;
+    return $last_md5;
+}
+
+#
+#  name: compiled_commit
+#  input: none
+#  output: Ultimo commit
+#
+sub compiled_commit() {
+    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT');
+    my @LAST = <FILE>;
+    close FILE;
+    chomp(@LAST);
+    return $LAST[0];
+}
+#
+#  name: save_compiled_commit
+#  input: $commit
+#  output: void
+#  Funzione che salva nel file indicato dalla variabile $save_last_commit l'argomento passato
+#
+sub save_compiled_commit($) {
+    open FILE, ">" . App::witchcraft::Config->param('LAST_COMMIT');
+    print FILE shift;
+    close FILE;
+}
+
+sub save_compiled_packages($) {
+    open FILE, ">" . App::witchcraft::Config->param('MD5_PACKAGES');
+    print FILE shift;
+    close FILE;
+}
+
+#
+#  name: find_diff
+#  input: git_path_repository, master
+#  output: @DIFFS
+#  Questa funzione prende in ingresso la path della repository git e la locazione del master file,
+#  procede poi a vedere le differenze tra il commit attuale e quello di cui è stato compilato correttamente,
+#  restituisce i pacchetti da compilare.
+sub find_diff($$) {
+    my $git_repository_path = $_[0];
+    my $master              = $_[1];
+    my ( $commit, $line ) = &last_commit( $git_repository_path, $master );
+    my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
+    $git_cmd =~ s/\[COMMIT\]/$commit/g;
+    my @DIFFS;
+    open CMD, "cd $git_repository_path;$git_cmd | ";  # Parsing the git output
+    while (<CMD>) {
+        my $line = $_;
+        my ( $diff, $all ) = split( / /, substr( $line, 1, -3 ) );
+        push( @DIFFS, $1 ) if $diff =~ /(.*)\/Manifest/;
+    }
+    chomp(@DIFFS);
+    return ( &uniq(@DIFFS) );
+}
+
+
 
 sub calculate_missing($$) {
     my $package  = shift;

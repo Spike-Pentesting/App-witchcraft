@@ -11,7 +11,8 @@ sub alias {
         "t" => "test",
         "c" => "clean",
         "d" => "depinstall",
-        "w" => "watch"
+        "w" => "watch",
+        "a" => "align"
     );
 }
 
@@ -38,7 +39,7 @@ help (--help for full)
     - show help message
 
 --> Scan new packages and add to the git repository:
-*    e|--euscan     "v|verbose", Verbose mode
+*    e|euscan     "v|verbose", Verbose mode
                     "q|quiet"  , Quiet mode
                     "c|check"  , Only check updates
                     "u|update" , Add it to the git repository
@@ -49,7 +50,7 @@ help (--help for full)
                     "f|force", Force the -i and -m also if the ebuild is already present
 
 --> Checkout a repository and filter the ebuilds and add to the git repository
-*    s|--sync       "u|update" , Add it to the git repository
+*    s|sync       "u|update" , Add it to the git repository
                     "r|refactor=s", Modify the refactor term
                     "t|refactortarget=s", Modify the target of the refactoring
                     "r|root=s",  Set root of the git repository
@@ -59,22 +60,25 @@ help (--help for full)
                     "-x|--ignore-existing", ignore existing files from rsync copy to the git overlay.
 
 --> Install dependencies of a packages (if available) using equo
-*   d|--depinstall   [package]
+*   d|depinstall   [package]
                     "d|depth=i", define the deepness of the depdence tree, 0 to take all dependencies
 
 --> List repository packages
-*    l|--list [repository]
+*    l|list [repository]
+
+--> Align to the last compiled commit (or the specified one)
+*    a|align [commit]
 
 --> Watch for ebuild change in the configured overlay
 *    w|watch
                      "d|daemon", daemonize
 
 --> Manifest & install untracked files, giving a report of what packages succedeed
-*    t|--test [repository dir]
+*    t|test [repository dir]
                      "a|add", It asks to add the failed installed packages to ignore list
 
 --> Clean all untracked files from the given repository
-*    c|--clean [repository dir]
+*    c|clean [repository dir]
 
 You can inspect further doing "witchcraft help <command>"
 
