@@ -9,6 +9,7 @@ use Regexp::Common qw/URI/;
 use Tie::File;
 use Git::Sub;
 use File::Path qw(remove_tree);
+use Git::Sub qw(add commit push);
 
 =encoding utf-8
 
@@ -19,7 +20,7 @@ App::witchcraft::Command::Sync - Synchronize from a remote repository, perform c
 =head1 SYNOPSIS
 
   $ witchcraft sync
-  $ witchcraft s [--help] [-a|--add] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] <remote_repository>
+  $ witchcraft s [--help] [-a|--add] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] [-g|--git] <remote_repository>
 
 =head1 DESCRIPTION
 
@@ -36,6 +37,10 @@ if given C<<term>> the substitution will search for that.
 =item C<-a|--add>
 
 It asks to add the failed installed packages to ignore list
+
+=item C<-g|--git>
+
+Automatic add, push to git and publish on the entropy repository
 
 =item C<-u|--update>
 
@@ -90,7 +95,8 @@ sub options {
         "i|install" => "install",
         "t|temp=s"  => "temp",      #temp directory for the svn checkout
         "a|add"     => "ignore",
-        "x|ignore-existing" => "ignore-existing"
+        "x|ignore-existing" => "ignore-existing",
+        "g|git"             => "git"
     );
 }
 
@@ -230,7 +236,29 @@ sub synchronize {
     system( "rm -rfv " . $temp . '*' );
 
     return if ( !$self->{install} );
-    test_untracked( $dir, $add, $password );
+    my @Installed = test_untracked( $dir, $add, $password );
+    return if ( !$self->{git} );
+    chdir($dir);
+    foreach my $atom (@Installed) {
+        eval { notice git::add $atom; };
+        if ($@) {
+            error $@;
+        }
+        eval {
+            notice git::commit -m => 'witchcraft: automatically added/updated from sync '
+                . $atom;
+        };
+        if ($@) {
+            error $@;
+        }
+    }
+    eval { notice git::push; };
+    if ($@) {
+        error $@;
+    }
+
+    emerge( map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') } @Installed);
+
 }
 
 1;

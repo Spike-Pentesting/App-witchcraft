@@ -6,7 +6,7 @@ use strict;
 use App::witchcraft::Utils;
 use File::stat;
 use File::Copy;
-use Git::Sub qw(add commit);
+use Git::Sub qw(add commit push);
 
 =encoding utf-8
 

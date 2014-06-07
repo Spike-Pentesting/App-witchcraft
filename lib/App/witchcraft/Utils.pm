@@ -30,9 +30,11 @@ our @EXPORT = qw(_debug
     daemonize
     depgraph
     calculate_missing
+    emerge
 );
 
-our @EXPORT_OK= qw(conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit);
+our @EXPORT_OK
+    = qw(conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit );
 
 sub conf_update {
     my $Expect = Expect->new;
@@ -77,82 +79,93 @@ sub process(@) {
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         &send_report( "Emerge in progress for $commit", @DIFFS );
-        &info( "Emerging... " . scalar(@DIFFS) . " packages" );
-        &conf_update;    #EXPECT per DISPATCH-CONF
-        &notice( "nice -20 emerge --color n -v --autounmask-write "
-                . join( " ", @DIFFS ) );
-        if (system(
-                "nice -20 emerge --color n -v --autounmask-write "
-                    . join( " ", @DIFFS )
-            ) == 0
-            )
-        {
-            &info(     "Compressing "
-                    . scalar(@DIFFS)
-                    . " packages: "
-                    . join( " ", @DIFFS ) );
-            ##EXPECT PER EIT ADD
-            my $Expect = Expect->new;
+        if ( &emerge(@DIFFS) ) {
+            &send_report(
+                "[$commit] Pacchetti correttamente compilati:\n####################\n"
+                    . join( "", @DIFFS ) );
+            if ( $use == 0 ) {
+                &save_compiled_commit($commit);
+            }
+            elsif ( $use == 1 ) {
+                &save_compiled_packages($commit);
+            }
+        }
+    }
+}
 
-            #       unshift( @CMD, "add" );
-            #     push( @CMD, "--quick" );
-            $Expect->spawn( "eit", "add", @CMD, "--quick" )
-                or send_report(
-                "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
-                );
-            $Expect->expect(
-                undef,
-                [   qr/missing dependencies have been found|nano/i => sub {
-                        my $exp = shift;
-                        $exp->send("\cX");
-                        $exp->send("\r");
-                        $exp->send("\r\n");
-                        $exp->send("\r");
-                        $exp->send("\r\n");
-                        $exp->send("\r");
-                        $exp->send("\n");
-                        exp_continue;
-                    },
-                    'eof' => sub {
-                        my $exp = shift;
-                        $exp->soft_close();
-                        }
-                ],
+sub emerge(@) {
+    my @DIFFS = @_;
+    my @CMD   = @DIFFS;
+    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    &info( "Emerging... " . scalar(@DIFFS) . " packages" );
+    &conf_update;    #EXPECT per DISPATCH-CONF
+    &notice( "nice -20 emerge --color n -v --autounmask-write "
+            . join( " ", @DIFFS ) );
+    if (system(
+            "nice -20 emerge --color n -v --autounmask-write "
+                . join( " ", @DIFFS )
+        ) == 0
+        )
+    {
+        &info(    "Compressing "
+                . scalar(@DIFFS)
+                . " packages: "
+                . join( " ", @DIFFS ) );
+        ##EXPECT PER EIT ADD
+        my $Expect = Expect->new;
+
+        #       unshift( @CMD, "add" );
+        #     push( @CMD, "--quick" );
+        $Expect->spawn( "eit", "add", @CMD, "--quick" )
+            or send_report(
+            "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
             );
-            if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
-                &conf_update;
-                if ( system("eit push --quick") == 0 ) {
-                    &info(
-                        "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
-                    );
-                    &send_report(
-                        "[$commit] Pacchetti correttamente compilati:\n####################\n"
-                            . join( "", @DIFFS ) );
-                    if ( $use == 0 ) {
-                        &save_compiled_commit($commit);
+        $Expect->expect(
+            undef,
+            [   qr/missing dependencies have been found|nano/i => sub {
+                    my $exp = shift;
+                    $exp->send("\cX");
+                    $exp->send("\r");
+                    $exp->send("\r\n");
+                    $exp->send("\r");
+                    $exp->send("\r\n");
+                    $exp->send("\r");
+                    $exp->send("\n");
+                    exp_continue;
+                },
+                'eof' => sub {
+                    my $exp = shift;
+                    $exp->soft_close();
                     }
-                    elsif ( $use == 1 ) {
-                       &save_compiled_packages($commit);
-                    }
-                }
-                else {
-                    &send_report(
-                        "nice -20 eit sync --quick gave an error, check out!"
-                    );
-                }
+            ],
+        );
+        if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
+            &conf_update;
+            if ( system("eit push --quick") == 0 ) {
+                &info(
+                    "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
+                );
+                return 1;
             }
             else {
-                my @LOGS = &find_logs();
-                &send_report( "Errore nella compressione dei pacchetti",
-                    join( " ", @LOGS ) );
+                &send_report(
+                    "nice -20 eit sync --quick gave an error, check out!");
+                return 0;
             }
         }
         else {
             my @LOGS = &find_logs();
-            &send_report(
-                "Errore nel merge dei pacchetti: " . join( " ", @DIFFS ),
+            &send_report( "Errore nella compressione dei pacchetti",
                 join( " ", @LOGS ) );
+            return 0;
         }
+    }
+    else {
+        my @LOGS = &find_logs();
+        &send_report(
+            "Errore nel merge dei pacchetti: " . join( " ", @DIFFS ),
+            join( " ", @LOGS ) );
+        return 0;
     }
 }
 
@@ -283,8 +296,6 @@ sub find_diff($$) {
     chomp(@DIFFS);
     return ( &uniq(@DIFFS) );
 }
-
-
 
 sub calculate_missing($$) {
     my $package  = shift;
@@ -455,13 +466,14 @@ sub test_ebuild {
             if ( defined $manifest and !defined $install );
         &notice("Starting installation");
         $ebuild =~ s/\.ebuild//;
-        my @package=split(/\//,$ebuild);
-        $ebuild=$package[0]."/".$package[2];
+        my @package = split( /\//, $ebuild );
+        $ebuild = $package[0] . "/" . $package[2];
         $ebuild = "=" . $ebuild;
         &info(    "PORTDIR_OVERLAY='"
                 . App::witchcraft::Config->param('GIT_REPOSITORY')
                 . "' emerge -n "
                 . $ebuild );
+
         if (defined $install
             and system( $password
                     . " PORTDIR_OVERLAY='"
@@ -533,6 +545,7 @@ sub test_untracked {
         &notice("emerge -av $result");
         &notice("eit add $result");
         &notice("eit push");
+        return @Installed;
     }
     else {
         &info(
