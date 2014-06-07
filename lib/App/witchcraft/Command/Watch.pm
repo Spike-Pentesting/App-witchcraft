@@ -150,7 +150,7 @@ sub update($$) {
     info("Last commit: $commit");
     my $compiled_commit = compiled_commit();
     info("Last COMPILED commit: $compiled_commit");
-    if ( $commit eq $compiled_commit ) {
+    if ( defined $compiled_commit and $commit eq $compiled_commit ) {
         info(
             "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
         );
