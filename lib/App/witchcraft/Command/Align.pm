@@ -53,7 +53,7 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 =cut
 
 sub run {
-   # error 'You must run it with root permissions' and exit 1 if $> != 0;
+   error 'You must run it with root permissions' and exit 1 if $> != 0;
     my $self = shift;
     my $last_commit = shift // compiled_commit();
     error 'No compiled commit could be found, you must specify it' and exit 1
