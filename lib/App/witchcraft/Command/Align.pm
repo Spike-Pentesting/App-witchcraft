@@ -53,7 +53,7 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 =cut
 
 sub run {
-   error 'You must run it with root permissions' and exit 1 if $> != 0;
+    error 'You must run it with root permissions' and exit 1 if $> != 0;
     my $self = shift;
     my $last_commit = shift // compiled_commit();
     error 'No compiled commit could be found, you must specify it' and exit 1
@@ -68,17 +68,13 @@ sub run {
         } grep {
         /Manifest$/i                   #Only with the manifest are interesting
         } git::diff( $last_commit, '--name-only' );
-    my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') } grep { -d $_ }  @FILES;
+    my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
+        grep { -d $_ } @FILES;
     notice 'Those are the packages that would be processed:';
     info "\t" . $_ for @EMERGING;
-    process(
-        @EMERGING,
-        last_commit(
-            $cfg->param('OVERLAY_PATH'),
-            $cfg->param('GIT_MASTER_FILE')
-        ),
-        0
-    );
+    my $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
+        $cfg->param('GIT_MASTER_FILE') );
+    process( @EMERGING, $last_commit, 0 );
 }
 
 1;
