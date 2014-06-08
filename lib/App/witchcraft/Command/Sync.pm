@@ -101,8 +101,8 @@ sub options {
 }
 
 sub run {
-    my $self      = shift;
-    my @REMOTES   = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
+    my $self = shift;
+    my @REMOTES = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
     info "Syncing with remote repository and merging into one!";
     my $password  = password_dialog();
     my @REFACTORS = $self->{'refactor'}
@@ -112,7 +112,7 @@ sub run {
     my $refactor_target = $self->{'refactor_target'}
         // App::witchcraft->Config->param('REFACTOR_TO');
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
-    system( "rm -rfv " . $temp . '*' );
+    system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
 
@@ -145,25 +145,26 @@ sub synchronize {
     my $m_t = uc( substr( $refactor_target, 0, 1 ) )
         . substr( $refactor_target, 1 );
     my @Installed;
+    info "Refactoring: $refactor";
+    info "Ignores: $flatten";
+    sleep 2;
 
     if ( system("git ls-remote $RepoUrl") == 0 ) {
-        info 'The repository is a git one!';
+        info $RepoUrl. ' is a git one!';
         notice git::clone $RepoUrl, $temp;
     }
     else {
-        info 'This is a svn repository!';
-        system( "svn checkout $RepoUrl " . $temp );
+        info $RepoUrl. ' is a svn one!';
+        system( "svn checkout -q $RepoUrl " . $temp );
     }
+    info "Starting the refactoring/selection process";
     finddepth(
         sub {
             my $file      = $File::Find::name;
             my $file_name = $_;
-
-            info "Refactoring with $refactor";
-            sleep 2;
             if (   $file_name =~ /$refactor/i
                 or $file =~ /$refactor/i
-                or $file =~ /$flatten/i )
+                or ( @ignores > 0 and $file =~ /$flatten/i ) )
             {
                 error $file. " removed";
                 unlink($file) if ( -f $file );
