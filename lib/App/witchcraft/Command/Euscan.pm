@@ -99,12 +99,13 @@ sub run {
     info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
-    my @Packages = `equo query list available $Repo -q`;
+    my @Packages = uniq(`equo query list available $Repo -q`);
     chomp(@Packages);
     my @Updates;
     my @Added;
     my $c = 1;
     info "Starting Euscan of " . join( " ", @Packages ) if $self->{verbose};
+
     foreach my $Package (@Packages) {
         draw_up_line;
         notice "[$c/" . scalar(@Packages) . "] " . $Package;
@@ -147,6 +148,7 @@ sub update {
     return () if ( !$self->{update} and !$self->{check} );
     my $dir
         = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+    chdir($dir);
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
     my $atom = join( '/', $dir, $Package );
