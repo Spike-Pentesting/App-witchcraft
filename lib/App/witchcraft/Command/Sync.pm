@@ -103,6 +103,7 @@ sub options {
 sub run {
     my $self      = shift;
     my @REMOTES   = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
+    info "Syncing with remote repository and merging into one!";
     my $password  = password_dialog();
     my @REFACTORS = $self->{'refactor'}
         // App::witchcraft->Config->param('REFACTOR');
@@ -158,7 +159,8 @@ sub synchronize {
             my $file      = $File::Find::name;
             my $file_name = $_;
 
-            # info "Refactor term is $refactor";
+            info "Refactoring with $refactor";
+            sleep 2;
             if (   $file_name =~ /$refactor/i
                 or $file =~ /$refactor/i
                 or $file =~ /$flatten/i )
