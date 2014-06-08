@@ -98,6 +98,7 @@ sub run {
     my $Repo = shift // "spike";
     info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
+    info "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = `equo query list available $Repo -q`;
     chomp(@Packages);
     my @Updates;
