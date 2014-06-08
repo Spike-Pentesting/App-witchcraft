@@ -113,6 +113,7 @@ sub run {
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     system( "rm -rfv " . $temp . '*' );
     my $i = 0;
+    draw_up_line;
 
     foreach my $RepoUrl (@REMOTES) {
         $self->synchronize( $REFACTORS[$i], $refactor_target, $RepoUrl,
@@ -120,6 +121,7 @@ sub run {
             $password, @ignores );
         $i++;
     }
+    draw_down_line;
 
     exit;
 }
@@ -245,8 +247,8 @@ sub synchronize {
             error $@;
         }
         eval {
-            notice git::commit -m => 'witchcraft: automatically added/updated from sync '
-                . $atom;
+            notice git::commit -m =>
+                'witchcraft: automatically added/updated from sync ' . $atom;
         };
         if ($@) {
             error $@;
@@ -257,7 +259,8 @@ sub synchronize {
         error $@;
     }
 
-    emerge( map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') } @Installed);
+    emerge( map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
+            @Installed );
 
 }
 

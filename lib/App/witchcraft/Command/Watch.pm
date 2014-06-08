@@ -2,7 +2,8 @@ package App::witchcraft::Command::Watch;
 
 use base qw(App::witchcraft::Command);
 use Carp::Always;
-use App::witchcraft::Utils qw(daemonize error info notice send_report conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit);
+use App::witchcraft::Utils
+    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit);
 use warnings;
 use strict;
 use File::Find;
@@ -73,6 +74,7 @@ sub run {
     send_report("I'm up!");
     while (1) {
         info "Checking for updates, and merging up!";
+        draw_up_line;
         if ( system("layman -S") == 0 ) {    #Launch layman -S first.
             system("eix-sync");
             update( $cfg->param('OVERLAY_PATH'),
@@ -82,6 +84,7 @@ sub run {
         else {
             send_report( "Layman coudn't sync", "Executing : layman -S " );
         }
+        draw_down_line;
         sleep $cfg->param('SLEEP_TIME');
     }
 

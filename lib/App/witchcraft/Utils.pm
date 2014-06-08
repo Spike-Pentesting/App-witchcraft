@@ -14,11 +14,15 @@ use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 use Expect;
 use Digest::MD5;
+use utf8;
+use Encode;
 
 our @EXPORT = qw(_debug
     info
     error
     notice
+    draw_up_line
+    draw_down_line
     send_report
     print_list
     test_untracked
@@ -462,11 +466,11 @@ sub test_ebuild {
     system( $password. " ebuild $ebuild clean" )
         ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
-        &notice('|| - Manifest created successfully');
-        &error("|===================================================/")
+        &info('Manifest created successfully');
+        &draw_down_line
             and return 1
             if ( defined $manifest and !defined $install );
-        &notice("Starting installation");
+        &info("Starting installation");
         $ebuild =~ s/\.ebuild//;
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
@@ -484,7 +488,7 @@ sub test_ebuild {
             ) == 0
             )
         {
-            &info('|| - Installation OK');
+            &info('Installation OK');
             return 1;
         }
         else { &error("Installation failed") and return 0; }
@@ -627,10 +631,18 @@ sub print_list {
     }
 }
 
+sub draw_up_line{
+    &notice(encode_uf8("▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"));
+}
+
+sub draw_down_line{
+    &notice(encode_uf8("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"));
+}
+
 sub error {
     my @msg = @_;
     print STDERR color 'bold red';
-    print STDERR '@@@ ' ;
+    print STDERR encode_utf8('☢☢☢ ');
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
@@ -638,8 +650,8 @@ sub error {
 
 sub info {
     my @msg = @_;
-    print STDERR color 'green';
-    print STDERR '|| --> ';
+    print STDERR color 'bold green';
+    print STDERR encode_utf8('╠ ');
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
@@ -648,7 +660,7 @@ sub info {
 sub notice {
     my @msg = @_;
     print STDERR color 'bold yellow';
-    print STDERR '/!\ ';
+    print STDERR encode_utf8('▶ ');
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';

@@ -58,6 +58,7 @@ sub run {
     my $last_commit = shift // compiled_commit();
     error 'No compiled commit could be found, you must specify it' and exit 1
         if ( !defined $last_commit );
+    info 'Emerging packages from commit ' . $last_commit;
     my $cfg = App::witchcraft->Config;
     chdir( $cfg->param('GIT_REPOSITORY') );
     my @FILES = map {
@@ -71,7 +72,9 @@ sub run {
     my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
         grep { -d $_ } @FILES;
     notice 'Those are the packages that would be processed:';
+    draw_up_line;
     info "\t" . $_ for @EMERGING;
+    draw_down_line;
     my $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
         $cfg->param('GIT_MASTER_FILE') );
     process( @EMERGING, $last_commit, 0 );

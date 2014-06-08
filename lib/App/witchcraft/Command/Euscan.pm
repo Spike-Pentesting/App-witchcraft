@@ -144,14 +144,14 @@ sub update {
 
     my @temp = @_;
     return () if ( !$self->{update} and !$self->{check} );
-    error "|===================================================\\";
+    draw_up_line;
     my $dir
         = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
     my $atom = join( '/', $dir, $Package );
     info 'repository doesn\'t have that atom (' . $atom . ')'
-        and error "|===================================================/"
+        and draw_down_line
         and return ()
         if ( !-d $atom );
     notice 'opening ' . $atom;
@@ -178,7 +178,7 @@ sub update {
     info "Searching for $pack";
 
     if ( !-f $updated ) {
-        error "|===================================================/"
+        draw_down_line
             and return ()
             if ( $self->{check} and -f $updated );
         my $last = shift @files;
@@ -191,13 +191,12 @@ sub update {
         info "Update to $Package already exists";
         return () if ( !$self->{force} );
     }
-    error "|===================================================/"
+    draw_down_line
         and return ()
         if ( !$self->{manifest} );
-    if (test_ebuild(
-            $Package, $self->{manifest}, $self->{install}, $password
-        )
-        )
+    my $Test = $updated;
+    $Test =~ s/$dir//g;
+    if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
         if ( $self->{git} ) {
             chdir($atom);
@@ -226,7 +225,7 @@ sub update {
     else {
         return ();
     }
-    error "|===================================================/";
+    draw_down_line;
     return join( "/", $Package, $pack );
 
 }
