@@ -103,10 +103,10 @@ sub run {
     my @Updates;
     my @Added;
     my $c = 1;
-
+    info "Starting Euscan of " . join( " ", @Packages ) if $self->{verbose};
     foreach my $Package (@Packages) {
-        notice "[$c/" . scalar(@Packages) . "] " . $Package
-            if $self->{verbose};
+        draw_up_line;
+        notice "[$c/" . scalar(@Packages) . "] " . $Package;
         my @temp = `euscan -q -C $Package`;
         chomp(@temp);
         if ( !$self->{quiet} ) {
@@ -144,7 +144,6 @@ sub update {
 
     my @temp = @_;
     return () if ( !$self->{update} and !$self->{check} );
-    draw_up_line;
     my $dir
         = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
@@ -196,7 +195,7 @@ sub update {
         and return ()
         if ( !$self->{manifest} );
     my $Test = $updated;
-    $Test =~ s/\/?$dir//g;
+    $Test =~ s/$dir\/?//g;
     if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
         if ( $self->{git} ) {
