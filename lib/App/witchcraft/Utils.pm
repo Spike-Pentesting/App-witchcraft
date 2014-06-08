@@ -632,11 +632,11 @@ sub print_list {
 }
 
 sub draw_up_line{
-    &notice(encode_uf8("▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"));
+    &notice(encode_utf8("▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"));
 }
 
 sub draw_down_line{
-    &notice(encode_uf8("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"));
+    &notice(encode_utf8("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"));
 }
 
 sub error {
