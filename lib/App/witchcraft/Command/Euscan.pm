@@ -189,13 +189,14 @@ sub update {
     }
     else {
         info "Update to $Package already exists";
+        draw_down_line;
         return () if ( !$self->{force} );
     }
     draw_down_line
         and return ()
         if ( !$self->{manifest} );
     my $Test = $updated;
-    $Test =~ s/$dir//g;
+    $Test =~ s/\/?$dir//g;
     if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
         if ( $self->{git} ) {
