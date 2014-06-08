@@ -236,7 +236,7 @@ sub synchronize {
     system( "rm -rfv " . $temp . '*' );
 
     return if ( !$self->{install} );
-    my @Installed = test_untracked( $dir, $add, $password );
+    @Installed = test_untracked( $dir, $add, $password );
     return if ( !$self->{git} );
     chdir($dir);
     foreach my $atom (@Installed) {

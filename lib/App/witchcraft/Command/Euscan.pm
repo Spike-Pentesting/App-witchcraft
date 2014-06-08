@@ -195,7 +195,7 @@ sub update {
         and return ()
         if ( !$self->{manifest} );
     if (test_ebuild(
-            $updated, $self->{manifest}, $self->{install}, $password
+            $Package, $self->{manifest}, $self->{install}, $password
         )
         )
     {
