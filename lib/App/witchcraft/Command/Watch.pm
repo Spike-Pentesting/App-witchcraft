@@ -3,7 +3,7 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit);
+    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit);
 use warnings;
 use strict;
 use File::Find;
