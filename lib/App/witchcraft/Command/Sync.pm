@@ -60,7 +60,11 @@ you can specify the git repository(C<-r|--root <git_root>>) directory where the 
 
 =item C<-t|--temp <temp_dir>>
 
-allow to set a different temporary checkout directory.
+allow to set a different temporary checkout directory
+
+=item C<-v|--verbose>
+
+Be more verbose.
 
 =item C<--help>
 
@@ -96,7 +100,8 @@ sub options {
         "t|temp=s"  => "temp",      #temp directory for the svn checkout
         "a|add"     => "ignore",
         "x|ignore-existing" => "ignore-existing",
-        "g|git"             => "git"
+        "g|git"             => "git",
+        "v|verbose"         => "verbose"
     );
 }
 
@@ -146,7 +151,7 @@ sub synchronize {
         . substr( $refactor_target, 1 );
     my @Installed;
     info "Refactoring: $refactor";
-    info "Ignores: $flatten";
+    info "Ignores: $flatten" if $self->{verbose};
     sleep 2;
 
     if ( system("git ls-remote $RepoUrl") == 0 ) {

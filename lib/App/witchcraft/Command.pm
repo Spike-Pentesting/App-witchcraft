@@ -59,6 +59,7 @@ help (--help for full)
                     "a|add", It asks to add the failed installed packages to ignore list
                     "-x|--ignore-existing", ignore existing files from rsync copy to the git overlay.
                     "-g|--git", add and push automatically to git and entropy repository
+                    "-v|--verbose", be more verbose
 
 --> Install dependencies of a packages (if available) using equo
 *   d|depinstall   [package]
