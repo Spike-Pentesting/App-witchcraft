@@ -629,22 +629,28 @@ sub print_list {
 
 sub error {
     my @msg = @_;
-    print STDERR color 'red';
-    print STDERR '@@@ ' . join( "\n", @msg ), "\n";
+    print STDERR color 'bold red';
+    print STDERR '@@@ ' ;
+    print STDERR color 'bold white';
+    print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub info {
     my @msg = @_;
     print STDERR color 'green';
-    print STDERR '|| --> ' . join( "\n", @msg ), "\n";
+    print STDERR '|| --> ';
+    print STDERR color 'bold white';
+    print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
 sub notice {
     my @msg = @_;
     print STDERR color 'bold yellow';
-    print STDERR '/!\ ' . join( "\n", @msg ), "\n";
+    print STDERR '/!\ ';
+    print STDERR color 'bold white';
+    print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
 
