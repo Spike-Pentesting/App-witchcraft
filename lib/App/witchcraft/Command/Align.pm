@@ -61,7 +61,8 @@ sub run {
         if ( !defined $last_commit );
     info 'Emerging packages from commit ' . $last_commit;
     my $cfg = App::witchcraft->Config;
-    chdir( $cfg->param('GIT_REPOSITORY') );
+    system("eix-sync");
+    chdir( $cfg->param('OVERLAY_PATH') );
     my @FILES = map {
         $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
         atom($_);                      #converting to atom
@@ -70,9 +71,9 @@ sub run {
         } grep {
         /Manifest$/i                   #Only with the manifest are interesting
         } git::diff( $last_commit, '--name-only' );
-    system("git stash");
-    my $Clean = App::witchcraft::Command::Clean->new;
-    $Clean->run;
+    #  system("git stash");
+    #my $Clean = App::witchcraft::Command::Clean->new;
+    #$Clean->run;
     my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
         grep { -d $_ } @FILES;
     notice 'Those are the packages that would be processed:';
