@@ -12,7 +12,8 @@ sub alias {
         "c" => "clean",
         "d" => "depinstall",
         "w" => "watch",
-        "a" => "align"
+        "a" => "align",
+        "p" => "pack"
     );
 }
 
@@ -67,6 +68,9 @@ help (--help for full)
 
 --> List repository packages
 *    l|list [repository]
+
+--> Emerge and push to entropy repository
+*    p|pack [package] [package2] ...
 
 --> Align to the last compiled commit (or the specified one)
 *    a|align [commit]

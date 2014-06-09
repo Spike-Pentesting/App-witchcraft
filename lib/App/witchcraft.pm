@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 0.005;
+our $VERSION              = 0.006;
 our $CONFIG_FILE          = "witchcraft.conf";
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
@@ -57,9 +57,17 @@ App::witchcraft - Helps the overlay mantainer doing is dirty job
                                 "i|install", Try to install them, output the file that passed
                                 "a|add", It asks to add the failed installed packages to ignore list
                                 "-x|--ignore-existing", ignore existing files from rsync copy to the git overlay.
+                                "-g|--git", add and push automatically to git and entropy repository
+                                "-v|--verbose", be more verbose
 
     --> List repository packages
     *    l|--list [repository]
+
+    --> Emerge and push to entropy repository
+    *    p|pack [package] [package2] ...
+
+    --> Align to the last compiled commit (or the specified one)
+    *    a|align [commit]
 
     --> Manifest & install untracked files, giving a report of what packages succedeed
     *    t|--test [repository dir]
