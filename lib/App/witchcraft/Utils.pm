@@ -227,8 +227,7 @@ sub last_commit($$) {
     open my $FH, "<" . $git_repository_path . "/" . $master or (&error('Something is terribly wrong, cannot open '. $git_repository_path . "/" . $master) and exit 1);
     my @FILE = <$FH>;
     close $FH;
-    my ( $last_commit, $all ) = split( / /, $FILE[-1] );
-    return $last_commit, $all;
+    return $FILE[0];
 }
 
 sub last_md5() {
@@ -289,7 +288,7 @@ sub save_compiled_packages($) {
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    my ( $commit, $line ) = &last_commit( $git_repository_path, $master );
+    my $commit = &last_commit( $git_repository_path, $master );
     my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
     $git_cmd =~ s/\[COMMIT\]/$commit/g;
     my @DIFFS;

@@ -145,7 +145,7 @@ sub update($$) {
     my $master_file = shift;
     my $cfg         = App::witchcraft->Config;
 
-    my ( $commit, $line ) = last_commit( $overlay, $master_file );
+    my $commit= last_commit( $overlay, $master_file );
     info("Last commit: $commit");
     my $compiled_commit = compiled_commit();
     info("Last COMPILED commit: $compiled_commit");
