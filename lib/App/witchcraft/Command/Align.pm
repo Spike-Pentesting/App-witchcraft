@@ -70,7 +70,7 @@ sub run {
         } grep {
         /Manifest$/i                   #Only with the manifest are interesting
         } git::diff( $last_commit, '--name-only' );
-    git::stash;
+    system("git stash");
     my $Clean = App::witchcraft::Clean->new;
     $Clean->run;
     my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
