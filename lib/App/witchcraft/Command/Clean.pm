@@ -45,7 +45,6 @@ sub run {
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1 if(!$dir);
         info 'Cleaning all the untracked files in '.$dir;
     clean_untracked($dir);
-    exit;
 }
 
 1;
