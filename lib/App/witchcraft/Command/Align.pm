@@ -4,9 +4,10 @@ use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
     qw(error info notice draw_down_line draw_up_line send_report process last_commit atom compiled_commit);
+use App::witchcraft::Command::Clean;
 use warnings;
 use strict;
-use Git::Sub qw(diff);
+use Git::Sub qw(diff stash);
 
 =encoding utf-8
 
@@ -69,6 +70,9 @@ sub run {
         } grep {
         /Manifest$/i                   #Only with the manifest are interesting
         } git::diff( $last_commit, '--name-only' );
+    git::stash;
+    my $Clean = App::witchcraft::Clean->new;
+    $Clean->run;
     my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
         grep { -d $_ } @FILES;
     notice 'Those are the packages that would be processed:';
