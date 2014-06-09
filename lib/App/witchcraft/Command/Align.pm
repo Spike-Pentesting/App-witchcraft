@@ -75,7 +75,7 @@ sub run {
     draw_up_line;
     info "\t" . $_ for @EMERGING;
     draw_down_line;
-    my $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
+    $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
         $cfg->param('GIT_MASTER_FILE') );
     process( @EMERGING, $last_commit, 0 );
 }
