@@ -6,7 +6,7 @@ use strict;
 use App::witchcraft::Utils;
 use File::stat;
 use File::Copy;
-use Git::Sub qw(add commit push);
+use Git::Sub qw(add commit push pull);
 
 =encoding utf-8
 
@@ -105,7 +105,13 @@ sub run {
     my @Added;
     my $c = 1;
     info "Starting Euscan of " . join( " ", @Packages ) if $self->{verbose};
-
+    my $dir
+        = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+    chdir($dir);
+    eval { notice git::pull; };
+    if ($@) {
+        error $@;
+    }
     foreach my $Package (@Packages) {
         draw_up_line;
         notice "[$c/" . scalar(@Packages) . "] " . $Package;

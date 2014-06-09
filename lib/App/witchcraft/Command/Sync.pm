@@ -9,7 +9,7 @@ use Regexp::Common qw/URI/;
 use Tie::File;
 use Git::Sub;
 use File::Path qw(remove_tree);
-use Git::Sub qw(add commit push);
+use Git::Sub qw(add commit push pull);
 
 =encoding utf-8
 
@@ -249,6 +249,10 @@ sub synchronize {
     @Installed = test_untracked( $dir, $add, $password );
     return if ( !$self->{git} );
     chdir($dir);
+    eval { notice git::pull; };
+    if ($@) {
+        error $@;
+    }
     foreach my $atom (@Installed) {
         eval { notice git::add $atom; };
         if ($@) {
