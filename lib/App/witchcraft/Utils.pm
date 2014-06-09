@@ -591,6 +591,7 @@ sub test_untracked {
         &info(
             "No files where tested because there weren't untracked files or all packages failed to install"
         );
+        return ();
     }
 }
 
