@@ -226,6 +226,7 @@ sub last_commit($$) {
     my $master              = $_[1];
     open my $FH, "<" . $git_repository_path . "/" . $master or (&error('Something is terribly wrong, cannot open '. $git_repository_path . "/" . $master) and exit 1);
     my @FILE = <$FH>;
+    chomp(@FILE);
     close $FH;
     return $FILE[0];
 }
