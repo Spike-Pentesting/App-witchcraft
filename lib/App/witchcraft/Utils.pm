@@ -128,7 +128,7 @@ sub emerge(@) {
             );
         $Expect->expect(
             undef,
-            [   qr/missing dependencies have been found|nano/i => sub {
+            [   qr/missing dependencies have been found|nano|\?/i => sub {
                     my $exp = shift;
                     $exp->send("\cX");
                     $exp->send("\r");
