@@ -148,7 +148,7 @@ sub update($$) {
     my $commit= last_commit( $overlay, $master_file );
     info("Last commit: $commit");
     my $compiled_commit = compiled_commit();
-    info("Last COMPILED commit: $compiled_commit");
+    info("Last COMPILED commit: $compiled_commit") if $compiled_commit;
     if ( defined $compiled_commit and $commit eq $compiled_commit ) {
         info(
             "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
