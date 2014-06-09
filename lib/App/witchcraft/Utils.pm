@@ -242,6 +242,27 @@ sub last_commit($$) {
     return $FILE[0];
 }
 
+sub previous_commit($$) {
+    my $git_repository_path = $_[0];
+    my $master              = $_[1];
+    open my $FH,
+          "<"
+        . $git_repository_path . "/"
+        . $master
+        or (
+        &error(
+                  'Something is terribly wrong, cannot open '
+                . $git_repository_path . "/"
+                . $master
+        )
+        and exit 1
+        );
+    my @FILE = <$FH>;
+    close $FH;
+    my ( $last_commit, $all ) = split( / /, $FILE[-1] );
+    return $last_commit;
+}
+
 sub last_md5() {
     open my $last,
         "<"
@@ -300,7 +321,8 @@ sub save_compiled_packages($) {
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    my $commit              = &compiled_commit;
+    my $commit              = &last_commit
+        // &previous_commit( $git_repository_path, $master );
     my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
     $git_cmd =~ s/\[COMMIT\]/$commit/g;
     my @DIFFS;
@@ -316,7 +338,7 @@ sub find_diff($$) {
 sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
-    my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
+    my @Packages = &depgraph( $package, $depth );     #depth=0 it's all
     &info( scalar(@Packages) . " dependencies found " );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
