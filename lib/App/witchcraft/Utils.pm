@@ -101,8 +101,8 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
-            system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
-            ;    #spring cleaning!
+    system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
+        ;    #spring cleaning!
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
     &notice( "nice -20 emerge --color n -v --autounmask-write "
@@ -224,7 +224,18 @@ sub to_ebuild(@) {
 sub last_commit($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    open my $FH, "<" . $git_repository_path . "/" . $master or (&error('Something is terribly wrong, cannot open '. $git_repository_path . "/" . $master) and exit 1);
+    open my $FH,
+          "<"
+        . $git_repository_path . "/"
+        . $master
+        or (
+        &error(
+                  'Something is terribly wrong, cannot open '
+                . $git_repository_path . "/"
+                . $master
+        )
+        and exit 1
+        );
     my @FILE = <$FH>;
     chomp(@FILE);
     close $FH;
@@ -289,14 +300,13 @@ sub save_compiled_packages($) {
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    my $commit = &last_commit( $git_repository_path, $master );
+    my $commit              = &compiled_commit;
     my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
     $git_cmd =~ s/\[COMMIT\]/$commit/g;
     my @DIFFS;
     open CMD, "cd $git_repository_path;$git_cmd | ";  # Parsing the git output
     while (<CMD>) {
-        my $line = $_;
-        my ( $diff, $all ) = split( / /, substr( $line, 1, -3 ) );
+        my ( $diff, $all ) = split( / /, substr( $_, 1, -3 ) );
         push( @DIFFS, $1 ) if $diff =~ /(.*)\/Manifest/;
     }
     chomp(@DIFFS);
@@ -509,8 +519,9 @@ sub test_untracked {
     @Untracked = grep {/\.ebuild$/} @Untracked;
     &info( "Those are the file that would be tested: "
             . join( " ", @Untracked ) );
-        system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
-            ;    #spring cleaning!
+    system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
+        ;    #spring cleaning!
+
     foreach my $new_pos (@Untracked) {
         &info("Testing $new_pos");
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
@@ -631,12 +642,20 @@ sub print_list {
     }
 }
 
-sub draw_up_line{
-    &notice(encode_utf8("▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"));
+sub draw_up_line {
+    &notice(
+        encode_utf8(
+            "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"
+        )
+    );
 }
 
-sub draw_down_line{
-    &notice(encode_utf8("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"));
+sub draw_down_line {
+    &notice(
+        encode_utf8(
+            "▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+        )
+    );
 }
 
 sub error {
