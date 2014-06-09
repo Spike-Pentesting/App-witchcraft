@@ -683,7 +683,7 @@ sub draw_down_line {
 sub error {
     my @msg = @_;
     print STDERR color 'bold red';
-    print STDERR encode_utf8('☢☢☢ ');
+    print STDERR encode_utf8('☢☢☢ ☛  ');
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
@@ -701,7 +701,7 @@ sub info {
 sub notice {
     my @msg = @_;
     print STDERR color 'bold yellow';
-    print STDERR encode_utf8('▶ ');
+    print STDERR encode_utf8('☛ ');
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
