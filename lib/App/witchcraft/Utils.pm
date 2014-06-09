@@ -287,7 +287,7 @@ sub last_md5() {
 #  output: Ultimo commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT');
+    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT') or ( &notice("Nothing was previously compiled") and return undef);
     my @LAST = <FILE>;
     close FILE;
     chomp(@LAST);
@@ -321,8 +321,8 @@ sub save_compiled_packages($) {
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    my $commit              = &last_commit
-        // &previous_commit( $git_repository_path, $master );
+    my $commit              = &compiled_commit
+        // &previous_commit( $git_repository_path, App::witchcraft::Config->param('GIT_HISTORY_FILE') );
     my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
     $git_cmd =~ s/\[COMMIT\]/$commit/g;
     my @DIFFS;
