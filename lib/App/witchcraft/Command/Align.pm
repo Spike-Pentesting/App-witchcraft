@@ -71,7 +71,7 @@ sub run {
         /Manifest$/i                   #Only with the manifest are interesting
         } git::diff( $last_commit, '--name-only' );
     system("git stash");
-    my $Clean = App::witchcraft::Clean->new;
+    my $Clean = App::witchcraft::Command::Clean->new;
     $Clean->run;
     my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
         grep { -d $_ } @FILES;
