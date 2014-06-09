@@ -122,7 +122,7 @@ sub emerge(@) {
 
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
-        $Expect->spawn( "eit", "add", @CMD, "--quick" )
+        $Expect->spawn( "eit", "add", "--quick", @CMD )
             or send_report(
             "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
             );
