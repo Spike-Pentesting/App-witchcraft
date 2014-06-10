@@ -20,8 +20,6 @@ App::witchcraft::Command::Upgrade - Upgrade entropy repository packages
 
 Upgrade entropy repository packages.
 
-=back
-
 =head1 AUTHOR
 
 mudler E<lt>mudler@dark-lab.netE<gt>
