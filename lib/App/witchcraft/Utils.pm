@@ -83,7 +83,7 @@ sub process(@) {
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         &send_report( "Emerge in progress for $commit", @DIFFS );
-        if ( &emerge(@DIFFS) ) {
+        if ( &emerge( {}, @DIFFS ) ) {
             &send_report(
                 "[$commit] Pacchetti correttamente compilati:\n####################\n"
                     . join( "", @DIFFS ) );
@@ -98,18 +98,23 @@ sub process(@) {
 }
 
 sub emerge(@) {
+    my $options = shift;
+    my $emerge_options
+        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
-    return 1 if (@DIFFS==0);
+    return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
-    system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
+    system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
         ;    #spring cleaning!
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
-    &notice( "nice -20 emerge --color n -v --autounmask-write "
+    &notice(
+        "nice -20 emerge --color n -v --autounmask-write $emerge_options "
             . join( " ", @DIFFS ) );
+
     if (system(
-            "nice -20 emerge --color n -v --autounmask-write "
+            "nice -20 emerge --color n -v --autounmask-write $emerge_options "
                 . join( " ", @DIFFS )
         ) == 0
         )
@@ -288,7 +293,8 @@ sub last_md5() {
 #  output: Ultimo commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT') or ( &notice("Nothing was previously compiled") and return undef);
+    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT')
+        or ( &notice("Nothing was previously compiled") and return undef );
     my @LAST = <FILE>;
     close FILE;
     chomp(@LAST);
@@ -322,8 +328,8 @@ sub save_compiled_packages($) {
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
-    my $commit              = &compiled_commit
-        // &previous_commit( $git_repository_path, App::witchcraft::Config->param('GIT_HISTORY_FILE') );
+    my $commit = &compiled_commit // &previous_commit( $git_repository_path,
+        App::witchcraft::Config->param('GIT_HISTORY_FILE') );
     my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
     $git_cmd =~ s/\[COMMIT\]/$commit/g;
     my @DIFFS;

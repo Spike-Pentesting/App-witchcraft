@@ -95,7 +95,7 @@ sub options {
 
 sub run {
     my $self = shift;
-    my $Repo = shift // "spike";
+    my $Repo = shift //  App::witchcraft->Config->param('OVERLAY_NAME');
     info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};

@@ -271,7 +271,7 @@ sub synchronize {
         error $@;
     }
 
-    emerge( map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
+    emerge( {},map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
             @Installed );
 
 }

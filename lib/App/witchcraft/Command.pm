@@ -13,7 +13,8 @@ sub alias {
         "d" => "depinstall",
         "w" => "watch",
         "a" => "align",
-        "p" => "pack"
+        "p" => "pack",
+        "u" => "upgrade"
     );
 }
 
@@ -74,6 +75,9 @@ help (--help for full)
 
 --> Align to the last compiled commit (or the specified one)
 *    a|align [commit]
+
+--> Upgrades the packages and push to the entropy repository
+*    u|upgrade [repo]
 
 --> Watch for ebuild change in the configured overlay
 *    w|watch
