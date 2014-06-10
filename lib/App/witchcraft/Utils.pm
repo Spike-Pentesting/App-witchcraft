@@ -157,7 +157,7 @@ sub emerge(@) {
             &conf_update;
             if ( system("eit push --quick") == 0 ) {
                 &info(
-                    "Fiuuuu..... tutto e' andato bene... aggiorno il commit che e' stato compilato correttamente"
+                    "All went smooth, HURRAY!"
                 );
                 return 1;
             }
@@ -440,6 +440,7 @@ sub send_report {
 
 sub git_index(@) {
     my @Atoms  = @_;
+    return (1,undef) if(@Atoms==0);
     my $cwd    = cwd();
     my $return = 1;
     chdir( App::witchcraft->Config->param('GIT_REPOSITORY') );
