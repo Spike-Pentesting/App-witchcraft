@@ -9,7 +9,6 @@ use Regexp::Common qw/URI/;
 use Tie::File;
 use Git::Sub;
 use File::Path qw(remove_tree);
-use Git::Sub qw(add commit push pull);
 
 =encoding utf-8
 
@@ -242,36 +241,15 @@ sub synchronize {
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
         : "rsync --progress -avp " . $temp . "/* $dir\/"
     );
-    notice 'Cleaning';
+    notice 'Cleaning' . $temp . '*';
     system( "rm -rfv " . $temp . '*' );
 
     return if ( !$self->{install} );
     @Installed = test_untracked( $dir, $add, $password );
     return if ( !$self->{git} );
-    chdir($dir);
-    eval { notice git::pull; };
-    if ($@) {
-        error $@;
-    }
-    foreach my $atom (@Installed) {
-        eval { notice git::add $atom; };
-        if ($@) {
-            error $@;
-        }
-        eval {
-            notice git::commit -m =>
-                'witchcraft: automatically added/updated from sync ' . $atom;
-        };
-        if ($@) {
-            error $@;
-        }
-    }
-    eval { notice git::push; };
-    if ($@) {
-        error $@;
-    }
-
-    emerge( {},map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
+    git_index(@Installed);
+    emerge( {},
+        map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
             @Installed );
 
 }

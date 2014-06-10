@@ -95,7 +95,7 @@ sub options {
 
 sub run {
     my $self = shift;
-    my $Repo = shift //  App::witchcraft->Config->param('OVERLAY_NAME');
+    my $Repo = shift // App::witchcraft->Config->param('OVERLAY_NAME');
     info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
@@ -108,10 +108,7 @@ sub run {
     my $dir
         = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
     chdir($dir);
-    eval { notice git::pull; };
-    if ($@) {
-        error $@;
-    }
+
     foreach my $Package (@Packages) {
         draw_up_line;
         notice "[$c/" . scalar(@Packages) . "] " . $Package;
@@ -125,23 +122,14 @@ sub run {
             if ( @temp > 0 );
         $c++;
     }
-    eval { notice git::push; };
-    if ($@) {
-        error $@;
-        send_report("Error while pushing to git $@");
-    }
     if ( @Updates > 0 ) {
         print $_ . "\n" for @Updates;
     }
     if ( $self->{git} ) {
-        system( "echo " . $password . " | sudo -S eix-sync" )
-            && system( "echo "
-                . $password
-                . " | sudo -S emerge -av "
-                . join( " ", @Added ) )
-            && system( "echo " . $password . " | sudo -S eit commit" )
-            && system( "echo " . $password . " | sudo -S eit push" )
-            && send_report("Successfully committed to sabayon repository");
+        if ( emerge( { '-n' => "" }, @Added ) ) {
+            send_report("Successfully committed to sabayon repository");
+        }
+        else { send_report("Error committing on entropy server") }
     }
 }
 
@@ -208,26 +196,15 @@ sub update {
     if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
         if ( $self->{git} ) {
-            chdir($atom);
-            eval { notice git::add './'; };
-            if ($@) {
-                error $@;
-            }
-            else {
+            if ( ( git_index($Test) )[0] ) {
                 info 'Added to git index of the repository';
-            }
-            send_report(
-                "'witchcraft: automatically updated $pack to remote git repository"
-            );
-            eval {
-                notice git::commit -m => 'witchcraft: automatically updated '
-                    . $pack;
-            };
-            if ($@) {
-                error $@;
+                send_report(
+                    "'witchcraft: automatically updated $pack to remote git repository"
+                );
             }
             else {
-                info 'Committed with "' . 'added ' . $pack . "'";
+                send_report(
+                    "'Error indexing $pack to remote git repository" );
             }
         }
     }

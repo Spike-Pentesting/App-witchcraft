@@ -16,6 +16,7 @@ use Expect;
 use Digest::MD5;
 use utf8;
 use Encode;
+use Cwd;
 
 our @EXPORT = qw(_debug
     info
@@ -35,6 +36,7 @@ our @EXPORT = qw(_debug
     depgraph
     calculate_missing
     emerge
+    git_index
 );
 
 our @EXPORT_OK
@@ -436,6 +438,40 @@ sub send_report {
     return $success;
 }
 
+sub git_index(@) {
+    my @Atoms  = @_;
+    my $cwd    = cwd();
+    my $return = 1;
+    chdir( App::witchcraft->Config->param('GIT_REPOSITORY') );
+    eval { &notice(git::pull); };
+    if ($@) {
+        &error($@);
+    }
+    foreach my $atom (@Atoms) {
+        eval { &notice( git::add $atom); };
+        if ($@) {
+            &error($@);
+            $return = 0;
+        }
+        eval {
+            &notice(
+                git::commit -m => 'witchcraft: automatically added/updated '
+                    . $atom );
+        };
+        if ($@) {
+            &error($@);
+            +$return = 0;
+        }
+    }
+    eval { &notice(git::push); };
+    if ($@) {
+        &error($@);
+        $return = 0;
+    }
+    chdir($cwd);
+    return ( $return, $@ );
+}
+
 sub daemonize($) {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);
 
@@ -516,14 +552,14 @@ sub test_ebuild {
         $ebuild = "=" . $ebuild;
         &info(    "PORTDIR_OVERLAY='"
                 . App::witchcraft::Config->param('GIT_REPOSITORY')
-                . "' emerge -n "
+                . "' emerge "
                 . $ebuild );
 
         if (defined $install
             and system( $password
                     . " PORTDIR_OVERLAY='"
                     . App::witchcraft::Config->param('GIT_REPOSITORY')
-                    . "' emerge -n $ebuild"
+                    . "' emerge $ebuild"
             ) == 0
             )
         {
