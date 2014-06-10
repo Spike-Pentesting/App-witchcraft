@@ -28,8 +28,13 @@ App::witchcraft - Helps the overlay mantainer doing is dirty job
                                   "-g|--git", add and push automatically to git and entropy repository
                                   "-v|--verbose", be more verbose
 
+
+      --> Install dependencies of a packages (if available) using equo
+      *   d|depinstall   [package]
+                                   "d|depth=i", define the deepness of the depdence tree, 0 to take all dependencies
+
       --> List repository packages
-      *    l|--list [repository]
+      *    l|list [repository]
 
       --> Emerge and push to entropy repository
       *    p|pack [package] [package2] ...
@@ -37,11 +42,19 @@ App::witchcraft - Helps the overlay mantainer doing is dirty job
       --> Align to the last compiled commit (or the specified one)
       *    a|align [commit]
 
+      --> Upgrades the packages and push to the entropy repository
+      *    u|upgrade [repo]
+
+      --> Watch for ebuild change in the configured overlay
+      *    w|watch
+                                  "d|daemon", daemonize
+
       --> Manifest & install untracked files, giving a report of what packages succedeed
-      *    t|--test [repository dir]
+      *    t|test [repository dir]
+                                   "a|add", It asks to add the failed installed packages to ignore list
 
       --> Clean all untracked files from the given repository
-      *    c|--clean [repository dir]
+      *    c|clean [repository dir]
 
 # DESCRIPTION
 
