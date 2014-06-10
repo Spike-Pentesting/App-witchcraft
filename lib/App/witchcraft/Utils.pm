@@ -100,6 +100,7 @@ sub process(@) {
 sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
+    return 1 if (@DIFFS==0);
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
         ;    #spring cleaning!
