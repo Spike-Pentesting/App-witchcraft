@@ -248,7 +248,7 @@ sub synchronize {
     @Installed = test_untracked( $dir, $add, $password );
     return if ( !$self->{git} );
     git_index(@Installed);
-    emerge( {},
+    emerge( {'-n'=> ''},
         map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
             @Installed );
 
