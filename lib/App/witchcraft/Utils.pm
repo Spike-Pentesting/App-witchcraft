@@ -40,7 +40,7 @@ our @EXPORT = qw(_debug
 );
 
 our @EXPORT_OK
-    = qw(conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit );
+    = qw(conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit remove_available);
 
 sub conf_update {
     my $Expect = Expect->new;
@@ -156,9 +156,7 @@ sub emerge(@) {
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
             &conf_update;
             if ( system("eit push --quick") == 0 ) {
-                &info(
-                    "All went smooth, HURRAY!"
-                );
+                &info("All went smooth, HURRAY!");
                 return 1;
             }
             else {
@@ -438,9 +436,17 @@ sub send_report {
     return $success;
 }
 
+sub remove_available(@) {
+    my @Packages  = shift;
+    my @Available = `equo q list -q available sabayonlinux.org`;
+    chomp(@Available);
+    my %available = map { $_ => 1 } @Available;
+    return grep( !defined $available{$_}, @Packages );
+}
+
 sub git_index(@) {
-    my @Atoms  = @_;
-    return (1,undef) if(@Atoms==0);
+    my @Atoms = @_;
+    return ( 1, undef ) if ( @Atoms == 0 );
     my $cwd    = cwd();
     my $return = 1;
     chdir( App::witchcraft->Config->param('GIT_REPOSITORY') );
@@ -587,9 +593,11 @@ sub test_untracked {
             . join( " ", @Untracked ) );
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
         ;    #spring cleaning!
+    my $c = 1;
 
     foreach my $new_pos (@Untracked) {
-        &info("Testing $new_pos");
+        &info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
+        $c++;
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
         $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
         if ( $result == 1 ) {
