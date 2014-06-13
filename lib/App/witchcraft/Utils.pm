@@ -80,6 +80,9 @@ sub irc_msg(@) {
         printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2 for @MESSAGES;
         sleep 5;
     }
+    while(my $line=<$socket>) {
+        &info($line);
+    }
 
     $socket->close();
 }
