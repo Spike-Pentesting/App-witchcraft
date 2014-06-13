@@ -71,13 +71,14 @@ sub irc_msg(@) {
     ) or &error("Couldn't connect to the irc server");
     &info("Sending notification also on IRC");
     $socket->autoflush(1);
+    sleep 2;
     printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
 
     while ( my $line = <$socket> ) {
         if ( $line =~ /NAMES/ ) { $socket->close(); }
         if ( $line =~ /PING/ )  { $socket->close(); }
-        if ( $line =~ /376/ ) {
+          if ($line =~ m/^\:(.+?)\s+376/i) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
                 &info( "Joined $chan on " . $cfg->param('IRC_SERVER') );
