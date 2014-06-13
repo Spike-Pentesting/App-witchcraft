@@ -74,17 +74,21 @@ sub irc_msg(@) {
     printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
 
-    foreach my $chan (@channels) {
-        printf $socket "JOIN $chan\r\n";
-        &info("Joined $chan on ". $cfg->param('IRC_SERVER'));
-        printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2 for @MESSAGES;
-        sleep 5;
+    while ( my $line = <$socket> ) {
+        if ( $line =~ /NAMES/ ) { $socket->close(); }
+        if ( $line =~ /PING/ )  { $socket->close(); }
+        if ( $line =~ /376/ ) {
+            foreach my $chan (@channels) {
+                printf $socket "JOIN $chan\r\n";
+                &info( "Joined $chan on " . $cfg->param('IRC_SERVER') );
+                printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
+                    for @MESSAGES;
+                sleep 5;
+            }
+            $socket->close();
+        }
     }
-    while(my $line=<$socket>) {
-        if($line=~/NAMES/){ $socket->close();}
-                if($line=~/PING/){ $socket->close();}
 
-    }
 }
 
 #
