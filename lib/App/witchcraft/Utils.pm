@@ -14,6 +14,7 @@ use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 use Expect;
 use Digest::MD5;
+use IO::Socket::INET;
 use utf8;
 use Encode;
 use Cwd;
@@ -53,6 +54,32 @@ sub conf_update {
 
     $Expect->send("-5\n");
     $Expect->soft_close();
+}
+
+sub irc_msg(@) {
+    my @MESSAGES = @_;
+    my $cfg      = App::witchcraft->Config;
+    return undef unless ( defined $cfg->param('IRC_IDENT') );
+    my $ident    = $cfg->param('IRC_IDENT');
+    my $realname = $cfg->param('IRC_REALNAME');
+    my @channels = $cfg->param('IRC_CHANNELS');
+    my $socket   = IO::Socket::INET->new(
+        PeerAddr => $cfg->param('IRC_SERVER'),
+        PeerPort => $cfg->param('IRC_PORT'),
+        Proto    => "tcp",
+        Timeout  => 10
+    ) or &error("Couldn't connect to the irc server");
+    $socket->autoflush(1);
+    printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
+    printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
+
+    foreach my $chan (@channels) {
+        printf $socket "JOIN $chan\r\n";
+        printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2 for @MESSAGES;
+        sleep 5;
+    }
+
+    $socket->close();
 }
 
 #
@@ -410,6 +437,10 @@ sub send_report {
                 $success = 0;
             }
         }
+        &irc_msg( "Witchcraft\@$hostname: "
+                . $message
+                . " - Nopaste link:"
+                . $url );
     }
     else {
         &info('WOOOW BULLETS!');
@@ -431,7 +462,7 @@ sub send_report {
                 $success = 0;
             }
         }
-
+        &irc_msg( "Witchcraft\@$hostname: " . $message );
     }
     return $success;
 }
