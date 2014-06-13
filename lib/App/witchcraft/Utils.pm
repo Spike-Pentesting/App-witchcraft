@@ -69,12 +69,14 @@ sub irc_msg(@) {
         Proto    => "tcp",
         Timeout  => 10
     ) or &error("Couldn't connect to the irc server");
+    &info("Sending notification also on IRC");
     $socket->autoflush(1);
     printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
 
     foreach my $chan (@channels) {
         printf $socket "JOIN $chan\r\n";
+        &info("Joined $chan on ". $cfg->param('IRC_SERVER'));
         printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2 for @MESSAGES;
         sleep 5;
     }
