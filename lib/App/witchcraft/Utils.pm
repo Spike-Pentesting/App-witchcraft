@@ -79,7 +79,7 @@ sub irc_msg(@) {
           if ($line =~ m/^\:(.+?)\s+376/i) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
-                &info( "Joined $chan on " . $cfg->param('IRC_SERVER') );
+                &info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
                     for @MESSAGES;
                 sleep 5;
