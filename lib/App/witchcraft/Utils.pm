@@ -76,8 +76,6 @@ sub irc_msg(@) {
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
 
     while ( my $line = <$socket> ) {
-        if ( $line =~ /NAMES/ ) { $socket->close(); }
-        if ( $line =~ /PING/ )  { $socket->close(); }
           if ($line =~ m/^\:(.+?)\s+376/i) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
