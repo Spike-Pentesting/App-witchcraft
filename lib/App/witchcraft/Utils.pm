@@ -81,10 +81,10 @@ sub irc_msg(@) {
         sleep 5;
     }
     while(my $line=<$socket>) {
-        &info($line);
-    }
+        if($line=~/NAMES/){ $socket->close();}
+                if($line=~/PING/){ $socket->close();}
 
-    $socket->close();
+    }
 }
 
 #
