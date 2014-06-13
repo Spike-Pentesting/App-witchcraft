@@ -85,8 +85,6 @@ sub irc_msg(@) {
                 sleep 5;
             }
             printf $socket "QUIT\r\n";
-            $socket->close();
-            last;
         }
     }
 
