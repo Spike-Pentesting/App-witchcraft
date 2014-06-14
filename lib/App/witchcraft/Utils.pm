@@ -80,10 +80,11 @@ sub irc_msg(@) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
                 &info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
-                $_ =~ s/\n/ /g
-                    and printf $socket "PRIVMSG $chan :$_\r\n"
-                    and sleep 2
-                    for @MESSAGES;
+                (   (   $_ =~ s/\n/ /g
+                            and printf $socket "PRIVMSG $chan :$_\r\n"
+                    )
+                        and sleep 2
+                ) for @MESSAGES;
                 sleep 5;
             }
             printf $socket "QUIT\r\n";
@@ -428,7 +429,7 @@ sub send_report {
             },
 
             # you may specify the services to use - but you don't have to
-               services => [ "Pastie" ],
+            services => ["Pastie"],
         );
 
         foreach my $BULL (@BULLET) {
