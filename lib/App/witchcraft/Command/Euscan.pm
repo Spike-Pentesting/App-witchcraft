@@ -196,10 +196,10 @@ sub update {
     if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
         if ( $self->{git} ) {
-            if ( ( git_index($Test) )[0] ) {
+            if ( ( git_index($Package) )[0] ) {
                 info 'Added to git index of the repository';
                 send_report(
-                    "'witchcraft: automatically updated $pack to remote git repository"
+                    "'witchcraft: automatically updated $Package to remote git repository"
                 );
             }
             else {
@@ -212,8 +212,8 @@ sub update {
         return ();
     }
     draw_down_line;
-    return join( "/", $Package, $pack );
-
+  #  return join( "/", $Package, $pack );
+return $Package;
 }
 
 1;

@@ -124,7 +124,7 @@ sub process(@) {
         &send_report( "Emerge in progress for $commit", @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
             &send_report(
-                "[$commit] Pacchetti correttamente compilati:\n####################\n"
+                "[$commit] Packets successfully compiled:\n####################\n"
                     . join( "", @DIFFS ) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
@@ -169,7 +169,7 @@ sub emerge(@) {
         #     push( @CMD, "--quick" );
         $Expect->spawn( "eit", "add", "--quick", @CMD )
             or send_report(
-            "Errore nell'esecuzione di eit add, devi intervenire! Cannot spawn eit: $!\n"
+            "Eit add gives error! Cannot spawn eit: $!\n"
             );
         $Expect->expect(
             undef,
@@ -204,7 +204,7 @@ sub emerge(@) {
         }
         else {
             my @LOGS = &find_logs();
-            &send_report( "Errore nella compressione dei pacchetti",
+            &send_report( "Error occured during compression phase",
                 join( " ", @LOGS ) );
             return 0;
         }
@@ -426,7 +426,7 @@ sub send_report {
             },
 
             # you may specify the services to use - but you don't have to
-            services => ["Pastie"],
+            services => ["Pastie","Shadowcat"],
         );
 
         foreach my $BULL (@BULLET) {
