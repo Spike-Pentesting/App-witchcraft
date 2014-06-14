@@ -80,8 +80,9 @@ sub irc_msg(@) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
                 &info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
-                $_ =~ s/\n/ /g;
-                    and printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
+                $_ =~ s/\n/ /g
+                    and printf $socket "PRIVMSG $chan :$_\r\n"
+                    and sleep 2
                     for @MESSAGES;
                 sleep 5;
             }
