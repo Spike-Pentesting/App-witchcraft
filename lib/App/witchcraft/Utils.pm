@@ -428,7 +428,7 @@ sub send_report {
             },
 
             # you may specify the services to use - but you don't have to
-            #     services => [ "pastie" ],
+               services => [ "Pastie" ],
         );
 
         foreach my $BULL (@BULLET) {
