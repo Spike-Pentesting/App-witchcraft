@@ -76,11 +76,12 @@ sub irc_msg(@) {
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
 
     while ( my $line = <$socket> ) {
-          if ($line =~ m/^\:(.+?)\s+376/i) {
+        if ( $line =~ m/^\:(.+?)\s+376/i ) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
                 &info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
-                printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
+                $_ =~ s/\n/ /g;
+                    and printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
                     for @MESSAGES;
                 sleep 5;
             }
@@ -88,7 +89,7 @@ sub irc_msg(@) {
             last;
         }
     }
-    $socket->close if (defined $socket);
+    $socket->close if ( defined $socket );
 
 }
 
