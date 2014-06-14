@@ -85,6 +85,7 @@ sub irc_msg(@) {
                 sleep 5;
             }
             printf $socket "QUIT\r\n";
+            $socket->close if ( defined $socket );
             last;
         }
     }
@@ -168,9 +169,7 @@ sub emerge(@) {
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
         $Expect->spawn( "eit", "add", "--quick", @CMD )
-            or send_report(
-            "Eit add gives error! Cannot spawn eit: $!\n"
-            );
+            or send_report( "Eit add gives error! Cannot spawn eit: $!\n" );
         $Expect->expect(
             undef,
             [   qr/missing dependencies have been found|nano|\?/i => sub {
@@ -198,7 +197,7 @@ sub emerge(@) {
             }
             else {
                 &send_report(
-                    "nice -20 eit sync --quick gave an error, check out!");
+                    "nice -20 eit push --quick gave an error, check out!");
                 return 0;
             }
         }
@@ -426,7 +425,7 @@ sub send_report {
             },
 
             # you may specify the services to use - but you don't have to
-            services => ["Pastie","Shadowcat"],
+            services => [ "Pastie", "Shadowcat" ],
         );
 
         foreach my $BULL (@BULLET) {
