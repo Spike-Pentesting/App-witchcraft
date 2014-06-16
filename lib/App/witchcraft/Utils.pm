@@ -170,6 +170,7 @@ sub emerge(@) {
                 . scalar(@DIFFS)
                 . " packages: "
                 . join( " ", @DIFFS ) );
+        &conf_update;
         ##EXPECT PER EIT ADD
         my $Expect = Expect->new;
 
@@ -198,7 +199,6 @@ sub emerge(@) {
             ],
         );
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
-            &conf_update;
             if ( system("eit push --quick") == 0 ) {
                 &info("All went smooth, HURRAY!");
                 return 1;
