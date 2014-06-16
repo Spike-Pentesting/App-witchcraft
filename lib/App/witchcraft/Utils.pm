@@ -93,6 +93,13 @@ sub irc_msg(@) {
 
 }
 
+sub upgrade{
+    my $cfg=App::witchcraft->Config;
+    if($cfg->param('WITCHCRAFT_GIT')){
+        system("cpanm ".$cfg->param('WITCHCRAFT_GIT'));
+    }
+}
+
 #
 #  name: process
 #  input: @DIFFS
@@ -216,6 +223,9 @@ sub emerge(@) {
             join( " ", @LOGS ) );
         return 0;
     }
+    #Maintenance stuff
+    &upgrade;
+    system("equo rescue spmsync && equo up && equo u");
 }
 
 sub find_logs {

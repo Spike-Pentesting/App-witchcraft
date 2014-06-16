@@ -96,6 +96,18 @@ It allows you to merge more overlay into one in a safe way: it tests installatio
 But it's far beyond that, it also checks updates, send reports thru push (using pushbullet.com), align build machines and much more, checkout the help.
 It's strictly required a configuration file, located in ~/.witchcraft/witchcraft.conf, an example is shipped within the repo, it's so easy to configure and get up and running.
 
+=head1 INSTALLATION
+
+Just run ./Build and ./Build install, ensure to have all licenses accepted into your machine adding inside make.conf
+
+    ACCEPT_LICENSE="*"
+
+and run this:
+
+    ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
+
+to have all licenses accepted in entropy
+
 =head1 AUTHOR
 
 mudler E<lt>mudler@dark-lab.netE<gt>, skullbocks E<lt>skullbocks@dark-lab.netE<gt>
