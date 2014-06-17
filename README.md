@@ -1,6 +1,6 @@
 # NAME
 
-App::witchcraft - Helps the overlay mantainer doing is dirty job
+App::witchcraft - Continuous integration tool for Entropy server
 
 # SYNOPSIS
 
@@ -58,8 +58,22 @@ App::witchcraft - Helps the overlay mantainer doing is dirty job
 
 # DESCRIPTION
 
-App::witchcraft is an evil tool that do a lot of tasks: performs euscan for the atoms in a sabayon repository, test and update them, committing to the git repository...
-Just invoke --help to see all the features
+App::witchcraft is an evil tool for Entropy server Continuous integration, that means that help to align your build muchines with the git repository of your overlay, we use it internally at spike-pentesting.org to build packages.
+It allows you to merge more overlay into one in a safe way: it tests installations by running emerge and integrate automatically into your overlay those who passed.
+But it's far beyond that, it also checks updates, send reports thru push (using pushbullet.com), align build machines and much more, checkout the help.
+It's strictly required a configuration file, located in ~/.witchcraft/witchcraft.conf, an example is shipped within the repo, it's so easy to configure and get up and running.
+
+# INSTALLATION
+
+Just run ./Build and ./Build install, ensure to have all licenses accepted into your machine adding inside make.conf
+
+    ACCEPT_LICENSE="*"
+
+and run this:
+
+    ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
+
+to have all licenses accepted in entropy
 
 # AUTHOR
 

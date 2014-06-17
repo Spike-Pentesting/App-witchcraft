@@ -1,5 +1,5 @@
 {
-   "abstract" : "Helps the overlay mantainer doing is dirty job",
+   "abstract" : "Continuous integration tool for Entropy server",
    "author" : [
       "mudler <mudler@dark-lab.net>, skullbocks <skullbocks@dark-lab.net>"
    ],
@@ -43,6 +43,7 @@
             "Carp::Always" : "0",
             "Config::Simple" : "0",
             "Digest::MD5" : "0",
+            "Encode" : "0",
             "Expect" : "0",
             "File::Path" : "0",
             "File::Xcopy" : "0",
