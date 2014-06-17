@@ -5,6 +5,7 @@ requires 'App::Nopaste';
 requires 'Carp::Always';
 requires 'Config::Simple';
 requires 'Digest::MD5';
+requires 'Encode';
 requires 'Expect';
 requires 'File::Path';
 requires 'File::Xcopy';
@@ -18,5 +19,5 @@ requires 'Test::More';
 requires 'perl', '5.008_005';
 
 on configure => sub {
-    requires 'Module::Build::Tiny', '0.034';
+    requires 'Module::Build::Tiny', '0.035';
 };
