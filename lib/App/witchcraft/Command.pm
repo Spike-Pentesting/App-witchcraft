@@ -14,7 +14,8 @@ sub alias {
         "w" => "watch",
         "a" => "align",
         "p" => "pack",
-        "u" => "upgrade"
+        "u" => "upgrade",
+        "m" => "mantain"
     );
 }
 
@@ -78,6 +79,9 @@ help (--help for full)
 
 --> Upgrades the packages and push to the entropy repository
 *    u|upgrade [repo]
+
+--> Perform automatic mantaining tasks
+*    m|mantain
 
 --> Watch for ebuild change in the configured overlay
 *    w|watch
