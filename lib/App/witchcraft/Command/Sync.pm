@@ -127,8 +127,6 @@ sub run {
         $i++;
     }
     draw_down_line;
-
-    exit;
 }
 
 sub synchronize {

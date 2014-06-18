@@ -1,0 +1,14 @@
+#Place it in /etc/systemd/system/witchcraft.service and remove this line
+[Unit]
+Description=Witchcraft service for automatic sync and upgrades
+After=network.target
+
+[Service]
+User=root
+ExecStart=
+ExecStart=/usr/local/bin/witchcraft mantain
+
+[Install]
+WantedBy=multi-user.target
+
+
