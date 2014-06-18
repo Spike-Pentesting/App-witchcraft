@@ -201,6 +201,7 @@ sub emerge(@) {
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
             if ( system("eit push --quick") == 0 ) {
                 &info("All went smooth, HURRAY!");
+                &send_report("All went smooth, HURRAY! do an equo up to checkout the juicy stuff");
                 system("equo rescue spmsync && equo up && equo u");
                 return 1;
             }
@@ -220,7 +221,7 @@ sub emerge(@) {
     else {
         my @LOGS = &find_logs();
         &send_report(
-            "Errore nel merge dei pacchetti: " . join( " ", @DIFFS ),
+            "Error while merging those packages: " . join( " ", @DIFFS ),
             join( " ", @LOGS ) );
         return 0;
     }

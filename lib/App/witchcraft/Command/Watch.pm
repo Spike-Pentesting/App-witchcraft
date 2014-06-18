@@ -145,7 +145,7 @@ sub update($$) {
     my $master_file = shift;
     my $cfg         = App::witchcraft->Config;
 
-    my $commit= last_commit( $overlay, $master_file );
+    my $commit = last_commit( $overlay, $master_file );
     info("Last commit: $commit");
     my $compiled_commit = compiled_commit();
     info("Last COMPILED commit: $compiled_commit") if $compiled_commit;
@@ -156,12 +156,14 @@ sub update($$) {
     }
     else {
         notice("Commits seems differents, calculating the differencies.");
+        chdir( $cfg->param('OVERLAY_PATH') );
         my @DIFFS = find_diff( $overlay, $master_file );
         info(     "A total of "
                 . scalar(@DIFFS)
                 . " real changes were found, proceeding to compile them." );
         my $overlay_name = $cfg->param('OVERLAY_NAME');
-        my @EMERGING = map { $_ . "::" . $overlay_name } @DIFFS;
+        my @EMERGING
+            = map { $_ . "::" . $overlay_name } grep { -d $_ } @DIFFS;
         process( @EMERGING, $commit, 0 )
             ;    # 0 to use with git, 1 with manual use
     }
