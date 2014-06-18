@@ -39,6 +39,9 @@ App::witchcraft - Continuous integration tool for Entropy server
       --> Emerge and push to entropy repository
       *    p|pack [package] [package2] ...
 
+      --> Perform automatic mantaining tasks
+      *    m|mantain
+
       --> Align to the last compiled commit (or the specified one)
       *    a|align [commit]
 
