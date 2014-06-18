@@ -93,10 +93,10 @@ sub irc_msg(@) {
 
 }
 
-sub upgrade{
-    my $cfg=App::witchcraft->Config;
-    if($cfg->param('WITCHCRAFT_GIT')){
-        system("cpanm ".$cfg->param('WITCHCRAFT_GIT'));
+sub upgrade {
+    my $cfg = App::witchcraft->Config;
+    if ( $cfg->param('WITCHCRAFT_GIT') ) {
+        system( "cpanm " . $cfg->param('WITCHCRAFT_GIT') );
     }
 }
 
@@ -176,9 +176,9 @@ sub emerge(@) {
 
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
-       # $Expect->spawn( "eit", "add", "--quick", @CMD )
-       $Expect->spawn( "eit", "commit", "--quick" )
-            or send_report( "Eit add gives error! Cannot spawn eit: $!\n" );
+        # $Expect->spawn( "eit", "add", "--quick", @CMD )
+        $Expect->spawn( "eit", "commit", "--quick" )
+            or send_report("Eit add gives error! Cannot spawn eit: $!\n");
         $Expect->expect(
             undef,
             [   qr/missing dependencies have been found|nano|\?/i => sub {
@@ -201,6 +201,7 @@ sub emerge(@) {
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
             if ( system("eit push --quick") == 0 ) {
                 &info("All went smooth, HURRAY!");
+                system("equo rescue spmsync && equo up && equo u");
                 return 1;
             }
             else {
@@ -223,9 +224,9 @@ sub emerge(@) {
             join( " ", @LOGS ) );
         return 0;
     }
+
     #Maintenance stuff
     &upgrade;
-    system("equo rescue spmsync && equo up && equo u");
 }
 
 sub find_logs {
