@@ -61,7 +61,8 @@ help (--help for full)
                                 "-i|--install" => Try to install them, output the file that passed
                                 "-a|--add" => It asks to add the failed installed packages to ignore list
                                 "-x|--ignore-existing" => ignore existing files from rsync copy to the git overlay.
-                                "-g|--git" => add and push automatically to git and entropy repository
+                                "-g|--git" => add and push automatically to git repository
+                                "-e|--eit" => add and push automatically to entropy repository
                                 "-v|--verbose" => be more verbose
 
 

@@ -19,7 +19,7 @@ App::witchcraft::Command::Sync - Synchronize from a remote repository, perform c
 =head1 SYNOPSIS
 
   $ witchcraft sync
-  $ witchcraft s [--help] [-a|--add] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] [-g|--git] <remote_repository>
+  $ witchcraft s [--help] [-e|--eit] [-a|--add] [-r|--refactor] [-t|--refactortarget] [-u|--update] [-i|--install] [-r git_repository] [-g|--git] <remote_repository>
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,11 @@ It asks to add the failed installed packages to ignore list
 
 =item C<-g|--git>
 
-Automatic add, push to git and publish on the entropy repository
+Automatic add, push to git  repository
+
+=item C<-e|--eit>
+
+Automatic add, push to the entropy repository
 
 =item C<-u|--update>
 
@@ -100,6 +104,7 @@ sub options {
         "a|add"     => "ignore",
         "x|ignore-existing" => "ignore-existing",
         "g|git"             => "git",
+        "e|eit"             => "eit",
         "v|verbose"         => "verbose"
     );
 }
@@ -246,9 +251,12 @@ sub synchronize {
     @Installed = test_untracked( $dir, $add, $password );
     return if ( !$self->{git} );
     git_index(@Installed);
-    emerge( {'-n'=> ''},
+    return if ( !$self->{eit} );
+    emerge(
+        { '-n' => '' },
         map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
-            @Installed );
+            @Installed
+    );
 
 }
 
