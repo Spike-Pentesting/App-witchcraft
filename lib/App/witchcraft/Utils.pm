@@ -38,6 +38,7 @@ our @EXPORT = qw(_debug
     calculate_missing
     emerge
     git_index
+    git_sync
 );
 
 our @EXPORT_OK
@@ -201,7 +202,9 @@ sub emerge(@) {
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
             if ( system("eit push --quick") == 0 ) {
                 &info("All went smooth, HURRAY!");
-                &send_report("All went smooth, HURRAY! do an equo up to checkout the juicy stuff");
+                &send_report(
+                    "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                );
                 system("equo rescue spmsync && equo up && equo u");
                 return 1;
             }
@@ -497,16 +500,24 @@ sub remove_available(@) {
     return grep( !defined $available{$_}, @Packages );
 }
 
+sub git_sync() {
+    chdir( App::witchcraft->Config->param('GIT_REPOSITORY') );
+    eval {
+        &notice(  "Git pull for ["
+                . App::witchcraft->Config->param('GIT_REPOSITORY') . "] "
+                . git::pull );
+    };
+    if ($@) {
+        &error($@);
+    }
+}
+
 sub git_index(@) {
     my @Atoms = @_;
     return ( 1, undef ) if ( @Atoms == 0 );
     my $cwd    = cwd();
     my $return = 1;
-    chdir( App::witchcraft->Config->param('GIT_REPOSITORY') );
-    eval { &notice(git::pull); };
-    if ($@) {
-        &error($@);
-    }
+    &git_sync;
     foreach my $atom (@Atoms) {
         eval { &notice( git::add $atom); };
         if ($@) {

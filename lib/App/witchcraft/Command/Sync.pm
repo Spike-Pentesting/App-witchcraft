@@ -120,6 +120,7 @@ sub run {
     my $temp = $self->{'temp'} // App::witchcraft->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
         // App::witchcraft->Config->param('REFACTOR_TO');
+    git_sync;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
@@ -144,9 +145,10 @@ sub synchronize {
     my @ignores         = @_;
     my $add             = $self->{'ignore'} ? 1 : 0;
     chomp(@ignores);
-    my $flatten         = join( "|", map{$_=quotemeta($_);$_=qr/$_/;$_} @ignores );
-    my $l_r             = lc($refactor);
-    my $u_r             = uc($refactor);
+    my $flatten
+        = join( "|", map { $_ = quotemeta($_); $_ = qr/$_/; $_ } @ignores );
+    my $l_r = lc($refactor);
+    my $u_r = uc($refactor);
     my $m_r = uc( substr( $refactor, 0, 1 ) ) . substr( $refactor, 1 );
     my $l_t = lc($refactor_target);
     my $u_t = uc($refactor_target);
@@ -176,7 +178,7 @@ sub synchronize {
             {
                 unlink($file) if ( -f $file );
                 rmdir($file)  if ( -d $file );
-                error "Removed: ".$file;
+                error "Removed: " . $file;
                 return;
             }
 
