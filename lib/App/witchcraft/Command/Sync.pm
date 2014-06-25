@@ -143,7 +143,8 @@ sub synchronize {
     my $password        = shift;
     my @ignores         = @_;
     my $add             = $self->{'ignore'} ? 1 : 0;
-    my $flatten         = join( "|", @ignores );
+    chomp(@ignores);
+    my $flatten         = join( "|", map{$_=quotemeta($_);$_=qr/$_/;$_} @ignores );
     my $l_r             = lc($refactor);
     my $u_r             = uc($refactor);
     my $m_r = uc( substr( $refactor, 0, 1 ) ) . substr( $refactor, 1 );
@@ -173,9 +174,9 @@ sub synchronize {
                 or $file =~ /$refactor/i
                 or ( @ignores > 0 and $file =~ /$flatten/i ) )
             {
-                error $file. " removed";
                 unlink($file) if ( -f $file );
                 rmdir($file)  if ( -d $file );
+                error "Removed: ".$file;
                 return;
             }
 
