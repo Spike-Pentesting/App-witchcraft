@@ -13,14 +13,17 @@ our $CONFIG
     = -e join( "/", $HOME, $CONFIG_FILE )
     ? join( "/", $HOME, $CONFIG_FILE )
     : join( "/", '.',   $CONFIG_FILE );
-our $IGNORE
-    = -e join( "/", $HOME, $IGNORE_FILE )
-    ? join( "/", $HOME, $IGNORE_FILE )
-    : join( "/", '.',   $IGNORE_FILE );
+
 our $CONFIG
     = ( -e $CONFIG )
     ? Config::Simple->new($CONFIG)
     : Config::Simple->new("./witchcraft.conf");
+
+our $IGNORE
+    = -e join( "/", $HOME, $IGNORE_FILE )
+    ? join( "/", $HOME,                            $IGNORE_FILE )
+    : join( "/", $CONFIG->param("GIT_REPOSITORY"), $IGNORE_FILE );
+
 our $HOSTNAME = `hostname`;
 chomp($HOSTNAME);
 
