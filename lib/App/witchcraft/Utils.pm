@@ -200,6 +200,8 @@ sub emerge(@) {
             ],
         );
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
+                &conf_update;    #EXPECT per DISPATCH-CONF
+
             if ( system("eit push --quick") == 0 ) {
                 &info("All went smooth, HURRAY!");
                 &send_report(
