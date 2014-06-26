@@ -200,7 +200,7 @@ sub emerge(@) {
             ],
         );
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
-                &conf_update;    #EXPECT per DISPATCH-CONF
+            &conf_update;    #EXPECT per DISPATCH-CONF
 
             if ( system("eit push --quick") == 0 ) {
                 &info("All went smooth, HURRAY!");
@@ -427,31 +427,34 @@ sub send_report {
     if (@_) {
         my $log = join( "\n", @_ );
         &notice( 'Attachment ' . $log );
-        my $url = nopaste(
-            text    => $log,
-            private => 1,      # default: 0
+        eval {
+            my $url = nopaste(
+                text    => $log,
+                private => 1,      # default: 0
 
            # this is the default, but maybe you want to do something different
-            error_handler => sub {
-                my ( $error, $service ) = @_;
-                warn "$service: $error";
-            },
+                error_handler => sub {
+                    my ( $error, $service ) = @_;
+                    warn "$service: $error";
+                },
 
-            warn_handler => sub {
-                my ( $warning, $service ) = @_;
-                warn "$service: $warning";
-            },
+                warn_handler => sub {
+                    my ( $warning, $service ) = @_;
+                    warn "$service: $warning";
+                },
 
-            # you may specify the services to use - but you don't have to
-            services => [ "Pastie", "Shadowcat" ],
-        );
-
-        foreach my $BULL (@BULLET) {
+                # you may specify the services to use - but you don't have to
+                services => [ "Pastie", "Shadowcat" ],
+            );
+            1;
+        };
+        if ($@) {
+            &error("Error generating nopaste url");
             my $req = POST 'https://api.pushbullet.com/v2/pushes',
                 [
-                type  => 'link',
-                title => "Witchcraft\@$hostname: " . $message,
-                url   => $url
+                type  => 'note',
+                title => 'Witchcraft@' . $hostname,
+                body  => $log
                 ];
             $req->authorization_basic($BULL);
             my $res = $ua->request($req)->as_string;
@@ -464,10 +467,32 @@ sub send_report {
                 $success = 0;
             }
         }
-        &irc_msg( "Witchcraft\@$hostname: "
-                . $message
-                . " - Nopaste link:"
-                . $url );
+        else {
+
+            foreach my $BULL (@BULLET) {
+                my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                    [
+                    type  => 'link',
+                    title => "Witchcraft\@$hostname: " . $message,
+                    url   => $url
+                    ];
+                $req->authorization_basic($BULL);
+                my $res = $ua->request($req)->as_string;
+                if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+                    &notice("Push sent correctly!");
+                    $success = 1;
+                }
+                else {
+                    &error("Error sending the push!");
+                    $success = 0;
+                }
+            }
+            &irc_msg( "Witchcraft\@$hostname: "
+                    . $message
+                    . " - Nopaste link:"
+                    . $url );
+        }
+
     }
     else {
         &info('WOOOW BULLETS!');
@@ -493,6 +518,7 @@ sub send_report {
     }
     return $success;
 }
+
 
 sub remove_available(@) {
     my @Packages  = shift;
