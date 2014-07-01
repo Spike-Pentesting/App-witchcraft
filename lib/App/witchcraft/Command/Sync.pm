@@ -242,10 +242,10 @@ sub synchronize {
         if ( !$dir );
     info $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
-        : "rsync --progress -avp " . $temp . "/* $dir\/";
+        : "rsync --progress --update -avp " . $temp . "/* $dir\/";
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
-        : "rsync --progress -avp " . $temp . "/* $dir\/"
+        : "rsync --progress --update -avp " . $temp . "/* $dir\/"
     );
     notice 'Cleaning' . $temp . '*';
     system( "rm -rfv " . $temp . '*' );
