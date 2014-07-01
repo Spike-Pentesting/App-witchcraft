@@ -150,26 +150,8 @@ sub update {
         and draw_down_line
         and return ()
         if ( !-d $atom );
-    notice 'opening ' . $atom;
-    opendir( DH, $atom );
-    my @files
-        = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
-        grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
-    closedir(DH);
-
-    my @Temp = @temp[    #natural sort order for strings containing numbers
-        map { unpack "N", substr( $_, -4 ) } #going back to normal representation
-        sort
-        map {
-            my $key = $temp[$_];
-            $key =~ s[(\d+)][ pack "N", $1 ]ge
-                ;    #transforming all numbers in ascii representation
-            $key . pack "CNN", 0, 0, $_
-        } 0 .. $#temp
-    ];
-    my $pack = shift @temp;
-
-    $pack =~ s/.*?\/(.*?)\:.*/$1/g;
+    my $pack = shift @{natural_order(@temp)};
+    $pack =~ s/.*?\/(.*?)\:.*/$1/g;#my ebuild name
     my $updated = join( '/', $atom, $pack . '.ebuild' );
     info "Searching for $pack";
 
@@ -177,11 +159,7 @@ sub update {
         draw_down_line
             and return ()
             if ( $self->{check} and -f $updated );
-        my $last = shift @files;
-        my $source = join( '/', $atom, $last );
-        notice $last . ' was chosen to be the source of the new version';
-        notice $updated . " updated"
-            if defined $last and copy( $source, $updated );
+        bump( $atom, $updated );
     }
     else {
         info "Update to $Package already exists";
@@ -203,8 +181,7 @@ sub update {
                 );
             }
             else {
-                send_report(
-                    "'Error indexing $pack to remote git repository" );
+                send_report("'Error indexing $pack to remote git repository");
             }
         }
     }
@@ -212,8 +189,9 @@ sub update {
         return ();
     }
     draw_down_line;
-  #  return join( "/", $Package, $pack );
-return $Package;
+
+    #  return join( "/", $Package, $pack );
+    return $Package;
 }
 
 1;

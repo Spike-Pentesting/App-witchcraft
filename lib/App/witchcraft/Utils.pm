@@ -17,9 +17,11 @@ use Digest::MD5;
 use IO::Socket::INET;
 use utf8;
 use Encode;
+use File::Copy;
 use Cwd;
+$|++;    # turn off output buffering;
 
-our @EXPORT = qw(_debug
+our @EXPORT = qw( _debug
     info
     error
     notice
@@ -39,10 +41,15 @@ our @EXPORT = qw(_debug
     emerge
     git_index
     git_sync
+    natural_order
+    bump
 );
 
 our @EXPORT_OK
-    = qw(conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit remove_available);
+    = qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
+    natural_order
+    bump
+    bremove_available);
 
 sub conf_update {
     my $Expect = Expect->new;
@@ -94,11 +101,48 @@ sub irc_msg(@) {
 
 }
 
+#usage bump($atom,$PV)
+sub bump {
+    my $atom    = shift;
+    my $updated = shift;
+    &notice( 'opening ' . $atom );
+    opendir( DH, $atom ) or ( &error("Cannot open $atom") and return undef );
+    my @files
+        = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
+        grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
+    closedir(DH);
+    my $last = shift @files;
+    my $source = join( '/', $atom, $last );
+    &notice(  'Using =====> '
+            . $last
+            . ' <===== as a skeleton for the new version' );
+    &notice("Copying");
+    &info( "Updated: " . $updated ) and return 1
+        if defined $last and copy( $source, $updated );
+    return undef;
+}
+
 sub upgrade {
     my $cfg = App::witchcraft->Config;
     if ( $cfg->param('WITCHCRAFT_GIT') ) {
         system( "cpanm " . $cfg->param('WITCHCRAFT_GIT') );
     }
+}
+
+sub natural_order {
+    my @a = @_;
+    return [
+        @a[    #natural sort order for strings containing numbers
+            map { unpack "N", substr( $_, -4 ) } #going back to normal representation
+            sort
+            map {
+                my $key = $a[$_];
+                $key =~ s[(\d+)][ pack "N", $1 ]ge
+                    ;    #transforming all numbers in ascii representation
+                $key . pack "CNN", 0, 0, $_
+            } 0 .. $#a
+        ]
+    ];
 }
 
 #
@@ -417,76 +461,73 @@ sub depgraph($$) {
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
+#usage: bullet("note|link","Title","body/url")
+sub bullet($$$) {
+    my $type     = shift;
+    my $title    = shift;
+    my $arg      = shift;
+    my $hostname = $App::witchcraft::HOSTNAME;
+    my $ua       = LWP::UserAgent->new;
+
+    my @BULLET = App::witchcraft::Config->param('ALERT_BULLET');
+    my $req;
+    my $success = @BULLET;
+    my $api = $type eq "note" ? "body" : "url";
+    foreach my $BULL (@BULLET) {
+        $req = POST 'https://api.pushbullet.com/v2/pushes',
+            [
+            type  => $type,
+            title => "Witchcraft\@$hostname: " . $title,
+            $api  => $arg
+            ];
+        $req->authorization_basic($BULL);
+        my $res = $ua->request($req)->as_string;
+        if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+            &notice("Push sent correctly!");
+        }
+        else {
+            &error("Error sending the push!");
+            $success--;
+        }
+    }
+
+    return $success;
+
+}
+
+#usage send_report("Message Title", @_);
 sub send_report {
     my $message = shift;
-    my $ua      = LWP::UserAgent->new;
     &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
-    my @BULLET   = App::witchcraft::Config->param('ALERT_BULLET');
     my $success  = 0;
     if (@_) {
         my $log = join( "\n", @_ );
         &notice( 'Attachment ' . $log );
+        my $url;
         eval {
-            my $url = nopaste(
-                text    => $log,
-                private => 1,      # default: 0
-
-           # this is the default, but maybe you want to do something different
+            $url = nopaste(
+                text          => $log,
+                private       => 1,
                 error_handler => sub {
                     my ( $error, $service ) = @_;
                     warn "$service: $error";
                 },
-
                 warn_handler => sub {
                     my ( $warning, $service ) = @_;
                     warn "$service: $warning";
                 },
-
-                # you may specify the services to use - but you don't have to
                 services => [ "Pastie", "Shadowcat" ],
             );
             1;
         };
         if ($@) {
             &error("Error generating nopaste url");
-            my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                [
-                type  => 'note',
-                title => 'Witchcraft@' . $hostname,
-                body  => $log
-                ];
-            $req->authorization_basic($BULL);
-            my $res = $ua->request($req)->as_string;
-            if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-                &notice("Push sent correctly!");
-                $success = 1;
-            }
-            else {
-                &error("Error sending the push!");
-                $success = 0;
-            }
+            &bullet( "note", "No paste could be generated, allegating all",
+                $log );
         }
         else {
-
-            foreach my $BULL (@BULLET) {
-                my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                    [
-                    type  => 'link',
-                    title => "Witchcraft\@$hostname: " . $message,
-                    url   => $url
-                    ];
-                $req->authorization_basic($BULL);
-                my $res = $ua->request($req)->as_string;
-                if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-                    &notice("Push sent correctly!");
-                    $success = 1;
-                }
-                else {
-                    &error("Error sending the push!");
-                    $success = 0;
-                }
-            }
+            &bullet( "link", $message, $url );
             &irc_msg( "Witchcraft\@$hostname: "
                     . $message
                     . " - Nopaste link:"
@@ -495,30 +536,11 @@ sub send_report {
 
     }
     else {
-        &info('WOOOW BULLETS!');
-        foreach my $BULL (@BULLET) {
-            my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                [
-                type  => 'note',
-                title => 'Witchcraft@' . $hostname,
-                body  => $message
-                ];
-            $req->authorization_basic($BULL);
-            my $res = $ua->request($req)->as_string;
-            if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-                &notice("Push sent correctly!");
-                $success = 1;
-            }
-            else {
-                &error("Error sending the push!");
-                $success = 0;
-            }
-        }
+        &bullet( "note", "Status", $message );
         &irc_msg( "Witchcraft\@$hostname: " . $message );
     }
     return $success;
 }
-
 
 sub remove_available(@) {
     my @Packages  = shift;

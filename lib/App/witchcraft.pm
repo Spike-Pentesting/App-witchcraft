@@ -14,7 +14,7 @@ our $CONFIG
     ? join( "/", $HOME, $CONFIG_FILE )
     : join( "/", '.',   $CONFIG_FILE );
 
-our $CONFIG
+ $CONFIG
     = ( -e $CONFIG )
     ? Config::Simple->new($CONFIG)
     : Config::Simple->new("./witchcraft.conf");
