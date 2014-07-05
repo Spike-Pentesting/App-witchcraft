@@ -199,6 +199,7 @@ sub emerge(@) {
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
         ;    #spring cleaning!
+    system("equo up && equo u");
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
     &notice(
