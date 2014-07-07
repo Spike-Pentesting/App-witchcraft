@@ -158,7 +158,7 @@ sub update {
     if ( !-f $updated ) {
         draw_down_line
             and return ()
-            if ( $self->{check} and -f $updated );
+            if ( $self->{check});
         bump( $atom, $updated );
     }
     else {

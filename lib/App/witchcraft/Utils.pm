@@ -117,7 +117,7 @@ sub bump {
             . $last
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
-    &info( "Updated: " . $updated ) and return 1
+    &info( "Bumped: " . $updated ) and return 1
         if defined $last and copy( $source, $updated );
     return undef;
 }
