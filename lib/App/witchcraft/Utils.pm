@@ -196,11 +196,24 @@ sub emerge(@) {
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
+        my @equo_install;
+
     return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
         ;    #spring cleaning!
     system("equo up && equo u");
+
+
+    #reticulating splines here...
+    push(@equo_install, &calculate_missing($package,1)) for @CMD;
+   &info(scalar(@equo_install)
+        . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
+    my $Installs = join( " ", @equo_install );
+    &info("Installing: ");
+    &notice($_) for @equo_install;
+    system("sudo equo i -q $Installs");
+
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
     &notice(
