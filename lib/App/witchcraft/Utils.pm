@@ -206,7 +206,7 @@ sub emerge(@) {
 
 
     #reticulating splines here...
-    push(@equo_install, &calculate_missing($package,1)) for @CMD;
+    push(@equo_install, &calculate_missing($_,1)) for @CMD;
    &info(scalar(@equo_install)
         . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
     my $Installs = join( " ", @equo_install );
