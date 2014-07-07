@@ -212,7 +212,7 @@ sub emerge(@) {
     my $Installs = join( " ", @equo_install );
     &info("Installing: ");
     &notice($_) for @equo_install;
-    system("sudo equo i -q $Installs");
+    system("sudo equo i -q --relaxed $Installs");
 
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
