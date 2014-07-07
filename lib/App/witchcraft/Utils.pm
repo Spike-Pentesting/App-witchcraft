@@ -112,6 +112,7 @@ sub bump {
         grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
     closedir(DH);
     my $last = shift @files;
+    &error("No ebuild could be found in $atom") and return undef if(!defined $last);
     my $source = join( '/', $atom, $last );
     &notice(  'Using =====> '
             . $last
