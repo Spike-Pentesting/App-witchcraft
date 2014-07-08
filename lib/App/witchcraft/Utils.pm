@@ -206,13 +206,13 @@ sub emerge(@) {
 
 
     #reticulating splines here...
-    push(@equo_install, &calculate_missing($_,1)) for @CMD;
-   &info(scalar(@equo_install)
-        . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
-    my $Installs = join( " ", @equo_install );
-    &info("Installing: ");
-    &notice($_) for @equo_install;
-    system("sudo equo i -q --relaxed $Installs");
+   #  push(@equo_install, &calculate_missing($_,1)) for @CMD;
+   # &info(scalar(@equo_install)
+   #      . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
+   #  my $Installs = join( " ", @equo_install );
+   #  &info("Installing: ");
+   #  &notice($_) for @equo_install;
+   #  system("sudo equo i -q --relaxed $Installs");
 
     &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
