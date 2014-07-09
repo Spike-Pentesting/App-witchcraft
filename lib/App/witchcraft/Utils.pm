@@ -198,11 +198,12 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
+    $ENV{EDITOR} = "cat";    #quick hack
 
     return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
-        ;    #spring cleaning!
+        ;                    #spring cleaning!
     system("equo up && equo u");
 
 #reticulating splines here...
@@ -292,6 +293,7 @@ sub emerge(@) {
 
     #Maintenance stuff
     &upgrade;
+    $ENV{EDITOR} = "nano";    #quick hack
 }
 
 sub find_logs {
