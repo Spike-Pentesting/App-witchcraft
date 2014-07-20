@@ -45,11 +45,22 @@ our @EXPORT = qw( _debug
     bump
 );
 
-our @EXPORT_OK
-    = qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
-    natural_order
-    bump
-    bremove_available);
+our @EXPORT_OK = (
+    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
+        natural_order
+        bump
+        bremove_available list_available), @EXPORT
+);
+
+sub list_available {
+    my $options = shift;
+    my $equo_options
+        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    my @r;
+    push( @r, &uniq(`equo query list available $_ $equo_options`) ) for @_;
+    chomp @r;
+    return @r;
+}
 
 sub conf_update {
     my $Expect = Expect->new;

@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 0.007;
+our $VERSION              = 0.008;
 our $CONFIG_FILE          = "witchcraft.conf";
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
@@ -71,6 +71,10 @@ App::witchcraft - Continuous integration tool for Entropy server
 
     --> List repository packages
     *    l|list [repository]
+
+     --> List or delete package conflicts between other repository
+    *    r|conflict
+                                    "-d|delete" => automatically delete from the sabayon repository
 
     --> Emerge and push to entropy repository
     *    p|pack [package] [package2] ...

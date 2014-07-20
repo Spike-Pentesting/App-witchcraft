@@ -39,6 +39,10 @@ Enable git repository sync (C<witchcraft sync -iuxg>)
 
 Enable entropy repository upgrade (C<witchcraft upgrade>)
 
+=item C<-c|--conflict>
+
+remove conflict between repositories (C<witchcraft conflict>)
+
 =item C<-q|--quit>
 
 Shutdown computer on finish
@@ -73,11 +77,12 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 =cut
 
 sub options {
-    (   "a|align"   => "align",
-        "s|sync"    => "sync",
-        "u|upgrade" => "upgrade",
-        "q|quit"    => "quit",
-        "l|loop"    => "loop"
+    (   "a|align"    => "align",
+        "s|sync"     => "sync",
+        "u|upgrade"  => "upgrade",
+        "c|conflict" => "conflict",
+        "q|quit"     => "quit",
+        "l|loop"     => "loop"
     );
 }
 
@@ -98,22 +103,18 @@ sub run {
 
 sub launch {
     my $self = shift;
-    if ( !$self->{'align'} and !$self->{'sync'} and !$self->{'upgrade'} ) {
-        my $Align   = App::witchcraft::Command::Align->new;
-        my $Sync    = App::witchcraft::Command::Sync->new;
-        my $Upgrade = App::witchcraft::Command::Upgrade->new;
-        $Sync->{'install'}         = 1;
-        $Sync->{'update'}          = 1;
-        $Sync->{'ignore-existing'} = 1;
-        $Sync->{'git'}             = 1;
-        $Align->run();
-        $Sync->run();
-        $Upgrade->run();
+    if (    !$self->{'align'}
+        and !$self->{'sync'}
+        and !$self->{'upgrade'}
+        and !$self->{'conflict'} )
+    {
+        $self->{'align'}    = 1;
+        $self->{'sync'}     = 1;
+        $self->{'conflict'} = 1;
     }
     if ( $self->{'align'} ) {
         my $Align = App::witchcraft::Command::Align->new;
         $Align->run();
-
     }
     if ( $self->{'sync'} ) {
         my $Sync = App::witchcraft::Command::Sync->new;
@@ -122,12 +123,17 @@ sub launch {
         $Sync->{'ignore-existing'} = 1;
         $Sync->{'git'}             = 1;
         $Sync->run();
-
     }
     if ( $self->{'upgrade'} ) {
         my $Upgrade = App::witchcraft::Command::Upgrade->new;
         $Upgrade->run();
     }
+    if ( $self->{'conflict'} ) {
+        my $Conflict = App::witchcraft::Command::Conflict->new;
+        $Conflict->{'delete'} = 1;
+        $Conflict->run();
+    }
+    system("eit vacuum");
 }
 
 1;

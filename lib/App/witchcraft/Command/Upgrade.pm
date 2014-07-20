@@ -4,6 +4,8 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(list_available);
+
 
 =encoding utf-8
 
@@ -45,8 +47,7 @@ sub run {
     info 'Upgrade of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
-    my @Packages = uniq(`equo query list available $Repo -q`);
-    chomp(@Packages);
+    my @Packages = list_available({},$Repo);
     return emerge( { '-n' => "" }, @Packages );
 }
 

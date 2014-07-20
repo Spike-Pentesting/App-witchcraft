@@ -10,6 +10,7 @@ sub alias {
         "e" => "euscan",
         "t" => "test",
         "c" => "clean",
+        "r" => "conflict",
         "d" => "depinstall",
         "w" => "watch",
         "a" => "align",
@@ -72,6 +73,10 @@ help (--help for full)
 
     --> List repository packages
     *    l|list [repository]
+
+    --> List or delete package conflicts between other repository
+    *    r|conflict
+                                    "-d|delete" => automatically delete from the sabayon repository
 
     --> Emerge and push to entropy repository
     *    p|pack [package] [package2] ...
