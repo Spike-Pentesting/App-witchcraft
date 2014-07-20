@@ -8,7 +8,7 @@ use App::witchcraft::Utils;
 use App::witchcraft::Command::Align;
 use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;
-
+use App::witchcraft::Command::Conflict;
 =encoding utf-8
 
 =head1 NAME
