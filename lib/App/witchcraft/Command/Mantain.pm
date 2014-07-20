@@ -133,7 +133,9 @@ sub launch {
         $Conflict->{'delete'} = 1;
         $Conflict->run();
     }
-    system("eit vacuum");
+    system("eit cleanup");
+
+    #system("eit vacuum --quick");
 }
 
 1;
