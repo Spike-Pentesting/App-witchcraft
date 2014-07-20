@@ -6,7 +6,6 @@ use strict;
 use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(list_available);
 
-
 =encoding utf-8
 
 =head1 NAME
@@ -42,12 +41,12 @@ L<App::witchcraft>, L<App::witchcraft::Command::Sync>
 
 sub run {
     error 'You must run it with root permissions' and exit 1 if $> != 0;
-   my $self = shift;
+    my $self = shift;
     my $Repo = shift // App::witchcraft->Config->param('OVERLAY_NAME');
     info 'Upgrade of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
-    my @Packages = list_available({},$Repo);
+    my @Packages = list_available( { '-q' => "" }, $Repo );
     return emerge( { '-n' => "" }, @Packages );
 }
 
