@@ -1,4 +1,5 @@
 Revision history for App-witchcraft
 
 {{$NEXT}}
-        - Added Upgrade command
+        - Added Conflict command
+        - No more automatic upgrade on mantain command
