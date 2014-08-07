@@ -206,7 +206,6 @@ sub emerge(@) {
     my $options = shift;
     my $emerge_options
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
-    open STDERR, ">&STDOUT" or die "Can't dup STDOUT: $!";
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
@@ -234,7 +233,7 @@ sub emerge(@) {
             . join( " ", @DIFFS ) );
 
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-    my @E_OUTPUT = `nice -20 emerge --color n -v --autounmask-write $args`;
+    my @E_OUTPUT = `nice -20 emerge --color n -v --autounmask-write $args  2>&1`;
 
     if ( $? == 0 ) {
         &info(    "Compressing "
