@@ -232,12 +232,10 @@ sub emerge(@) {
         "nice -20 emerge --color n -v --autounmask-write $emerge_options "
             . join( " ", @DIFFS ) );
 
-    if (system(
-            "nice -20 emerge --color n -v --autounmask-write $emerge_options "
-                . join( " ", @DIFFS )
-        ) == 0
-        )
-    {
+    my $args = $emerge_options . " " . join( " ", @DIFFS );
+    my @E_OUTPUT = `nice -20 emerge --color n -v --autounmask-write $args`;
+
+    if ( $? == 0 ) {
         &info(    "Compressing "
                 . scalar(@DIFFS)
                 . " packages: "
@@ -296,9 +294,9 @@ sub emerge(@) {
     }
     else {
         my @LOGS = &find_logs();
-        &send_report(
-            "Error while merging those packages: " . join( " ", @DIFFS ),
-            join( " ", @LOGS ) );
+        &send_report( "Emerge failed on " . join( " ", @DIFFS ),
+            join( " ", @E_OUTPUT ) );
+        &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
         return 0;
     }
 
