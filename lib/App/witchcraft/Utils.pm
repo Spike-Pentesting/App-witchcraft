@@ -206,6 +206,7 @@ sub emerge(@) {
     my $options = shift;
     my $emerge_options
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    open STDERR, ">&STDOUT" or die "Can't dup STDOUT: $!";
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
@@ -294,8 +295,7 @@ sub emerge(@) {
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( "Emerge failed on " . join( " ", @DIFFS ),
-            join( " ", @E_OUTPUT ) );
+        &send_report( "Emerge failed ", join( " ", @E_OUTPUT ) );
         &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
         return 0;
     }
