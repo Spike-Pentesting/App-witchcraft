@@ -48,8 +48,9 @@ our @EXPORT = qw( _debug
 our @EXPORT_OK = (
     qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
         natural_order
+        entropy_update
         bump
-        bremove_available list_available), @EXPORT
+        bremove_available list_available eix_sync), @EXPORT
 );
 
 sub list_available {
@@ -209,13 +210,14 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
+    my $EDITOR = $ENV{EDITOR};
     $ENV{EDITOR} = "cat";    #quick hack
 
     return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
         ;                    #spring cleaning!
-    system("equo up && equo u");
+    &entropy_update;
 
 #reticulating splines here...
 #  push(@equo_install, &calculate_missing($_,1)) for @CMD;
@@ -233,7 +235,8 @@ sub emerge(@) {
             . join( " ", @DIFFS ) );
 
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-    my @E_OUTPUT = `nice -20 emerge --color n -v --autounmask-write $args  2>&1`;
+    my @E_OUTPUT
+        = `nice -20 emerge --color n -v --autounmask-write $args  2>&1`;
 
     if ( $? == 0 ) {
         &info(    "Compressing "
@@ -271,19 +274,16 @@ sub emerge(@) {
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
 
-            if ( system("eit push --quick") == 0 ) {
+            if ( &log_command("eit push --quick") ) {
                 &info("All went smooth, HURRAY!");
                 &send_report(
                     "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
                 );
-                system("equo rescue spmsync && equo up && equo u");
+                &entropy_rescue;
+                &entropy_update;
                 return 1;
             }
-            else {
-                &send_report(
-                    "nice -20 eit push --quick gave an error, check out!");
-                return 0;
-            }
+
         }
         else {
             my @LOGS = &find_logs();
@@ -301,7 +301,7 @@ sub emerge(@) {
 
     #Maintenance stuff
     &upgrade;
-    $ENV{EDITOR} = "nano";    #quick hack
+    $ENV{EDITOR} = $EDITOR;    #quick hack
 }
 
 sub find_logs {
@@ -573,6 +573,33 @@ sub remove_available(@) {
     chomp(@Available);
     my %available = map { $_ => 1 } @Available;
     return grep( !defined $available{$_}, @Packages );
+}
+
+sub eix_sync {
+    &log_command("eix-sync");
+}
+
+sub entropy_update {
+    &log_command("equo up && equo u");
+}
+
+sub entropy_rescue {
+    &log_command("equo rescue spmsync");
+}
+
+sub log_command {
+    my $command = shift;
+    &info("Phase: $command");
+    my @LOG = `$command 2>&1`;
+    if ( $? == 0 ) {
+        &notice("$command succeded");
+        return 1;
+    }
+    else {
+        &error("Something went wrong with $command");
+        &send_report( "Phase: $command failed", @LOG );
+        return 0;
+    }
 }
 
 sub git_sync() {

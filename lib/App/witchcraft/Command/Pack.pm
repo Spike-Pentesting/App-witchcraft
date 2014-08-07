@@ -3,7 +3,7 @@ package App::witchcraft::Command::Pack;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(error info notice draw_down_line draw_up_line  emerge);
+    qw(error info notice draw_down_line draw_up_line  emerge eix_sync);
 use warnings;
 use strict;
 
@@ -56,12 +56,12 @@ sub run {
     my @EMERGING = @_;
     info 'Emerging & Pushing ' . scalar(@EMERGING) . ' packages';
     my $cfg = App::witchcraft->Config;
-    system("eix-sync");
+    eix_sync;
     notice 'Those are the packages that would be processed:';
     draw_up_line;
     info "\t" . $_ for @EMERGING;
     draw_down_line;
-    emerge({},@EMERGING);
+    emerge( {}, @EMERGING );
 }
 
 1;
