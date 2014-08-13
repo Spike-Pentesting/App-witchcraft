@@ -68,6 +68,16 @@ App::witchcraft - Continuous integration tool for Entropy server
       --> Clean all untracked files from the given repository
       *    c|clean [repository dir]
 
+      --> Manage your vagrant boxes
+      *    b|box (list|status|halt|up|ssh|monitor_start|monitor_stop)
+                                   "list"                => list your boxes
+                                   "status"           => print the boxes status
+                                   "halt"               => stop all the boxes
+                                   "up"                 => starts all your boxes
+                                   "ssh"               => spawn a new tmux window and do a vagrant ssh for the boxes
+                                   "monitor_start" => spawn a process monitor for the boxes
+                                   "monitor_stop" => kills the monitor process
+
 # DESCRIPTION
 
 App::witchcraft is an evil tool for Entropy server Continuous integration, that means that help to align your build muchines with the git repository of your overlay, we use it internally at spike-pentesting.org to build packages.

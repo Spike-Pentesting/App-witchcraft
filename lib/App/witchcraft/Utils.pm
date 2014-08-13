@@ -49,6 +49,8 @@ our @EXPORT_OK = (
     qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
         natural_order
         entropy_update
+        vagrant_box_status
+        vagrant_box_cmd
         bump
         bremove_available list_available eix_sync), @EXPORT
 );
@@ -523,12 +525,15 @@ sub bullet($$$) {
 #usage send_report("Message Title", @_);
 sub send_report {
     my $message = shift;
-    &info( 'Sending ' . $message );
+    &info("Sending report status");
+
+    #  &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
     my $success  = 0;
     if (@_) {
         my $log = join( "\n", @_ );
-        &notice( 'Attachment ' . $log );
+
+        #   &notice( 'Attachment ' . $log );
         my $url;
         eval {
             $url = nopaste(
@@ -547,7 +552,8 @@ sub send_report {
             1;
         };
         if ($@) {
-            &error("Error generating nopaste url");
+
+            # &error("Error generating nopaste url");
             &bullet( "note", "No paste could be generated, allegating all",
                 $log );
         }
@@ -650,8 +656,8 @@ sub daemonize($) {
 
     open( SELFLOCK, "<$0" ) or die("Couldn't open $0: $!\n");
 
-    #  flock( SELFLOCK, LOCK_EX | LOCK_NB )
-    #      or die("Aborting: another $ProgramName is already running\n");
+    flock( SELFLOCK, LOCK_EX | LOCK_NB )
+        or die("Aborting: another $ProgramName is already running\n");
     open( STDOUT, "|-", "logger -t $ProgramName" )
         or die("Couldn't open logger output stream: $!\n");
     open( STDERR, ">&STDOUT" )
@@ -811,6 +817,26 @@ sub test_untracked {
         );
         return ();
     }
+}
+
+#################### vagrant functs
+
+sub vagrant_box_status {
+    (   split /,/,    #splitting --machine-readable output
+        (   &vagrant_box_cmd( "status --machine-readable",
+                shift )    #taking just the output, ignoring the return status
+            )[1]->[1]      # the second line of the output contain the status
+    )[3];                  #the third column has the status
+}
+
+sub vagrant_box_cmd {
+    my $cmd = shift;
+    my $cwd = cwd;
+    chdir(shift);
+    my @v = `vagrant $cmd 2>&1`;
+    chomp @v;
+    chdir($cwd);
+    return ( $?, \@v );
 }
 
 ########################################################

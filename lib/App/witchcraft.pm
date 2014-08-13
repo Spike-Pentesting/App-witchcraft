@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 0.008;
+our $VERSION              = 0.009;
 our $CONFIG_FILE          = "witchcraft.conf";
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
@@ -103,6 +103,16 @@ App::witchcraft - Continuous integration tool for Entropy server
 
     --> Clean all untracked files from the given repository
     *    c|clean [repository dir]
+
+    --> Manage your vagrant boxes
+    *    b|box (list|status|halt|up|ssh|monitor_start|monitor_stop)
+                                 "list"                => list your boxes
+                                 "status"           => print the boxes status
+                                 "halt"               => stop all the boxes
+                                 "up"                 => starts all your boxes
+                                 "ssh"               => spawn a new tmux window and do a vagrant ssh for the boxes
+                                 "monitor_start" => spawn a process monitor for the boxes
+                                 "monitor_stop" => kills the monitor process
 
 
 =head1 DESCRIPTION
