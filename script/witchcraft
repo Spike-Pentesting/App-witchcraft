@@ -4,9 +4,10 @@ use utf8;
 use warnings;
 use constant debug => $ENV{DEBUG};
 use App::witchcraft::Command;
+use App::witchcraft::Utils qw(error info);
 use File::Path qw(make_path remove_tree);
-#use Carp::Always;
 
+#use Carp::Always;
 
 $| = 1;
 
@@ -17,7 +18,11 @@ my $act = shift;
 $SIG{INT} = sub {
     exit;
 };
-make_path ${App::witchcraft::HOME} unless ( -d ${App::witchcraft::HOME} );
+make_path ${App::witchcraft::HOME}
+    and info "Now you need to setup your witchcraft.conf"
+    unless ( -d ${App::witchcraft::HOME} );
+error "You must create a proper " . ${App::witchcraft::CONFIG} . " !!" and die
+    unless ( -e ${App::witchcraft::CONFIG} );
 App::witchcraft::Command->global_help and exit
     if ( defined $act and $act eq "--help" );
 App::witchcraft::Command->invoke( ($act), @ARGV );
