@@ -17,7 +17,7 @@ our $CONFIG
 $CONFIG
     = ( -e $CONFIG ) ? Config::Simple->new($CONFIG)
     : -e "./witchcraft.conf" ? Config::Simple->new("./witchcraft.conf")
-    :                          Config::Simple->new; #just empty
+    :   $CONFIG;
 
 our $IGNORE
     = -e join( "/", $HOME, $IGNORE_FILE )
