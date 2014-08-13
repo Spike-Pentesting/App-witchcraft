@@ -21,8 +21,12 @@ $SIG{INT} = sub {
 make_path ${App::witchcraft::HOME}
     and info "Now you need to setup your witchcraft.conf"
     unless ( -d ${App::witchcraft::HOME} );
-error "You must create a proper " . ${App::witchcraft::CONFIG} . " !!" and die
-    unless ( -e ${App::witchcraft::CONFIG} );
+error "You must create a proper "
+    . join( "/", ${App::witchcraft::HOME}, ${App::witchcraft::CONFIG_FILE} )
+    . " !!" and die
+    unless (
+    -e join( "/", ${App::witchcraft::HOME}, ${App::witchcraft::CONFIG_FILE} )
+    );
 App::witchcraft::Command->global_help and exit
     if ( defined $act and $act eq "--help" );
 App::witchcraft::Command->invoke( ($act), @ARGV );
