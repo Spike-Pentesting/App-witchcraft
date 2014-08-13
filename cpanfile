@@ -3,6 +3,7 @@ requires 'App::CLI::Command';
 requires 'App::CLI::Command::Help';
 requires 'App::Nopaste';
 requires 'Carp::Always';
+requires 'Child';
 requires 'Config::Simple';
 requires 'Digest::MD5';
 requires 'Encode';
@@ -14,9 +15,12 @@ requires 'LWP::UserAgent';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'Term::ReadKey';
-requires 'Test::More';
 requires 'perl', '5.008_005';
 
 on configure => sub {
-    requires 'Module::Build::Tiny', '0.035';
+    requires 'Module::Build::Tiny', '0.037';
+};
+
+on test => sub {
+    requires 'Test::More';
 };
