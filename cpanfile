@@ -8,7 +8,6 @@ requires 'Digest::MD5';
 requires 'Encode';
 requires 'Expect';
 requires 'File::Path';
-requires 'File::Xcopy';
 requires 'Git::Sub';
 requires 'HTTP::Request::Common';
 requires 'LWP::UserAgent';
