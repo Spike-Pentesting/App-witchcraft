@@ -88,6 +88,7 @@ help (--help for full)
                                     "-u|--upgrade" => "upgrade", alias of witchcraft upgrade
                                     "-q|--quit"    => "quit", shutdown computer when finished
                                     "-l|--loop"    => "loop" enters an infinite loop
+                                    "-e|--euscan" => "euscan", alias of witchcraft euscan -migu
 
     --> Align to the last compiled commit (or the specified one)
     *    a|align [commit]
