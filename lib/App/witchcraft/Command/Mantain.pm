@@ -9,6 +9,7 @@ use App::witchcraft::Command::Align;
 use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;
 use App::witchcraft::Command::Conflict;
+use App::witchcraft::Command::Euscan;
 
 =encoding utf-8
 
