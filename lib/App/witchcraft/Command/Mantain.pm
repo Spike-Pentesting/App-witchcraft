@@ -40,6 +40,10 @@ Enable git repository sync (C<witchcraft sync -iuxg>)
 
 Enable entropy repository upgrade (C<witchcraft upgrade>)
 
+=item C<-e|--euscan>
+
+Enable euscan automatic bump (C<witchcraft e -migu>)
+
 =item C<-c|--conflict>
 
 remove conflict between repositories (C<witchcraft conflict>)
