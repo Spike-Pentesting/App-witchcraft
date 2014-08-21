@@ -9,6 +9,7 @@ use App::witchcraft::Command::Align;
 use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;
 use App::witchcraft::Command::Conflict;
+
 =encoding utf-8
 
 =head1 NAME
@@ -81,6 +82,7 @@ sub options {
         "s|sync"     => "sync",
         "u|upgrade"  => "upgrade",
         "c|conflict" => "conflict",
+        "e|euscan"   => "euscan",
         "q|quit"     => "quit",
         "l|loop"     => "loop"
     );
@@ -106,11 +108,21 @@ sub launch {
     if (    !$self->{'align'}
         and !$self->{'sync'}
         and !$self->{'upgrade'}
-        and !$self->{'conflict'} )
+        and !$self->{'conflict'}
+        and !$self->{'euscan'} )
     {
         $self->{'align'}    = 1;
         $self->{'sync'}     = 1;
         $self->{'conflict'} = 1;
+        $self->{'euscan'}   = 1;
+    }
+    if ( $self->{'euscan'} ) {
+        my $Euscan = App::witchcraft::Command::Euscan->new;
+        $Euscan->{'manifest'} = 1;
+        $Euscan->{'install'}  = 1;
+        $Euscan->{'git'}      = 1;
+        $Euscan->{'update'}   = 1;
+        $Euscan->run();
     }
     if ( $self->{'align'} ) {
         my $Align = App::witchcraft::Command::Align->new;
