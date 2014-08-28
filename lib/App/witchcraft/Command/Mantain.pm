@@ -5,6 +5,8 @@ use Carp::Always;
 use warnings;
 use strict;
 use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(upgrade);
+
 use App::witchcraft::Command::Align;
 use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;
@@ -121,6 +123,17 @@ sub launch {
         $self->{'conflict'} = 1;
         $self->{'euscan'}   = 1;
     }
+    $self->align;
+    $self->conflict;
+    system("eit cleanup --quick");
+    $self->sync;
+    $self->upgrade;
+    $self->euscan;
+    upgrade;
+}
+
+sub euscan {
+    my $self = shift;
     if ( $self->{'euscan'} ) {
         my $Euscan = App::witchcraft::Command::Euscan->new;
         $Euscan->{'manifest'} = 1;
@@ -129,10 +142,18 @@ sub launch {
         $Euscan->{'update'}   = 1;
         $Euscan->run();
     }
-    if ( $self->{'align'} ) {
+}
+
+sub align {
+    my $self = shift
+        if ( $self->{'align'} ) {
         my $Align = App::witchcraft::Command::Align->new;
         $Align->run();
     }
+}
+
+sub sync {
+    my $self = shift;
     if ( $self->{'sync'} ) {
         my $Sync = App::witchcraft::Command::Sync->new;
         $Sync->{'install'}         = 1;
@@ -141,18 +162,23 @@ sub launch {
         $Sync->{'git'}             = 1;
         $Sync->run();
     }
+}
+
+sub upgrade {
+    my $self = shift;
     if ( $self->{'upgrade'} ) {
         my $Upgrade = App::witchcraft::Command::Upgrade->new;
         $Upgrade->run();
     }
+}
+
+sub conflict {
+    my $self = shift;
     if ( $self->{'conflict'} ) {
         my $Conflict = App::witchcraft::Command::Conflict->new;
         $Conflict->{'delete'} = 1;
         $Conflict->run();
     }
-    system("eit cleanup --quick");
-
-    #system("eit vacuum --quick");
 }
 
 1;

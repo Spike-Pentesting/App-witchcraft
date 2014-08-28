@@ -50,6 +50,7 @@ our @EXPORT_OK = (
         natural_order
         entropy_update
         vagrant_box_status
+        upgrade
         vagrant_box_cmd
         bump
         bremove_available list_available eix_sync), @EXPORT
@@ -180,7 +181,6 @@ sub process(@) {
     my @ebuilds = &to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
-        &send_report("Packages removed, saving diffs.");
         if ( $use == 0 ) {
             &save_compiled_commit($commit);
         }
