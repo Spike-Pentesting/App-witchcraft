@@ -141,9 +141,8 @@ sub bump {
 
 sub upgrade {
     my $cfg = App::witchcraft->Config;
-    if ( $cfg->param('WITCHCRAFT_GIT') ) {
-        system( "cpanm " . $cfg->param('WITCHCRAFT_GIT') );
-    }
+    &log_command( "cpanm " . $cfg->param('WITCHCRAFT_GIT') )
+        if ( $cfg->param('WITCHCRAFT_GIT') );
 }
 
 sub natural_order {
