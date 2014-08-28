@@ -127,7 +127,7 @@ sub launch {
     $self->conflict;
     system("eit cleanup --quick");
     $self->sync;
-    $self->upgrade;
+    $self->package_upgrade;
     $self->euscan;
     upgrade;
 }
@@ -145,7 +145,7 @@ sub euscan {
 }
 
 sub align {
-    my $self = shift
+    my $self = shift;
         if ( $self->{'align'} ) {
         my $Align = App::witchcraft::Command::Align->new;
         $Align->run();
@@ -164,7 +164,7 @@ sub sync {
     }
 }
 
-sub upgrade {
+sub package_upgrade {
     my $self = shift;
     if ( $self->{'upgrade'} ) {
         my $Upgrade = App::witchcraft::Command::Upgrade->new;
