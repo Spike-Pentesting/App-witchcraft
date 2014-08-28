@@ -1,7 +1,8 @@
 package App::witchcraft::Command::Depinstall;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(calculate_missing info log_command
+    error notice);
 use warnings;
 use strict;
 
@@ -65,11 +66,7 @@ sub run {
     my $Installs = join( " ", @to_install );
     info "Installing: ";
     notice $_. "\t" for @to_install;
-    exec("sudo equo i -q $Installs");
-
- #    info "Installing $_" and system("echo $password | sudo -S equo i -q $_")
- #      for @to_install;
-    exit;
+    log_command("sudo equo i -q $Installs");
 }
 
 1;

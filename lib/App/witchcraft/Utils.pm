@@ -711,7 +711,7 @@ sub clean_stash {
     my $cwd = cwd;
     chdir($dir);
     system("git stash");
-    &info("$dir stashed");
+    &info("$dir stashed") if $? == 0;
     chdir($cwd);
     return $? == 0 ? 1 : 0;
 }
@@ -752,7 +752,7 @@ sub test_ebuild {
             and system( $password
                     . " PORTDIR_OVERLAY='"
                     . App::witchcraft::Config->param('GIT_REPOSITORY')
-                    . "' emerge $ebuild"
+                    . "' emerge -B $ebuild"
             ) == 0
             )
         {
