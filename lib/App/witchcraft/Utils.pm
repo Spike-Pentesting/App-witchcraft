@@ -51,6 +51,7 @@ our @EXPORT_OK = (
         entropy_update
         vagrant_box_status
         upgrade
+        clean_stash
         vagrant_box_cmd
         bump
         bremove_available list_available eix_sync), @EXPORT
@@ -695,10 +696,24 @@ sub password_dialog {
 sub clean_untracked {
     my $dir = shift;
     my @Installed;
+    my $cwd = cwd;
     chdir($dir);
     system("git ls-files --others --exclude-standard | xargs rm -rfv");
     &notice(
         "Launch 'git stash' if you want to rid about all the modifications");
+    chdir($cwd);
+    return $? == 0 ? 1 : 0;
+}
+
+sub clean_stash {
+    my $dir = shift;
+    my @Installed;
+    my $cwd = cwd;
+    chdir($dir);
+    system("git stash");
+    &info("$dir stashed");
+    chdir($cwd);
+    return $? == 0 ? 1 : 0;
 }
 
 sub uniq {

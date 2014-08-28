@@ -1,7 +1,7 @@
 package App::witchcraft::Command::Clean;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(clean_untracked clean_stash error info);
 use warnings;
 use strict;
 
@@ -14,12 +14,18 @@ App::witchcraft::Command::Clean - Clean the repository from untracked files
 =head1 SYNOPSIS
 
   $ witchcraft c
-  $ witchcraft c <git_repository>
+  $ witchcraft c <git_repository> (--nostash)
 
 =head1 DESCRIPTION
 
 Clean the repository from untracked files.
 If an argument is supplied it clean that git repository.
+
+=head1 OPTIONS
+
+=head2 --nostash
+
+Avoid to C<git stash> inside the directory of the repository.
 
 =head1 AUTHOR
 
@@ -38,6 +44,11 @@ it under the same terms as Perl itself.
 L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 
 =cut
+
+sub options {
+    ( "ns|nostash" => "no_stash" );
+}
+
 sub run {
     my $self = shift;
     my $dir
@@ -45,6 +56,7 @@ sub run {
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1 if(!$dir);
         info 'Cleaning all the untracked files in '.$dir;
     clean_untracked($dir);
+    clean_stash($dir) unless ($self->{no_stash});
 }
 
 1;

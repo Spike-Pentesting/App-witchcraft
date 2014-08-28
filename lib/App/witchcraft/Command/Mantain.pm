@@ -12,6 +12,7 @@ use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;
 use App::witchcraft::Command::Conflict;
 use App::witchcraft::Command::Euscan;
+use App::witchcraft::Command::Clean;
 
 =encoding utf-8
 
@@ -123,13 +124,18 @@ sub launch {
         $self->{'conflict'} = 1;
         $self->{'euscan'}   = 1;
     }
+    $self->clean;
     $self->align;
     $self->conflict;
     system("eit cleanup --quick");
     $self->sync;
-    $self->package_upgrade;
+    $self->upgrade;
     $self->euscan;
     upgrade;
+}
+
+sub clean {
+    App::witchcraft::Command::Clean->new->run;
 }
 
 sub euscan {
@@ -146,7 +152,7 @@ sub euscan {
 
 sub align {
     my $self = shift;
-        if ( $self->{'align'} ) {
+    if ( $self->{'align'} ) {
         my $Align = App::witchcraft::Command::Align->new;
         $Align->run();
     }

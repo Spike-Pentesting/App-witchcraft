@@ -106,6 +106,7 @@ help (--help for full)
 
     --> Clean all untracked files from the given repository
     *    c|clean [repository dir]
+                                "nostash"   => avoid "git stash"
 
     --> Manage your vagrant boxes
     *    b|box (list|status|halt|up|ssh|monitor_start|monitor_stop)
