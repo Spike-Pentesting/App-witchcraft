@@ -135,6 +135,7 @@ sub bump {
             . $last
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
+    &send_report("Automagic bump: $last --> $updated");
     &info( "Bumped: " . $updated ) and return 1
         if defined $last and copy( $source, $updated );
     return undef;
@@ -194,7 +195,7 @@ sub process(@) {
         if ( &emerge( {}, @DIFFS ) ) {
             &send_report(
                 "[$commit] Packets successfully compiled:\n####################\n"
-                    . join( "", @DIFFS ) );
+                    . join( " ", @DIFFS ) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
             }
@@ -743,10 +744,6 @@ sub test_ebuild {
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
         $ebuild = "=" . $ebuild;
-        &info(    "PORTDIR_OVERLAY='"
-                . App::witchcraft::Config->param('GIT_REPOSITORY')
-                . "' emerge "
-                . $ebuild );
 
         if (defined $install
             and system( $password
