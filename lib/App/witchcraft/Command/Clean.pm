@@ -60,18 +60,3 @@ sub run {
 }
 
 1;
-__DATA__
-compat-wireless
-linux-live
-profiles
-prism54
-compat-drivers
-acpid
-layout.conf
-linux-sources
-genmenu
-nvidia-drivers
-ati-drivers
-openrc
-mkxf86config
-genkernel

@@ -167,9 +167,9 @@ sub natural_order {
 #  name: process
 #  input: @DIFFS
 #  output: void
-#  Questa funziona si occupa , da un array i quali elementi sono pacchetti di tipo: category/nomepacchetto
-#  genera la lista che viene fatta compilare tramite emerge e poi aggiunta alla repository, ogni errore viene riportato
-#
+# from an array of atoms ("category/atom","category/atom2")
+# it generates then a list that would be emerged and then added to the repo, each error would be reported
+
 sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
@@ -331,9 +331,8 @@ sub find_logs {
 #  name: to_ebuild
 #  input:@DIFFS
 #  output:@TO_EMERGE
-#  Dato un'array contenente i pacchetti nel formato categoria/pacchetto, trova gli ebuild nell'overlay e genera un array
-#
-#.
+# given an array contening atoms, finds the ebuilds in the overlay and generate an array
+
 sub to_ebuild(@) {
     my @DIFFS = @_;
     my @TO_EMERGE;
@@ -351,8 +350,8 @@ sub to_ebuild(@) {
 #  name: last_commit
 #  input: git_path_repository, master
 #  output: last_commit
-#  Data una path di una repository git e il suo master file, restituisce l'id dell'ultimo commit sulla repository git
-#
+# Given a path of a git repo and his master file, it returns the last commit id
+
 sub last_commit($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
@@ -416,7 +415,7 @@ sub last_md5() {
 #
 #  name: compiled_commit
 #  input: none
-#  output: Ultimo commit
+#  output: last commit
 #
 sub compiled_commit() {
     open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT')
@@ -430,8 +429,8 @@ sub compiled_commit() {
 #  name: save_compiled_commit
 #  input: $commit
 #  output: void
-#  Funzione che salva nel file indicato dalla variabile $save_last_commit l'argomento passato
-#
+#  it just saves the last commit on the specified file
+
 sub save_compiled_commit($) {
     open FILE, ">" . App::witchcraft::Config->param('LAST_COMMIT');
     print FILE shift;
@@ -448,9 +447,9 @@ sub save_compiled_packages($) {
 #  name: find_diff
 #  input: git_path_repository, master
 #  output: @DIFFS
-#  Questa funzione prende in ingresso la path della repository git e la locazione del master file,
-#  procede poi a vedere le differenze tra il commit attuale e quello di cui è stato compilato correttamente,
-#  restituisce i pacchetti da compilare.
+# takes as argument the git path repository and the master file
+# generate  diff from the last build and returns the packages to compile
+
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];

@@ -50,6 +50,7 @@ App::witchcraft - Continuous integration tool for Entropy server
                                       "-u|--upgrade" => "upgrade", alias of witchcraft upgrade
                                       "-q|--quit"    => "quit", shutdown computer when finished
                                       "-l|--loop"    => "loop" enters an infinite loop
+                                      "-e|--euscan" => "euscan", alias of witchcraft euscan -migu
 
       --> Align to the last compiled commit (or the specified one)
       *    a|align [commit]
@@ -67,6 +68,7 @@ App::witchcraft - Continuous integration tool for Entropy server
 
       --> Clean all untracked files from the given repository
       *    c|clean [repository dir]
+                                  "nostash"   => avoid "git stash"
 
       --> Manage your vagrant boxes
       *    b|box (list|status|halt|up|ssh|monitor_start|monitor_stop)
@@ -103,7 +105,7 @@ mudler <mudler@dark-lab.net>, skullbocks <skullbocks@dark-lab.net>
 
 # COPYRIGHT
 
-Copyright 2014- mudler, skullbocks
+Copyright 2014- mudler
 
 # LICENSE
 

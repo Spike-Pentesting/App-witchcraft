@@ -149,11 +149,10 @@ sub synchronize {
         = join( "|", map { $_ = quotemeta($_); $_ = qr/$_/; $_ } @ignores );
     my $l_r = lc($refactor);
     my $u_r = uc($refactor);
-    my $m_r = uc( substr( $refactor, 0, 1 ) ) . substr( $refactor, 1 );
+    my $m_r = ucfirst($refactor);
     my $l_t = lc($refactor_target);
     my $u_t = uc($refactor_target);
-    my $m_t = uc( substr( $refactor_target, 0, 1 ) )
-        . substr( $refactor_target, 1 );
+    my $m_t = ucfirst($refactor_target);
     my @Installed;
     info "Refactoring: $refactor" if $self->{verbose};
     info "Ignores: $flatten"      if $self->{verbose};

@@ -135,8 +135,8 @@ sub manual_update($) {
 #  name: update
 #  input: $overlay,$master_file
 #  output: void
-#  Funzione che si occupa di gestire le chiamate alle funzioni in caso di compile tramite l'ausilio dei commit di git
-#
+# handles the calls to the functions using git to find diffs
+
 sub update($$) {
     my $overlay     = shift;
     my $master_file = shift;
