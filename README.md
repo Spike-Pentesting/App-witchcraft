@@ -105,7 +105,7 @@ mudler <mudler@dark-lab.net>, skullbocks <skullbocks@dark-lab.net>
 
 # COPYRIGHT
 
-Copyright 2014- mudler
+Copyright 2014- mudler, skullbocks
 
 # LICENSE
 
