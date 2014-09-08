@@ -5,7 +5,7 @@ use App::CLI;
 use Config::Simple;
 
 our $VERSION              = 0.009;
-our $CONFIG_FILE          = "witchcraft.conf";
+our $CONFIG_FILE          = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"; #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
 our $HOME                 = join( "/", $ENV{HOME}, $WITCHCRAFT_DIRECTORY );
@@ -28,7 +28,7 @@ our $IGNORE
 our $HOSTNAME = `hostname`;
 chomp($HOSTNAME);
 
-sub Config {
+sub Config {    #it's just handy sometimes!
     return $CONFIG;
 }
 
