@@ -28,8 +28,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.38",
-            "Module::Build::Tiny" : "0.037"
+            "Module::Build" : "0.38"
          }
       },
       "develop" : {
