@@ -18,7 +18,7 @@ requires 'Term::ReadKey';
 requires 'perl', '5.008_005';
 
 on configure => sub {
-    requires 'Module::Build::Tiny', '0.037';
+    requires 'Module::Build';
 };
 
 on test => sub {
