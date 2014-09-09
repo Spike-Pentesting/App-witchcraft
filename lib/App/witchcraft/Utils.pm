@@ -18,6 +18,7 @@ use IO::Socket::INET;
 use utf8;
 use Encode;
 use File::Copy;
+use File::Find;
 use Cwd;
 $|++;    # turn off output buffering;
 
@@ -49,6 +50,8 @@ our @EXPORT_OK = (
     qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
         natural_order
         entropy_update
+        euscan
+        find_ebuilds
         vagrant_box_status
         upgrade
         clean_stash
@@ -467,10 +470,22 @@ sub find_diff($$) {
     return ( &uniq(@DIFFS) );
 }
 
+sub find_ebuilds($) {
+    my $dir = shift;
+    my @EBUILDS;
+    find(
+        {   wanted => sub { push @EBUILDS, $_ if $_ =~ /\.ebuild$/ },
+            no_chdir => 1
+        },
+        $dir
+    );
+    return @EBUILDS;
+}
+
 sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
-    my @Packages = &depgraph( $package, $depth );     #depth=0 it's all
+    my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
     &info( scalar(@Packages) . " dependencies found " );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
@@ -525,6 +540,9 @@ sub bullet($$$) {
 #usage send_report("Message Title", @_);
 sub send_report {
     my $message = shift;
+    return undef
+        unless ( App::witchcraft::Config->param('ALERT_BULLET')
+        or App::witchcraft::Config->param('IRC_CHANNELS') );
     &info("Sending report status");
 
     #  &info( 'Sending ' . $message );
@@ -720,6 +738,13 @@ sub uniq {
     return keys %{ { map { $_ => 1 } @_ } };
 }
 
+sub euscan {
+    my $Package = shift;
+    my @temp    = `euscan -q -C $Package`;
+    chomp(@temp);
+    return @temp;
+}
+
 sub test_ebuild {
     my $ebuild   = shift;
     my $manifest = shift || undef;
@@ -743,12 +768,17 @@ sub test_ebuild {
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
         $ebuild = "=" . $ebuild;
+        system(   $password
+                . " PORTDIR_OVERLAY='"
+                . App::witchcraft::Config->param('GIT_REPOSITORY')
+                . "' emerge --onlydeps $ebuild" )
+            if ( defined $install );
 
         if (defined $install
             and system( $password
                     . " PORTDIR_OVERLAY='"
                     . App::witchcraft::Config->param('GIT_REPOSITORY')
-                    . "' emerge -B $ebuild"
+                    . "' emerge -B  --nodeps $ebuild"
             ) == 0
             )
         {

@@ -17,7 +17,8 @@ sub alias {
         "p" => "pack",
         "u" => "upgrade",
         "m" => "mantain",
-        "b" => "box"
+        "b" => "box",
+        "bu" => "bump"
     );
 }
 
@@ -44,7 +45,7 @@ help (--help for full)
     - show help message
 
   $ --> Scan new packages and add to the git repository:
-    *    e|--euscan  "-v|--verbose" => Verbose mode
+    *    e|euscan  "-v|--verbose" => Verbose mode
                                 "-q|--quiet" => Quiet mode
                                 "-c|--check" => Only check updates
                                 "-u|--update" => Add it to the git repository
@@ -54,8 +55,14 @@ help (--help for full)
                                 "-g|--git" => Stages git add and commit for each ebuild
                                 "-f|--force" => Force the -i and -m also if the ebuild is already present
 
+  $ --> Automatically bumps packages using euscan:
+    *    bu|bump [full|scan]  "-n|--no-test" => skip tests
+                                "-g|--git" => Stages git add and commit for each package
+                                "-f|--force" => Force the -i and -m also if the ebuild is already present
+           bump scan cat/atom
+
     --> Checkout a repository and filter the ebuilds and add to the git repository (supports multiple repository)
-    *    s|--sync      "-u|--update" => Add it to the git repository
+    *    s|sync      "-u|--update" => Add it to the git repository
                                 "-r|--refactor=s", Modify the refactor term
                                 "-t|--refactortarget=s" => Modify the target of the refactoring
                                 "-r|--root=s" =>  Set root of the git repository

@@ -74,7 +74,7 @@
          "url" : "ssh://git://dev.dark-lab.net/2222/spike/app-witchcraft.git"
       }
    },
-   "version" : "0.009",
+   "version" : "0.01",
    "x_contributors" : [
       "skullbocks <dgikille@gmail.com>"
    ]

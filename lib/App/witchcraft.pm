@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 0.009;
+our $VERSION              = 0.010;
 our $CONFIG_FILE          = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"; #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
@@ -51,6 +51,12 @@ App::witchcraft - Continuous integration tool for Entropy server
                                 "-i|--install" => Also Install it
                                 "-g|--git" => Stages git add and commit for each ebuild
                                 "-f|--force" => Force the -i and -m also if the ebuild is already present
+
+  $ --> Automatically bumps packages using euscan:
+    *    bu|bump [full|scan]  "-n|--no-test" => skip tests
+                                "-g|--git" => Stages git add and commit for each package
+                                "-f|--force" => Force the -i and -m also if the ebuild is already present
+           bump scan cat/atom
 
     --> Checkout a repository and filter the ebuilds and add to the git repository (supports multiple repository)
     *    s|--sync      "-u|--update" => Add it to the git repository

@@ -16,6 +16,12 @@ App::witchcraft - Continuous integration tool for Entropy server
                                   "-g|--git" => Stages git add and commit for each ebuild
                                   "-f|--force" => Force the -i and -m also if the ebuild is already present
 
+    $ --> Automatically bumps packages using euscan:
+      *    bu|bump [full|scan]  "-n|--no-test" => skip tests
+                                  "-g|--git" => Stages git add and commit for each package
+                                  "-f|--force" => Force the -i and -m also if the ebuild is already present
+             bump scan cat/atom
+
       --> Checkout a repository and filter the ebuilds and add to the git repository (supports multiple repository)
       *    s|--sync      "-u|--update" => Add it to the git repository
                                   "-r|--refactor=s", Modify the refactor term
