@@ -57,7 +57,7 @@ our @EXPORT_OK = (
         clean_stash
         vagrant_box_cmd
         bump
-        bremove_available list_available eix_sync), @EXPORT
+        remove_available list_available eix_sync), @EXPORT
 );
 
 sub list_available {
