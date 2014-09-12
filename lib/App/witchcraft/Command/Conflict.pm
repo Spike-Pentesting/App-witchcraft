@@ -1,7 +1,7 @@
 package App::witchcraft::Command::Conflict;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils qw(list_available error info notice uniq);
+use App::witchcraft::Utils qw(send_report list_available error info notice uniq);
 
 use warnings;
 use strict;
@@ -63,6 +63,7 @@ sub run {
     info "Those are the packages that are already in other repository: ";
     notice "\t$_" for @to_remove;
     return if !$self->{delete};
+    send_report("Those packages will be removed from the repository since are presents on others ", @to_remove);
     system("eit remove --quick --nodeps --from $overlay $_ ") for @to_remove;
 }
 
