@@ -1,7 +1,8 @@
 package App::witchcraft::Command::Conflict;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils qw(send_report list_available error info notice uniq);
+use App::witchcraft::Utils
+    qw(send_report list_available error info notice uniq log_command);
 
 use warnings;
 use strict;
@@ -19,7 +20,7 @@ App::witchcraft::Command::Conflict - Resolve repository conflict
 
 =head1 DESCRIPTION
 
-Clean the sabayon repository from upstream conflict
+Clean the sabayon repository from upstream conflicts
 
 =head1 AUTHOR
 
@@ -54,7 +55,8 @@ sub run {
     chomp(@repos);
     @repos = grep { !/$overlay/ } @repos;
     info "Searching packages in the following repositories: @repos";
-    my @other_repos_packages = list_available({ "-q" => "", "-v" => "" },@repos);
+    my @other_repos_packages
+        = list_available( { "-q" => "", "-v" => "" }, @repos );
     info "retrieving packages in the $overlay repository";
     my @repo_packages = list_available( { "-q" => "", "-v" => "" }, $overlay )
         ;    #also compare versions
@@ -63,8 +65,9 @@ sub run {
     info "Those are the packages that are already in other repository: ";
     notice "\t$_" for @to_remove;
     return if !$self->{delete};
-    send_report("Those packages will be removed from the repository since are presents on others ", @to_remove);
-    system("eit remove --quick --nodeps --from $overlay $_ ") for @to_remove;
+    send_report( "[Conflict] Removing: " . join( " ", @to_remove ) );
+    log_command("eit remove --quick --nodeps --from $overlay $_ ")
+        for @to_remove;
 }
 
 1;
