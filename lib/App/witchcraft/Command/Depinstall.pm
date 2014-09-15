@@ -60,13 +60,12 @@ sub run {
         . $depth
         . ' using equo';
     info 'Retrieving dependencies';
-    my @to_install = calculate_missing($package,$depth);
+    my @to_install = calculate_missing( $package, $depth );
     info scalar(@to_install)
         . " are not present in the systems and needs to be installed ";
-    my $Installs = join( " ", @to_install );
     info "Installing: ";
     notice $_. "\t" for @to_install;
-    log_command("sudo equo i -q $Installs");
+    log_command( "sudo equo i -q " . join( " ", @to_install ) );
 }
 
 1;
