@@ -65,7 +65,7 @@ sub run {
     info "Those are the packages that are already in other repository: ";
     notice "\t$_" for @to_remove;
     return if !$self->{delete};
-    send_report( "[Conflict] Removing: " . join( " ", @to_remove ) );
+    send_report( "[Conflict] Removing those packages ",@to_remove );
     log_command("eit remove --quick --nodeps --from $overlay $_ ")
         for @to_remove;
 }

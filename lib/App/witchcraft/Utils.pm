@@ -56,6 +56,7 @@ our @EXPORT_OK = (
         upgrade
         clean_stash
         vagrant_box_cmd
+        log_command
         bump
         remove_available list_available eix_sync), @EXPORT
 );
@@ -579,7 +580,7 @@ sub send_report {
             &bullet( "link", $message, $url );
             &irc_msg( "Witchcraft\@$hostname: "
                     . $message
-                    . " - Nopaste link:"
+                    . " - "
                     . $url );
         }
 
