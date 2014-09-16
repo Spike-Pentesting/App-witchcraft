@@ -1,5 +1,5 @@
 {
-   "abstract" : "Continuous integration tool for Entropy server",
+   "abstract" : "Continuous integration tool, repository manager for Gentoo or your Entropy server",
    "author" : [
       "mudler <mudler@dark-lab.net>, skullbocks <skullbocks@dark-lab.net>"
    ],

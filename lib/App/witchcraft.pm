@@ -36,7 +36,7 @@ sub Config {    #it's just handy sometimes!
 
 =head1 NAME
 
-App::witchcraft - Continuous integration tool for Entropy server
+App::witchcraft - Continuous integration tool, repository manager for Gentoo or your Entropy server
 
 =head1 SYNOPSIS
 
