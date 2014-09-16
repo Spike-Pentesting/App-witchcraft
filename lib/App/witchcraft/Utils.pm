@@ -8,10 +8,9 @@ use warnings;
 use strict;
 
 sub import {
-    my $class  = shift;
+    shift;
     my @functs = @_;
     my $caller = caller;
-
     if ( my $helper = App::witchcraft->Config->param("DISTRO") ) {
         App::witchcraft::Utils::Gentoo->import::into( $caller, @functs )
             and return
