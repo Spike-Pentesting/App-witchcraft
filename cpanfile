@@ -11,10 +11,12 @@ requires 'Expect';
 requires 'File::Path';
 requires 'Git::Sub';
 requires 'HTTP::Request::Common';
+requires 'Import::Into';
 requires 'LWP::UserAgent';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'Term::ReadKey';
+requires 'parent';
 requires 'perl', '5.008_005';
 
 on configure => sub {
