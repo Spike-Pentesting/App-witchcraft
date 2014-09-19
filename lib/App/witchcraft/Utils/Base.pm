@@ -53,6 +53,7 @@ our @EXPORT_OK = (
         euscan
         find_ebuilds
         vagrant_box_status
+        filetopackage
         upgrade
         clean_stash
         vagrant_box_cmd
@@ -60,6 +61,13 @@ our @EXPORT_OK = (
         bump
         remove_available list_available eix_sync), @EXPORT
 );
+
+sub filetopackage {
+    return map {
+        my @pieces = split( /\//, $_ );
+        $pieces[-3] . '/' . $pieces[-2];
+    } @_;
+}
 
 sub list_available {
     my $options = shift;
@@ -139,7 +147,8 @@ sub bump {
             . $last
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
-    &send_report("Automagic bump: $last --> $updated");
+    my $package = &filetopackage($updated);
+    &send_report("Automagic bump: $last --> $package");
     &info( "Bumped: " . $updated ) and return 1
         if defined $last and copy( $source, $updated );
     return undef;
@@ -197,9 +206,7 @@ sub process(@) {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
         &send_report( "Emerge in progress for $commit", @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
-            &send_report(
-                "[$commit] Packets successfully compiled:\n####################\n"
-                    . join( " ", @DIFFS ) );
+            &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
             }
@@ -214,14 +221,19 @@ sub emerge(@) {
     my $options = shift;
     my $emerge_options
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    $emerge_options .= " " . App::witchcraft::Config->param('EMERGE_OPTS')
+        if App::witchcraft::Config->param('EMERGE_OPTS');
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
+    my $rs     = 1;
     my $EDITOR = $ENV{EDITOR};
     $ENV{EDITOR} = "cat";    #quick hack
 
-    return 1 if ( @DIFFS == 0 );
+    $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    my $args = $emerge_options . " " . join( " ", @DIFFS );
+
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
         ;                    #spring cleaning!
     &entropy_update;
@@ -235,17 +247,8 @@ sub emerge(@) {
 #  &notice($_) for @equo_install;
 #  system("sudo equo i -q --relaxed $Installs");
 
-    &info( "Emerging... " . scalar(@DIFFS) . " packages" );
     &conf_update;    #EXPECT per DISPATCH-CONF
-    &notice(
-        "nice -20 emerge --color n -v --autounmask-write $emerge_options "
-            . join( " ", @DIFFS ) );
-
-    my $args = $emerge_options . " " . join( " ", @DIFFS );
-    my @E_OUTPUT
-        = `nice -20 emerge --color n -v --autounmask-write $args  2>&1`;
-
-    if ( $? == 0 ) {
+    if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         &info(    "Compressing "
                 . scalar(@DIFFS)
                 . " packages: "
@@ -288,7 +291,6 @@ sub emerge(@) {
                 );
                 &entropy_rescue;
                 &entropy_update;
-                return 1;
             }
 
         }
@@ -296,19 +298,19 @@ sub emerge(@) {
             my @LOGS = &find_logs();
             &send_report( "Error occured during compression phase",
                 join( " ", @LOGS ) );
-            return 0;
+            $rs = 0;
         }
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( "Emerge failed ", join( " ", @E_OUTPUT ) );
         &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
-        return 0;
+        $rs = 0;
     }
 
     #Maintenance stuff
     &upgrade;
     $ENV{EDITOR} = $EDITOR;    #quick hack
+    return $rs;
 }
 
 sub find_logs {
