@@ -3,7 +3,7 @@ package App::witchcraft::Command::Bump;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(error info notice draw_down_line draw_up_line find_ebuilds uniq euscan filetopackage);
+    qw(error info notice draw_down_line draw_up_line find_ebuilds uniq euscan filetoatom);
 use warnings;
 use App::witchcraft::Command::Euscan;
 use strict;
@@ -102,7 +102,7 @@ sub full {
     my $self   = shift;
     my $Euscan = shift;
     my $git     = App::witchcraft->Config->param('GIT_REPOSITORY');
-    my @EBUILDS = uniq( filetopackage( find_ebuilds($git) ) );
+    my @EBUILDS = uniq( filetoatom( find_ebuilds($git) ) );
     $self->euscan_packages( $Euscan, @EBUILDS );
 }
 

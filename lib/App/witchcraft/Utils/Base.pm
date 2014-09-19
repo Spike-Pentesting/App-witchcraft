@@ -53,8 +53,9 @@ our @EXPORT_OK = (
         euscan
         find_ebuilds
         vagrant_box_status
-        filetopackage
+        filetoatom
         upgrade
+        filetopackage
         clean_stash
         vagrant_box_cmd
         log_command
@@ -62,10 +63,19 @@ our @EXPORT_OK = (
         remove_available list_available eix_sync), @EXPORT
 );
 
-sub filetopackage {
+sub filetoatom {
     return map {
         my @pieces = split( /\//, $_ );
         $pieces[-3] . '/' . $pieces[-2];
+    } @_;
+}
+
+sub filetopackage {
+    return map {
+        my @pieces = split( /\//, $_ );
+        $_ = $pieces[-3] . '/' . $pieces[-1];
+        s/\.ebuild//;
+        $_;
     } @_;
 }
 
