@@ -147,7 +147,7 @@ sub bump {
             . $last
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
-    my $package = &filetopackage($updated);
+    my ($package) = &filetopackage($updated);
     &send_report("Automagic bump: $last --> $package");
     &info( "Bumped: " . $updated ) and return 1
         if defined $last and copy( $source, $updated );
