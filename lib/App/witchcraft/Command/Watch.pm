@@ -3,7 +3,7 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit eix_sync entropy_upgrade);
+    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit eix_sync entropy_update);
 use warnings;
 use strict;
 use File::Find;
@@ -76,7 +76,7 @@ sub run {
         info "Checking for updates, and merging up!";
         draw_up_line;
         if (eix_sync) {    #Launch layman -S first.
-            entropy_upgrade;
+            entropy_update;
             update( $cfg->param('OVERLAY_PATH'),
                 $cfg->param('GIT_MASTER_FILE') );
             manual_update( $cfg->param('OVERLAY_PATH') );

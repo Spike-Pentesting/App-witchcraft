@@ -1,12 +1,13 @@
+#!/usr/bin/env perl
+use lib './t/lib';
+use warnings FATAL => 'all';
 use strict;
+use Helpers qw(search_modules);
+
 use Test::More;
 
-# replace with the actual test
-use_ok("App::witchcraft");
-use_ok("App::witchcraft::Command::Sync");
-use_ok("App::witchcraft::Command::List");
-use_ok("App::witchcraft::Command::Euscan");
-use_ok("App::witchcraft::Command");
-use_ok("App::witchcraft::Utils");
+BEGIN {
+    use_ok( $_ ) or BAIL_OUT("$_ failed") for search_modules("App::witchcraft");
+}
 
-done_testing;
+done_testing();

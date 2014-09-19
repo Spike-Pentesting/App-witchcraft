@@ -4,7 +4,7 @@ use 5.008_005;
 use App::CLI;
 use Config::Simple;
 
-our $VERSION              = 0.010;
+our $VERSION              = 0.011;
 our $CONFIG_FILE          = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"; #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
