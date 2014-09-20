@@ -805,7 +805,11 @@ sub test_ebuild {
             &info('Installation OK');
             return 1;
         }
-        else { &error("Installation failed") and return 0; }
+        else {
+            &send_report( "Emerge failed for $specific_ebuild",
+                join( " ", &find_logs() ) );
+            &error("Installation failed") and return 0;
+        }
     }
     else { &error("Manifest failed") and return 0; }
 }
