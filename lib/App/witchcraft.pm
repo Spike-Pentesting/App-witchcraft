@@ -16,10 +16,7 @@ our $CONFIG
     = -e join( "/", $HOME, $CONFIG_FILE )
     ? join( "/", $HOME, $CONFIG_FILE )
     : join( "/", '.',   $CONFIG_FILE );
-$CONFIG
-    = ( -e $CONFIG ) ? Config::Simple->new($CONFIG)
-    : -e "./witchcraft.conf" ? Config::Simple->new("./witchcraft.conf")
-    :                          $CONFIG;
+$CONFIG = Config::Simple->new($CONFIG) if ( -e $CONFIG );
 our $IGNORE
     = -e join( "/", $HOME, $IGNORE_FILE ) ? join( "/", $HOME, $IGNORE_FILE )
     : $CONFIG->isa("Config::Simple")
@@ -46,9 +43,7 @@ sub load_plugins {
 }
 
 has 'Config' => sub {
-    ( -e $CONFIG )               ? Config::Simple->new($CONFIG)
-        : -e "./witchcraft.conf" ? Config::Simple->new("./witchcraft.conf")
-        :                          $CONFIG;
+    $CONFIG;
 };
 
 *instance = \&new;
