@@ -4,13 +4,17 @@ use App::witchcraft::Utils::Base (
     @App::witchcraft::Utils::Base::EXPORT,
     @App::witchcraft::Utils::Base::EXPORT_OK
 );
-our @EXPORT = (@App::witchcraft::Utils::Base::EXPORT);
-our @EXPORT_OK
-    = ( @App::witchcraft::Utils::Base::EXPORT_OK, qw(calculate_missing) );
+our @EXPORT    = (@App::witchcraft::Utils::Base::EXPORT);
+our @EXPORT_OK = (
+    @App::witchcraft::Utils::Base::EXPORT_OK,
+    qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
+);
 use Expect;
 use Term::ANSIColor;
 use Encode;
 use utf8;
+use Carp;
+
 #here functs can be overloaded.
 sub info {
     my @msg = @_;
@@ -20,6 +24,7 @@ sub info {
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
 }
+
 sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
@@ -94,7 +99,7 @@ sub emerge(@) {
 
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         &info("All went smooth, HURRAY! packages merged correctly");
-        &send_report("All went smooth, HURRAY! packages merged correctly");
+        &send_report( "Packages merged successfully", @DIFFS );
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
     }
     else {
@@ -126,6 +131,7 @@ Processes the atoms, can also be given in net-im/something::overlay type
 =head3 after_process => (@ATOMS)
 
 =cut
+
 sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
@@ -161,4 +167,25 @@ sub process(@) {
         }
     }
 }
+
+sub list_available {
+    croak
+        "list_available is not implemented by App::witchcraft::Utils::Gentoo class";
+}
+
+sub remove_available(@) {
+    croak
+        "remove_available is not implemented by App::witchcraft::Utils::Gentoo class";
+}
+
+sub entropy_update {
+    croak
+        "entropy_update is not implemented by App::witchcraft::Utils::Gentoo class";
+}
+
+sub entropy_rescue {
+    croak
+        "entropy_rescue is not implemented by App::witchcraft::Utils::Gentoo class";
+}
+
 1;

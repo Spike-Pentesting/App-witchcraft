@@ -49,7 +49,6 @@ our @EXPORT = qw( _debug
 our @EXPORT_OK = (
     qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
         natural_order
-        entropy_update
         euscan
         find_ebuilds
         vagrant_box_status
@@ -64,7 +63,7 @@ our @EXPORT_OK = (
         vagrant_box_cmd
         log_command
         bump
-        remove_available list_available eix_sync), @EXPORT
+        eix_sync), @EXPORT
 );
 
 =encoding utf-8
@@ -486,32 +485,7 @@ sub eix_sync {
     &log_command("eix-sync");
 }
 
-##### XXX: Those remains to port on gentoo
-sub list_available {
-    my $options = shift;
-    my $equo_options
-        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
-    my @r;
-    push( @r, &uniq(`equo query list available $_ $equo_options`) ) for @_;
-    chomp @r;
-    return @r;
-}
 
-sub remove_available(@) {
-    my @Packages  = shift;
-    my @Available = `equo q list -q available sabayonlinux.org`;
-    chomp(@Available);
-    my %available = map { $_ => 1 } @Available;
-    return grep( !defined $available{$_}, @Packages );
-}
-
-sub entropy_update {
-    &log_command("equo up && equo u");
-}
-
-sub entropy_rescue {
-    &log_command("equo rescue spmsync");
-}
 
 ######## END
 

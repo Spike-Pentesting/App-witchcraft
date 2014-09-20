@@ -5,7 +5,10 @@ use App::witchcraft::Utils::Base (
     @App::witchcraft::Utils::Base::EXPORT_OK
 );
 our @EXPORT    = (@App::witchcraft::Utils::Base::EXPORT);
-our @EXPORT_OK = (@App::witchcraft::Utils::Base::EXPORT_OK, qw(calculate_missing));
+our @EXPORT_OK = (
+    @App::witchcraft::Utils::Base::EXPORT_OK,
+    qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
+);
 
 #here functs can be overloaded.
 
@@ -26,9 +29,11 @@ emerges the given atoms
 =head3 after_push => (@ATOMS)
 
 =cut
-sub conf_update{
+
+sub conf_update {
     &log_command("echo -5 | equo conf update");
 }
+
 sub emerge(@) {
     my $options = shift;
     App::witchcraft->instance->emit( before_emerge => ($options) );
@@ -132,7 +137,6 @@ sub emerge(@) {
     return $rs;
 }
 
-
 sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
@@ -163,6 +167,7 @@ Processes the atoms, can also be given in net-im/something::overlay type
 =head3 after_process => (@ATOMS)
 
 =cut
+
 sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
@@ -197,6 +202,32 @@ sub process(@) {
             }
         }
     }
+}
+
+sub list_available {
+    my $options = shift;
+    my $equo_options
+        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    my @r;
+    push( @r, &uniq(`equo query list available $_ $equo_options`) ) for @_;
+    chomp @r;
+    return @r;
+}
+
+sub remove_available(@) {
+    my @Packages  = shift;
+    my @Available = `equo q list -q available sabayonlinux.org`;
+    chomp(@Available);
+    my %available = map { $_ => 1 } @Available;
+    return grep( !defined $available{$_}, @Packages );
+}
+
+sub entropy_update {
+    &log_command("equo up && equo u");
+}
+
+sub entropy_rescue {
+    &log_command("equo rescue spmsync");
 }
 
 1;
