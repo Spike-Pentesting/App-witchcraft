@@ -5,6 +5,7 @@ requires 'App::Nopaste';
 requires 'Carp::Always';
 requires 'Child';
 requires 'Config::Simple';
+requires 'Deeme::Obj';
 requires 'Digest::MD5';
 requires 'Encode';
 requires 'Expect';
