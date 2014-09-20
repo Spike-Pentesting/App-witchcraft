@@ -1,8 +1,14 @@
 package App::witchcraft::Utils::Gentoo;
 use base qw(Exporter);
-use  App::witchcraft::Utils::Base (@App::witchcraft::Utils::Base::EXPORT,@App::witchcraft::Utils::Base::EXPORT_OK);
+use App::witchcraft::Utils::Base (
+    @App::witchcraft::Utils::Base::EXPORT,
+    @App::witchcraft::Utils::Base::EXPORT_OK
+);
 our @EXPORT = (@App::witchcraft::Utils::Base::EXPORT);
-our @EXPORT_OK =  (@App::witchcraft::Utils::Base::EXPORT_OK,qw(calculate_missing));
+our @EXPORT_OK
+    = ( @App::witchcraft::Utils::Base::EXPORT_OK, qw(calculate_missing) );
+use Expect;
+
 #here functs can be overloaded.
 
 sub calculate_missing($$) {
@@ -18,5 +24,19 @@ sub calculate_missing($$) {
     return @to_install;
 }
 
+sub conf_update {
+    my $Expect = Expect->new;
+    $Expect->raw_pty(1);
+    $Expect->spawn("sudo dispatch-conf")
+        or send_report(
+        "error executing equo conf update",
+        "Cannot spawn equo conf update: $!\n"
+        );
+
+    $Expect->send("u\n");
+    my @potential = < /etc/conf.d/..*>;
+    $Expect->send("u\n") for @potential;
+    $Expect->soft_close();
+}
 
 1;

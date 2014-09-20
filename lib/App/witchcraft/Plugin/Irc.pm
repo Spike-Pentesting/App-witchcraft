@@ -25,8 +25,8 @@ sub register {
 
 sub irc_msg {
     shift;
-    my @MESSAGES = @_;
-    my $cfg      = App::witchcraft->instance->Config;
+    my @MESSAGES = map { $_ =~ s/\n/ /g; $_ } @_;
+    my $cfg = App::witchcraft->instance->Config;
     return undef unless ( defined $cfg->param('IRC_IDENT') );
     my $ident    = $cfg->param('IRC_IDENT');
     my $realname = $cfg->param('IRC_REALNAME');
@@ -49,7 +49,7 @@ sub irc_msg {
                 printf $socket "JOIN $chan\r\n";
                 info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
-                    for ( map { $_ =~ s/\n/ /g; $_ } @MESSAGES );
+                    for (@MESSAGES);
                 sleep 5;
             }
             printf $socket "QUIT\r\n";

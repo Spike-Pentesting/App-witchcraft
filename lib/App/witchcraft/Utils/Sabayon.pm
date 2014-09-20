@@ -26,7 +26,9 @@ emerges the given atoms
 =head3 after_push => (@ATOMS)
 
 =cut
-
+sub conf_update{
+    &log_command("echo -5 | equo conf update");
+}
 sub emerge(@) {
     my $options = shift;
     App::witchcraft->instance->emit( before_emerge => ($options) );

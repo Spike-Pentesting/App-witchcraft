@@ -5,6 +5,7 @@ use parent
 
 use Import::Into;
 use warnings;
+use App::witchcraft;
 use strict;
 
 sub import {

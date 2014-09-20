@@ -19,6 +19,7 @@ use utf8;
 use Encode;
 use File::Copy;
 use File::Find;
+use Carp;
 use Cwd;
 $|++;    # turn off output buffering;
 
@@ -54,7 +55,11 @@ our @EXPORT_OK = (
         vagrant_box_status
         filetoatom
         upgrade
+        chwn
         filetopackage
+        slurp
+        append
+        spurt
         clean_stash
         vagrant_box_cmd
         log_command
@@ -91,27 +96,41 @@ sub filetopackage {
     } @_;
 }
 
-sub list_available {
-    my $options = shift;
-    my $equo_options
-        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
-    my @r;
-    push( @r, &uniq(`equo query list available $_ $equo_options`) ) for @_;
-    chomp @r;
-    return @r;
+sub spurt {
+    my ( $content, $path ) = @_;
+    croak qq{Can't open file "$path": $!} unless open my $file, '>', $path;
+    croak qq{Can't write to file "$path": $!}
+        unless defined $file->syswrite($content);
+    return $content;
 }
 
-sub conf_update {
-    my $Expect = Expect->new;
-    $Expect->raw_pty(1);
-    $Expect->spawn("equo conf update")
-        or send_report(
-        "error executing equo conf update",
-        "Cannot spawn equo conf update: $!\n"
-        );
+sub slurp {
+    my $path = shift;
+    croak qq{Can't open file "$path": $!} unless open my $file, '<', $path;
+    my $content = '';
+    while ( $file->sysread( my $buffer, 131072, 0 ) ) { $content .= $buffer }
+    return $content;
+}
 
-    $Expect->send("-5\n");
-    $Expect->soft_close();
+sub append {
+    my ( $content, $path ) = @_;
+    croak qq{Can't open file "$path": $!} unless open my $file, '>>', $path;
+    croak qq{Can't write to file "$path": $!}
+        unless defined $file->syswrite($content);
+    return $content;
+}
+
+sub chwn {
+    my $uid = getpwnam shift;
+    my $gid = getgrnam shift;
+    chown $uid, $gid, shift;
+}
+
+
+
+sub conf_update {
+    croak
+        "conf_update is not implemented by App::witchcraftUtils::Base class";
 }
 
 =head1 bump($atom,$newfile)
@@ -473,6 +492,23 @@ sub depgraph($$) {
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
+
+sub log_command {
+    my $command = shift;
+    &info("Phase: $command");
+    my @LOG = `$command 2>&1`;
+    if ( $? == 0 ) {
+        &notice("$command succeded");
+        return 1;
+    }
+    else {
+        &error("Something went wrong with $command");
+        &send_report( "Phase: $command failed", @LOG );
+        return 0;
+    }
+}
+
+
 =head1 send_report ($message, @lines)
 
 send report status back to the user
@@ -541,16 +577,29 @@ sub send_report {
     return $success;
 }
 
+
+
+sub eix_sync {
+    &log_command("eix-sync");
+}
+
+##### XXX: Those remains to port on gentoo
+sub list_available {
+    my $options = shift;
+    my $equo_options
+        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    my @r;
+    push( @r, &uniq(`equo query list available $_ $equo_options`) ) for @_;
+    chomp @r;
+    return @r;
+}
+
 sub remove_available(@) {
     my @Packages  = shift;
     my @Available = `equo q list -q available sabayonlinux.org`;
     chomp(@Available);
     my %available = map { $_ => 1 } @Available;
     return grep( !defined $available{$_}, @Packages );
-}
-
-sub eix_sync {
-    &log_command("eix-sync");
 }
 
 sub entropy_update {
@@ -561,20 +610,7 @@ sub entropy_rescue {
     &log_command("equo rescue spmsync");
 }
 
-sub log_command {
-    my $command = shift;
-    &info("Phase: $command");
-    my @LOG = `$command 2>&1`;
-    if ( $? == 0 ) {
-        &notice("$command succeded");
-        return 1;
-    }
-    else {
-        &error("Something went wrong with $command");
-        &send_report( "Phase: $command failed", @LOG );
-        return 0;
-    }
-}
+######## END
 
 sub git_sync() {
     chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
