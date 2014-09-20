@@ -161,7 +161,6 @@ sub bump {
             . $last
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
-    &send_report("Automagic bump: $last --> $updated");
     &info( "Bumped: " . $updated )
         and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
         and return 1
@@ -807,7 +806,12 @@ sub test_ebuild {
         }
         else {
             &send_report( "Emerge failed for $specific_ebuild",
-                join( " ", &find_logs() ) );
+                join( " ", &find_logs() ) )
+                if App::witchcraft->instance->Config->param(
+                "REPORT_TEST_FAILS")
+                and
+                App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+                == 1;
             &error("Installation failed") and return 0;
         }
     }
@@ -830,9 +834,14 @@ sub test_untracked {
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
         ;    #spring cleaning!
     my $c = 1;
+    my @Atoms_Installed;
 
     foreach my $new_pos (@Untracked) {
         &info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
+        my $atom = $new_pos;
+        $atom=filetoatom($atom);
+        $atom=~s/\.ebuild//g;
+        push(@Atoms_Installed,$atom);
         $c++;
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
         $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
@@ -865,8 +874,8 @@ sub test_untracked {
             "Those files where correctly installed, maybe you wanna check them: "
         );
         my $result;
-        &notice($_) and $result .= " " . $_ for ( &uniq(@Installed) );
-        &send_report("Those ebuilds where correctly installed: $result");
+        &notice($_) and $result .= " " . $_ for ( &uniq(@Atoms_Installed) );
+        &send_report("These ebuilds where correctly installed: $result");
         &info("Generating the command for maintenance");
         &notice("git add $result");
         &notice("eix-sync");

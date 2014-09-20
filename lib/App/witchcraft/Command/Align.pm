@@ -60,6 +60,7 @@ sub run {
     error 'No compiled commit could be found, you must specify it' and exit 1
         if ( !defined $last_commit );
     info 'Emerging packages from commit ' . $last_commit;
+    send_report("Align start, building commit from $last_commit");
     my $cfg = App::witchcraft->instance->Config;
     eix_sync;
     chdir( $cfg->param('OVERLAY_PATH') );

@@ -9,7 +9,7 @@ sub register {
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('IRC_CHANNELS');
     info "<Plugin: IRC> Configured, loading";
-    notice $_ for ($emitter->Config->param('IRC_CHANNELS'));
+    notice $_ for ( $emitter->Config->param('IRC_CHANNELS') );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
@@ -39,8 +39,11 @@ sub irc_msg {
         PeerPort => $cfg->param('IRC_PORT'),
         Proto    => "tcp",
         Timeout  => 10
-    ) or error("Couldn't connect to the irc server");
+        )
+        or error("Couldn't connect to the irc server")
+        and return undef;
     info("Sending notification also on IRC");
+    return undef unless $socket;
     $socket->autoflush(1);
     sleep 2;
     printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";

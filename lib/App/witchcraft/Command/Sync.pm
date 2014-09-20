@@ -2,6 +2,8 @@ package App::witchcraft::Command::Sync;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(send_report);
+
 use warnings;
 use strict;
 use File::Find;
@@ -128,7 +130,7 @@ sub run {
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
-
+    send_report("Starting to sync: @REMOTES");
     foreach my $RepoUrl (@REMOTES) {
         App::witchcraft::Command::Clean->new
             ->run;    #XXX: cleaning before each sync
