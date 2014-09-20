@@ -11,13 +11,15 @@ sub import {
     shift;
     my @functs = @_;
     my $caller = caller;
-    if ( my $helper = App::witchcraft->Config->param("DISTRO") ) {
-        App::witchcraft::Utils::Gentoo->import::into( $caller, @functs )
-            and return
-            if $helper eq "gentoo";
-        App::witchcraft::Utils::Sabayon->import::into( $caller, @functs )
-            and return
-            if $helper eq "sabayon";
+    if ( my $helper = App::witchcraft->new->Config->param("DISTRO") ) {
+        if ( $helper eq "gentoo" ) {
+            App::witchcraft::Utils::Gentoo->import::into( $caller, @functs );
+            return;
+        }
+        elsif ( $helper eq "sabayon" ) {
+            App::witchcraft::Utils::Sabayon->import::into( $caller, @functs );
+            return;
+        }
     }
     App::witchcraft::Utils::Base->import::into( $caller, @functs );
 

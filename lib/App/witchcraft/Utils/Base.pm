@@ -10,7 +10,7 @@ use Term::ReadKey;
 use App::Nopaste 'nopaste';
 use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
-use HTTP::Request::Common qw(POST);
+
 use LWP::UserAgent;
 use Expect;
 use Digest::MD5;
@@ -38,7 +38,6 @@ our @EXPORT = qw( _debug
     atom
     daemonize
     depgraph
-    calculate_missing
     emerge
     git_index
     git_sync
@@ -62,6 +61,19 @@ our @EXPORT_OK = (
         bump
         remove_available list_available eix_sync), @EXPORT
 );
+
+=encoding utf-8
+
+=head1 NAME
+
+App::witchcraft::Utils::Base - Various utilities functions
+
+
+=head1 DESCRIPTION
+
+Upgrade entropy repository packages.
+
+=cut
 
 sub filetoatom {
     return map {
@@ -102,42 +114,17 @@ sub conf_update {
     $Expect->soft_close();
 }
 
-sub irc_msg(@) {
-    my @MESSAGES = @_;
-    my $cfg      = App::witchcraft->Config;
-    return undef unless ( defined $cfg->param('IRC_IDENT') );
-    my $ident    = $cfg->param('IRC_IDENT');
-    my $realname = $cfg->param('IRC_REALNAME');
-    my @channels = $cfg->param('IRC_CHANNELS');
-    my $socket   = IO::Socket::INET->new(
-        PeerAddr => $cfg->param('IRC_SERVER'),
-        PeerPort => $cfg->param('IRC_PORT'),
-        Proto    => "tcp",
-        Timeout  => 10
-    ) or &error("Couldn't connect to the irc server");
-    &info("Sending notification also on IRC");
-    $socket->autoflush(1);
-    sleep 2;
-    printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
-    printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
+=head1 bump($atom,$newfile)
 
-    while ( my $line = <$socket> ) {
-        if ( $line =~ m/^\:(.+?)\s+376/i ) {
-            foreach my $chan (@channels) {
-                printf $socket "JOIN $chan\r\n";
-                &info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
-                printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
-                    for ( map { $_ =~ s/\n/ /g; $_ } @MESSAGES );
-                sleep 5;
-            }
-            printf $socket "QUIT\r\n";
-            $socket->close if ( defined $socket );
-            last;
-        }
-    }
-    $socket->close if ( defined $socket );
+Bumps the $atom (cat/atom) to the $newfile (absolute path with PV included)
 
-}
+=head2 EMITS
+
+=head3 bump => $atom,$updated
+
+after the bump
+
+=cut
 
 #usage bump($atom,$PV)
 sub bump {
@@ -158,13 +145,16 @@ sub bump {
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
     &send_report("Automagic bump: $last --> $updated");
-    &info( "Bumped: " . $updated ) and return 1
-        if defined $last and copy( $source, $updated );
+    &info( "Bumped: " . $updated )
+        and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
+        and return 1
+        if defined $last
+        and copy( $source, $updated );
     return undef;
 }
 
 sub upgrade {
-    my $cfg = App::witchcraft->Config;
+    my $cfg = App::witchcraft->instance->Config;
     &log_command( "cpanm " . $cfg->param('WITCHCRAFT_GIT') )
         if ( $cfg->param('WITCHCRAFT_GIT') );
 }
@@ -192,15 +182,28 @@ sub natural_order {
 # from an array of atoms ("category/atom","category/atom2")
 # it generates then a list that would be emerged and then added to the repo, each error would be reported
 
+=head1 process(@Atoms,$commit,$usage)
+
+Processes the atoms, can also be given in net-im/something::overlay type
+
+=head2 EMITS
+
+=head3 before_process => (@ATOMS)
+
+=head3 after_process => (@ATOMS)
+
+=cut
+
 sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
     my @DIFFS  = @_;
     &notice( "Processing " . join( " ", @DIFFS ) );
-    my $cfg          = App::witchcraft->Config;
+    my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    App::witchcraft->instance->emit( before_process => (@CMD) );
     my @ebuilds = &to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
@@ -216,6 +219,7 @@ sub process(@) {
         &send_report( "Emerge in progress for $commit", @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
             &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
+            App::witchcraft->instance->emit( after_process => (@DIFFS) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
             }
@@ -226,12 +230,27 @@ sub process(@) {
     }
 }
 
+=head1 emerge(@Atoms,$commit,$usage)
+
+emerges the given atoms
+
+=head2 EMITS
+
+=head3 before_emerge => ($options)
+
+=head3 after_emerge => (@ATOMS)
+
+=cut
+
 sub emerge(@) {
     my $options = shift;
+    App::witchcraft->instance->emit( before_emerge => ($options) );
+
     my $emerge_options
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
-    $emerge_options .= " " . App::witchcraft::Config->param('EMERGE_OPTS')
-        if App::witchcraft::Config->param('EMERGE_OPTS');
+    $emerge_options
+        .= " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
+        if App::witchcraft->instance->Config->param('EMERGE_OPTS');
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
@@ -245,7 +264,6 @@ sub emerge(@) {
 
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
         ;                    #spring cleaning!
-    &entropy_update;
 
 #reticulating splines here...
 #  push(@equo_install, &calculate_missing($_,1)) for @CMD;
@@ -256,59 +274,10 @@ sub emerge(@) {
 #  &notice($_) for @equo_install;
 #  system("sudo equo i -q --relaxed $Installs");
 
-    &conf_update;    #EXPECT per DISPATCH-CONF
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
-        &info(    "Compressing "
-                . scalar(@DIFFS)
-                . " packages: "
-                . join( " ", @DIFFS ) );
-        &conf_update;
-        ##EXPECT PER EIT ADD
-        my $Expect = Expect->new;
-
-        #       unshift( @CMD, "add" );
-        #     push( @CMD, "--quick" );
-        # $Expect->spawn( "eit", "add", "--quick", @CMD )
-        $Expect->spawn( "eit", "commit", "--quick" )
-            or send_report("Eit add gives error! Cannot spawn eit: $!\n");
-        $Expect->expect(
-            undef,
-            [   qr/missing dependencies have been found|nano|\?/i => sub {
-                    my $exp = shift;
-                    $exp->send("\cX");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\n");
-                    exp_continue;
-                },
-                'eof' => sub {
-                    my $exp = shift;
-                    $exp->soft_close();
-                    }
-            ],
-        );
-        if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
-            &conf_update;    #EXPECT per DISPATCH-CONF
-
-            if ( &log_command("eit push --quick") ) {
-                &info("All went smooth, HURRAY!");
-                &send_report(
-                    "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
-                );
-                &entropy_rescue;
-                &entropy_update;
-            }
-
-        }
-        else {
-            my @LOGS = &find_logs();
-            &send_report( "Error occured during compression phase",
-                join( " ", @LOGS ) );
-            $rs = 0;
-        }
+        &info("All went smooth, HURRAY! packages merged correctly");
+        &send_report("All went smooth, HURRAY! packages merged correctly");
+        App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
     }
     else {
         my @LOGS = &find_logs();
@@ -351,7 +320,7 @@ sub find_logs {
 sub to_ebuild(@) {
     my @DIFFS = @_;
     my @TO_EMERGE;
-    my $overlay = App::witchcraft::Config->param('OVERLAY_PATH');
+    my $overlay = App::witchcraft->instance->Config->param('OVERLAY_PATH');
     foreach my $file (@DIFFS) {
         my @ebuild = <$overlay/$file/*>;
         foreach my $e (@ebuild) {
@@ -412,12 +381,13 @@ sub previous_commit($$) {
 sub last_md5() {
     open my $last,
         "<"
-        . App::witchcraft::Config->param('MD5_PACKAGES')
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES')
         or (
         &send_report(
             "Errore nella lettura dell'ultimo md5 compilato",
             'Can\'t open '
-                . App::witchcraft::Config->param('MD5_PACKAGES') . ' -> '
+                . App::witchcraft->instance->Config->param('MD5_PACKAGES')
+                . ' -> '
                 . $!
         )
         and return undef
@@ -433,7 +403,7 @@ sub last_md5() {
 #  output: last commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft::Config->param('LAST_COMMIT')
+    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT')
         or ( &notice("Nothing was previously compiled") and return undef );
     my @LAST = <FILE>;
     close FILE;
@@ -447,13 +417,13 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
-    open FILE, ">" . App::witchcraft::Config->param('LAST_COMMIT');
+    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
-    open FILE, ">" . App::witchcraft::Config->param('MD5_PACKAGES');
+    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES');
     print FILE shift;
     close FILE;
 }
@@ -469,8 +439,9 @@ sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
     my $commit = &compiled_commit // &previous_commit( $git_repository_path,
-        App::witchcraft::Config->param('GIT_HISTORY_FILE') );
-    my $git_cmd = App::witchcraft::Config->param('GIT_DIFF_COMMAND');
+        App::witchcraft->instance->Config->param('GIT_HISTORY_FILE') );
+    my $git_cmd
+        = App::witchcraft->instance->Config->param('GIT_DIFF_COMMAND');
     $git_cmd =~ s/\[COMMIT\]/$commit/g;
     my @DIFFS;
     open CMD, "cd $git_repository_path;$git_cmd | ";  # Parsing the git output
@@ -494,19 +465,6 @@ sub find_ebuilds($) {
     return @EBUILDS;
 }
 
-sub calculate_missing($$) {
-    my $package  = shift;
-    my $depth    = shift;
-    my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( scalar(@Packages) . " dependencies found " );
-    my @Installed_Packages = qx/equo q -q list installed/;
-    chomp(@Installed_Packages);
-    my %packs = map { $_ => 1 } @Installed_Packages;
-    my @to_install = uniq( grep( !defined $packs{$_}, @Packages ) );
-    shift @to_install;
-    return @to_install;
-}
-
 sub depgraph($$) {
     my $package = shift;
     my $depth   = shift;
@@ -515,46 +473,33 @@ sub depgraph($$) {
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
-#usage: bullet("note|link","Title","body/url")
-sub bullet($$$) {
-    my $type     = shift;
-    my $title    = shift;
-    my $arg      = shift;
-    my $hostname = $App::witchcraft::HOSTNAME;
-    my $ua       = LWP::UserAgent->new;
+=head1 send_report ($message, @lines)
 
-    my @BULLET = App::witchcraft::Config->param('ALERT_BULLET');
-    my $req;
-    my $success = @BULLET;
-    my $api = $type eq "note" ? "body" : "url";
-    foreach my $BULL (@BULLET) {
-        $req = POST 'https://api.pushbullet.com/v2/pushes',
-            [
-            type  => $type,
-            title => "Witchcraft\@$hostname: " . $title,
-            $api  => $arg
-            ];
-        $req->authorization_basic($BULL);
-        my $res = $ua->request($req)->as_string;
-        if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-            &notice("Push sent correctly!");
-        }
-        else {
-            &error("Error sending the push!");
-            $success--;
-        }
-    }
+send report status back to the user
+Tries to generate a nopaste url if @lines are given, emits the following depending if the link was generated
 
-    return $success;
+=head2 EMITS
 
-}
+=head3 send_report_body => $message, $log
+
+No paste link could be generated, $log contains now all your lines squashed by \n
+
+=head3 send_report_message => $message
+
+The report should contain only a message
+
+=head3 send_report_link => $message,$link
+
+The @lines where successfully posted, $link is the url of the nopaste
+
+=cut
 
 #usage send_report("Message Title", @_);
 sub send_report {
     my $message = shift;
     return undef
-        unless ( App::witchcraft::Config->param('ALERT_BULLET')
-        or App::witchcraft::Config->param('IRC_CHANNELS') );
+        unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
+        or App::witchcraft->instance->Config->param('IRC_CHANNELS') );
     &info("Sending report status");
 
     #  &info( 'Sending ' . $message );
@@ -582,20 +527,16 @@ sub send_report {
             1;
         };
         if ($@) {
-
-            # &error("Error generating nopaste url");
-            &bullet( "note", "No paste could be generated, allegating all",
-                $log );
+            App::witchcraft->instance->emit(
+                send_report_body => ( $message, $log ) );
         }
         else {
-            &bullet( "link", $message, $url );
-            &irc_msg( "Witchcraft\@$hostname: " . $message . " - " . $url );
+            App::witchcraft->instance->emit(
+                send_report_link => ( $message, $url ) );
         }
-
     }
     else {
-        &bullet( "note", "Status", $message );
-        &irc_msg( "Witchcraft\@$hostname: " . $message );
+        App::witchcraft->instance->emit( send_report_message => ($message) );
     }
     return $success;
 }
@@ -636,10 +577,11 @@ sub log_command {
 }
 
 sub git_sync() {
-    chdir( App::witchcraft->Config->param('GIT_REPOSITORY') );
+    chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
     eval {
         &notice(  "Git pull for ["
-                . App::witchcraft->Config->param('GIT_REPOSITORY') . "] "
+                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
+                . "] "
                 . git::pull );
     };
     if ($@) {
@@ -754,6 +696,22 @@ sub euscan {
     return @temp;
 }
 
+=head1 test_ebuild ($ebuild, manifest:1, install:1,$password)
+
+test the ebuild, creating the manifest and call the install phase if requested
+
+=head2 EMITS
+
+=head3 before_test => $ebuild
+
+Called before testing, giving the ebuild path
+
+=head3 after_test => $ebuild
+
+Called after a successfully test phase
+
+=cut
+
 sub test_ebuild {
 
     #XXX: to add repoman scan here
@@ -778,21 +736,24 @@ sub test_ebuild {
         $ebuild =~ s/\.ebuild//;
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
-        $ebuild = "=" . $ebuild;
+        my $specific_ebuild = "=" . $ebuild;
         system(   $password
                 . " PORTDIR_OVERLAY='"
-                . App::witchcraft::Config->param('GIT_REPOSITORY')
-                . "' emerge --onlydeps $ebuild" )
+                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
+                . "' emerge --onlydeps $specific_ebuild" )
             if ( defined $install );
+        App::witchcraft->instance->emit( before_test => ($ebuild) );
 
         if (defined $install
             and system( $password
                     . " PORTDIR_OVERLAY='"
-                    . App::witchcraft::Config->param('GIT_REPOSITORY')
-                    . "' emerge -B  --nodeps $ebuild"
+                    . App::witchcraft->instance->Config->param(
+                    'GIT_REPOSITORY')
+                    . "' emerge -B  --nodeps $specific_ebuild"
             ) == 0
             )
         {
+            App::witchcraft->instance->emit( after_test => ($ebuild) );
             &info('Installation OK');
             return 1;
         }
@@ -1026,3 +987,21 @@ sub dialog_yes_default {
 }
 
 1;
+
+=head1 AUTHOR
+
+mudler E<lt>mudler@dark-lab.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2014- mudler
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+L<App::witchcraft>, L<App::witchcraft::Command::Sync>
+
+=cut
