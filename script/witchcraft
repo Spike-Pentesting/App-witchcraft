@@ -18,6 +18,8 @@ my $act = shift;
 $SIG{INT} = sub {
     exit;
 };
+
+
 make_path ${App::witchcraft::HOME}
     and info "Now you need to setup your witchcraft.conf"
     unless ( -d ${App::witchcraft::HOME} );
@@ -29,5 +31,8 @@ error "You must create a proper "
     );
 App::witchcraft::Command->global_help and exit
     if ( defined $act and $act eq "--help" );
+
+App::witchcraft->new->load_plugins;
+
 App::witchcraft::Command->invoke( ($act), @ARGV );
 exit;
