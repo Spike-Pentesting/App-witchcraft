@@ -13,16 +13,16 @@ sub import {
     my @functs = @_;
     my $caller = caller;
     if ( my $helper = App::witchcraft->new->Config->param("DISTRO") ) {
-        if ( $helper eq "gentoo" ) {
+        if ( $helper =~ /gentoo/i ) {
             App::witchcraft::Utils::Gentoo->import::into( $caller, @functs );
             return;
         }
-        elsif ( $helper eq "sabayon" ) {
+        elsif ( $helper =~ /sabayon/i ) {
             App::witchcraft::Utils::Sabayon->import::into( $caller, @functs );
             return;
         }
     }
-    App::witchcraft::Utils::Gentoo->import::into( $caller, @functs );
+    App::witchcraft::Utils::Base->import::into( $caller, @functs );
 
     return;
 }
