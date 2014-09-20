@@ -21,7 +21,7 @@ sub import {
             return;
         }
     }
-    App::witchcraft::Utils::Base->import::into( $caller, @functs );
+    App::witchcraft::Utils::Gentoo->import::into( $caller, @functs );
 
     return;
 }
