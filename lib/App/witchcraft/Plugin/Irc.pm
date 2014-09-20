@@ -8,7 +8,7 @@ sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('IRC_CHANNELS');
-    info "Registering IRC hooks";
+    info "<Plugin: IRC> Configured, loading";
     notice $_ for ($emitter->Config->param('IRC_CHANNELS'));
     $emitter->on(
         "send_report_link" => sub {

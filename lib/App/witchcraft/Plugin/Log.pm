@@ -11,7 +11,7 @@ sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('LOGS_DIR');
-    info "Registering Log hooks";
+    info "<Plugin: Log> Configured, loading";
     $emitter->on(
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;
@@ -20,7 +20,7 @@ sub register {
                 $message
                     . "\n\n########################################\n"
                     . $log
-                    . "\n\n############END##########\n",
+                    . "\n\n############END##########\n\n",
                 $dir . "/" . DateTime->now->day . ".txt"
             ) if $dir;
         }
@@ -29,7 +29,7 @@ sub register {
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
             my $dir = $self->prepare_dir;
-            append( $url . ":" . $message,
+            append( $url . ": " . $message . "\n",
                 $dir . "/" . DateTime->now->day . ".txt" )
                 if $dir;
         }
@@ -38,7 +38,8 @@ sub register {
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             my $dir = $self->prepare_dir;
-            append( $message, $dir . "/" . DateTime->now->day . ".txt" )
+            append( $message . "\n",
+                $dir . "/" . DateTime->now->day . ".txt" )
                 if $dir;
         }
     );
