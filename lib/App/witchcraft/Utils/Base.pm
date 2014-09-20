@@ -126,8 +126,6 @@ sub chwn {
     chown $uid, $gid, shift;
 }
 
-
-
 sub conf_update {
     croak
         "conf_update is not implemented by App::witchcraftUtils::Base class";
@@ -492,13 +490,30 @@ sub depgraph($$) {
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
+=head1 log_command($command)
+
+log each fail on a given command, and return it's fail/succeeded state
+
+=head2 EMITS
+
+=head3 before_$command
+
+Emitted before the execution of the given $command
+
+=head3 after_$command
+
+Emitted after the execution of the given $command
+
+=cut
 
 sub log_command {
     my $command = shift;
     &info("Phase: $command");
+    App::witchcraft->instance->emit("before_$command");
     my @LOG = `$command 2>&1`;
     if ( $? == 0 ) {
         &notice("$command succeded");
+        App::witchcraft->instance->emit("after_$command");
         return 1;
     }
     else {
@@ -507,7 +522,6 @@ sub log_command {
         return 0;
     }
 }
-
 
 =head1 send_report ($message, @lines)
 
@@ -576,8 +590,6 @@ sub send_report {
     }
     return $success;
 }
-
-
 
 sub eix_sync {
     &log_command("eix-sync");
