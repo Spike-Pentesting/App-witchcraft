@@ -145,6 +145,58 @@ sub calculate_missing($$) {
     shift @to_install;
     return @to_install;
 }
+#
+#  name: process
+#  input: @DIFFS
+#  output: void
+# from an array of atoms ("category/atom","category/atom2")
+# it generates then a list that would be emerged and then added to the repo, each error would be reported
 
+=head1 process(@Atoms,$commit,$usage)
+
+Processes the atoms, can also be given in net-im/something::overlay type
+
+=head2 EMITS
+
+=head3 before_process => (@ATOMS)
+
+=head3 after_process => (@ATOMS)
+
+=cut
+sub process(@) {
+    my $use    = pop(@_);
+    my $commit = pop(@_);
+    my @DIFFS  = @_;
+    &notice( "Processing " . join( " ", @DIFFS ) );
+    my $cfg          = App::witchcraft->instance->Config;
+    my $overlay_name = $cfg->param('OVERLAY_NAME');
+    my @CMD          = @DIFFS;
+    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    App::witchcraft->instance->emit( before_process => (@CMD) );
+    my @ebuilds = &to_ebuild(@CMD);
+
+    if ( scalar(@ebuilds) == 0 and $use == 0 ) {
+        if ( $use == 0 ) {
+            &save_compiled_commit($commit);
+        }
+        elsif ( $use == 1 ) {
+            &save_compiled_packages($commit);
+        }
+    }
+    else {
+#at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
+        &send_report( "Emerge in progress for $commit", @DIFFS );
+        if ( &emerge( {}, @DIFFS ) ) {
+            &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
+            App::witchcraft->instance->emit( after_process => (@DIFFS) );
+            if ( $use == 0 ) {
+                &save_compiled_commit($commit);
+            }
+            elsif ( $use == 1 ) {
+                &save_compiled_packages($commit);
+            }
+        }
+    }
+}
 
 1;

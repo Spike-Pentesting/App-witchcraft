@@ -12,6 +12,7 @@ sub import {
     shift;
     my @functs = @_;
     my $caller = caller;
+
     if ( my $helper = App::witchcraft->new->Config->param("DISTRO") ) {
         if ( $helper =~ /gentoo/i ) {
             App::witchcraft::Utils::Gentoo->import::into( $caller, @functs );
@@ -22,7 +23,7 @@ sub import {
             return;
         }
     }
-    App::witchcraft::Utils::Base->import::into( $caller, @functs );
+    App::witchcraft::Utils::Gentoo->import::into( $caller, @functs );
 
     return;
 }
