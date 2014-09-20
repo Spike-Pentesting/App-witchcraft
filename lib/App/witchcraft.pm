@@ -1,11 +1,14 @@
 package App::witchcraft;
 use strict;
 use 5.008_005;
+use Deeme::Obj 'Deeme';
+
 use App::CLI;
 use Config::Simple;
-
-our $VERSION              = 0.011;
-our $CONFIG_FILE          = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"; #with this you can handle multiple repos configurations
+use App::witchcraft::Loader;
+our $VERSION = 0.011;
+our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
+    ;    #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
 our $HOME                 = join( "/", $ENV{HOME}, $WITCHCRAFT_DIRECTORY );
@@ -13,11 +16,6 @@ our $CONFIG
     = -e join( "/", $HOME, $CONFIG_FILE )
     ? join( "/", $HOME, $CONFIG_FILE )
     : join( "/", '.',   $CONFIG_FILE );
-
-$CONFIG
-    = ( -e $CONFIG ) ? Config::Simple->new($CONFIG)
-    : -e "./witchcraft.conf" ? Config::Simple->new("./witchcraft.conf")
-    :                          $CONFIG;
 
 our $IGNORE
     = -e join( "/", $HOME, $IGNORE_FILE ) ? join( "/", $HOME, $IGNORE_FILE )
@@ -28,9 +26,30 @@ our $IGNORE
 our $HOSTNAME = `hostname`;
 chomp($HOSTNAME);
 
-sub Config {    #it's just handy sometimes!
-    return $CONFIG;
+my $singleton;
+
+sub new { $singleton ||= shift->SUPER::new(@_); }
+
+sub load_plugins {
+    my $self   = shift;
+    my $Loader = App::witchcraft::Loader->new;
+    if ( my @PLUGINS = $self->Config->param("PLUGINS") ) {
+        for (@PLUGINS) {
+            my $Plugin = "App::witchcraft::Plugin::" . ucfirst($_);
+            next if $Loader->load($Plugin);
+            $Plugin->new->register($self);
+        }
+    }
 }
+
+has 'Config' => sub {
+          ( -e $CONFIG )         ? Config::Simple->new($CONFIG)
+        : -e "./witchcraft.conf" ? Config::Simple->new("./witchcraft.conf")
+        :                          $CONFIG;
+};
+
+*instance = \&new;
+1;
 
 =encoding utf-8
 
@@ -159,6 +178,4 @@ it under the same terms as Perl itself.
 L<App::witchcraft::Command::Euscan>, L<App::witchcraft::Command::Sync>
 
 =cut
-
-1;
 
