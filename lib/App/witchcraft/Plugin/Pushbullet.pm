@@ -4,27 +4,30 @@ use Deeme::Obj -base;
 use App::witchcraft::Utils qw(info error notice);
 use LWP::UserAgent;
 use HTTP::Request::Common qw(POST);
+
 sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
+    return undef unless $emitter->Config->param('ALERT_BULLET');
+    info "Registering PushBullet hooks";
     $emitter->on(
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;
             $self->bullet( "note", $message, $log );
         }
-    ) if $emitter->Config->param('ALERT_BULLET');
+    );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
             $self->bullet( "link", $message, $url );
         }
-    ) if $emitter->Config->param('ALERT_BULLET');
+    );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             $self->bullet( "note", "Status", $message );
         }
-    ) if $emitter->Config->param('ALERT_BULLET');
+    );
 
 }
 

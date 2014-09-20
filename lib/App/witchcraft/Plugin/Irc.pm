@@ -2,24 +2,27 @@ package App::witchcraft::Plugin::Irc;
 
 use Deeme::Obj -base;
 use IO::Socket::INET;
-use App::witchcraft::Utils qw(info error);
+use App::witchcraft::Utils qw(info error notice);
 
 sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
+    return undef unless $emitter->Config->param('IRC_CHANNELS');
+    info "Registering IRC hooks";
+    notice $_ for ($emitter->Config->param('IRC_CHANNELS'));
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
             $self->irc_msg(
                 "Witchcraft\@$hostname: " . $message . " - " . $url );
         }
-    ) if $emitter->Config->param('IRC_CHANNELS');
+    );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             $self->irc_msg( "Witchcraft\@$hostname: " . $message );
         }
-    ) if $emitter->Config->param('IRC_CHANNELS');
+    );
 
 }
 

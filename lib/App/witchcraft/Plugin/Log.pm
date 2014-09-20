@@ -10,6 +10,8 @@ use DateTime;
 sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
+    return undef unless $emitter->Config->param('LOGS_DIR');
+    info "Registering Log hooks";
     $emitter->on(
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;
@@ -22,7 +24,7 @@ sub register {
                 $dir . "/" . DateTime->now->day . ".txt"
             ) if $dir;
         }
-    ) if $emitter->Config->param('LOGS_DIR');
+    );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
@@ -31,7 +33,7 @@ sub register {
                 $dir . "/" . DateTime->now->day . ".txt" )
                 if $dir;
         }
-    ) if $emitter->Config->param('LOGS_DIR');
+    );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
@@ -39,7 +41,7 @@ sub register {
             append( $message, $dir . "/" . DateTime->now->day . ".txt" )
                 if $dir;
         }
-    ) if $emitter->Config->param('LOGS_DIR');
+    );
 
 }
 
