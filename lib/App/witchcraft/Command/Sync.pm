@@ -111,15 +111,15 @@ sub options {
 
 sub run {
     my $self = shift;
-    my @REMOTES = shift // App::witchcraft->Config->param('REMOTE_OVERLAY');
+    my @REMOTES = shift // App::witchcraft->instance->Config->param('REMOTE_OVERLAY');
     info "Syncing with remote repository and merging into one!";
     my $password  = password_dialog();
     my @REFACTORS = $self->{'refactor'}
-        // App::witchcraft->Config->param('REFACTOR');
+        // App::witchcraft->instance->Config->param('REFACTOR');
     my @ignores;
-    my $temp = $self->{'temp'} // App::witchcraft->Config->param('CVS_TMP');
+    my $temp = $self->{'temp'} // App::witchcraft->instance->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
-        // App::witchcraft->Config->param('REFACTOR_TO');
+        // App::witchcraft->instance->Config->param('REFACTOR_TO');
     git_sync;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     system( "rm -rf " . $temp . '*' );
@@ -236,7 +236,7 @@ sub synchronize {
     return if ( !$self->{update} );
     info "Copying content to git directory" if $self->{verbose};
     my $dir
-        = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+        = $self->{root} // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
 
@@ -257,7 +257,7 @@ sub synchronize {
     return if ( !$self->{eit} );
     emerge(
         { '-n' => '' },
-        map { $_ . "::" . App::witchcraft->Config->param('OVERLAY_NAME') }
+        map { $_ . "::" . App::witchcraft->instance->Config->param('OVERLAY_NAME') }
             @Installed
     );
 

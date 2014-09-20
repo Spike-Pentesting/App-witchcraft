@@ -85,7 +85,7 @@ sub run {
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );
 
-    my $cfg          = App::witchcraft->Config;
+    my $cfg          = App::witchcraft->instance->Config;
     my $HOME         = $ENV{HOME};
     my $VAGRANT_HOME = $ENV{VAGRANT_HOME};
 

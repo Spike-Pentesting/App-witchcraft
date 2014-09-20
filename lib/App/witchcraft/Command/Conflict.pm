@@ -47,7 +47,7 @@ sub options {
 sub run {
     my $self = shift;
     error 'You must run it with root permissions' and exit 1 if $> != 0;
-    my $overlay = shift // App::witchcraft->Config->param('OVERLAY_NAME');
+    my $overlay = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     error 'No OVERLAY_NAME defined' and exit 1 if ( !$overlay );
     info
         'Calculating packages that are already in other sabayon repositories ';

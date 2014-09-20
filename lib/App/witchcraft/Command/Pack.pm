@@ -55,7 +55,7 @@ sub run {
     my $self     = shift;
     my @EMERGING = @_;
     info 'Emerging & Pushing ' . scalar(@EMERGING) . ' packages';
-    my $cfg = App::witchcraft->Config;
+    my $cfg = App::witchcraft->instance->Config;
     eix_sync;
     notice 'Those are the packages that would be processed:';
     draw_up_line;

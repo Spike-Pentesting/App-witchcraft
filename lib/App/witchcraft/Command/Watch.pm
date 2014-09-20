@@ -65,7 +65,7 @@ sub options {
 sub run {
     my $self = shift;
     error 'You must run it with root permissions' and exit 1 if $> != 0;
-    my $cfg = App::witchcraft->Config;
+    my $cfg = App::witchcraft->instance->Config;
     info 'Watching overlay '
         . $cfg->param('OVERLAY_NAME')
         . ' every '
@@ -89,7 +89,7 @@ sub run {
 
 sub manual_update($) {
     my $overlay = shift;
-    my $cfg     = App::witchcraft->Config;
+    my $cfg     = App::witchcraft->instance->Config;
     my $overlay_to_compile_packages
         = $cfg->param('OVERLAY_MANUAL_COMPILE_FILE');
 
@@ -140,7 +140,7 @@ sub manual_update($) {
 sub update($$) {
     my $overlay     = shift;
     my $master_file = shift;
-    my $cfg         = App::witchcraft->Config;
+    my $cfg         = App::witchcraft->instance->Config;
 
     my $commit = last_commit( $overlay, $master_file );
     info("Last commit: $commit");

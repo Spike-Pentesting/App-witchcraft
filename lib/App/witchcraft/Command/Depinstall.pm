@@ -54,8 +54,8 @@ sub run {
     error "You must supply a package"             and exit 1 if ( !$package );
     error 'You must run it with root permissions' and exit 1 if $> != 0;
     error "This feature is only available for Sabayon"      and exit 1
-        if App::witchcraft->Config->param("DISTRO")
-        and App::witchcraft->Config->param("DISTRO") ne "Sabayon";
+        if App::witchcraft->instance->Config->param("DISTRO")
+        and App::witchcraft->instance->Config->param("DISTRO") ne "Sabayon";
 
     info 'Installing all dependencies for '
         . $package

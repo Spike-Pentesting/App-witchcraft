@@ -95,7 +95,7 @@ sub options {
 
 sub run {
     my $self = shift;
-    my $Repo = shift // App::witchcraft->Config->param('OVERLAY_NAME');
+    my $Repo = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
@@ -106,7 +106,7 @@ sub run {
     my $c = 1;
     info "Starting Euscan of " . join( " ", @Packages ) if $self->{verbose};
     my $dir
-        = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+        = $self->{root} // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
 
     foreach my $Package (@Packages) {
@@ -141,7 +141,7 @@ sub update {
     my @temp = @_;
     return () if ( !$self->{update} and !$self->{check} );
     my $dir
-        = $self->{root} // App::witchcraft->Config->param('GIT_REPOSITORY');
+        = $self->{root} // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );

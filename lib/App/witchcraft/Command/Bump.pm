@@ -101,7 +101,7 @@ sub scan {
 sub full {
     my $self   = shift;
     my $Euscan = shift;
-    my $git     = App::witchcraft->Config->param('GIT_REPOSITORY');
+    my $git     = App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     my @EBUILDS = uniq( filetoatom( find_ebuilds($git) ) );
     $self->euscan_packages( $Euscan, @EBUILDS );
 }
@@ -117,7 +117,6 @@ sub euscan_packages {
         draw_up_line;
         notice "[$c/" . scalar(@EBUILDS) . "] " . $Package;
         my @temp = euscan($Package);
-
         info "** " . $_ for @temp;
         push( @Updates, @temp );
         push( @Added, $Euscan->update( $Package, undef, @temp ) )
