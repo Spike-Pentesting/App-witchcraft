@@ -9,6 +9,7 @@ use Regexp::Common qw/URI/;
 use Tie::File;
 use Git::Sub;
 use File::Path qw(remove_tree);
+use App::witchcraft::Command::Clean;
 
 =encoding utf-8
 
@@ -110,14 +111,16 @@ sub options {
 }
 
 sub run {
-    my $self = shift;
-    my @REMOTES = shift // App::witchcraft->instance->Config->param('REMOTE_OVERLAY');
+    my $self    = shift;
+    my @REMOTES = shift
+        // App::witchcraft->instance->Config->param('REMOTE_OVERLAY');
     info "Syncing with remote repository and merging into one!";
     my $password  = password_dialog();
     my @REFACTORS = $self->{'refactor'}
         // App::witchcraft->instance->Config->param('REFACTOR');
     my @ignores;
-    my $temp = $self->{'temp'} // App::witchcraft->instance->Config->param('CVS_TMP');
+    my $temp = $self->{'temp'}
+        // App::witchcraft->instance->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
         // App::witchcraft->instance->Config->param('REFACTOR_TO');
     git_sync;
@@ -127,6 +130,8 @@ sub run {
     draw_up_line;
 
     foreach my $RepoUrl (@REMOTES) {
+        App::witchcraft::Command::Clean->new
+            ->run;    #XXX: cleaning before each sync
         $self->synchronize( $REFACTORS[$i], $refactor_target, $RepoUrl,
             $temp . int( rand(10000) ),
             $password, @ignores );
@@ -236,7 +241,8 @@ sub synchronize {
     return if ( !$self->{update} );
     info "Copying content to git directory" if $self->{verbose};
     my $dir
-        = $self->{root} // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+        = $self->{root}
+        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
 
@@ -257,8 +263,10 @@ sub synchronize {
     return if ( !$self->{eit} );
     emerge(
         { '-n' => '' },
-        map { $_ . "::" . App::witchcraft->instance->Config->param('OVERLAY_NAME') }
-            @Installed
+        map {
+            $_ . "::"
+                . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+        } @Installed
     );
 
 }
