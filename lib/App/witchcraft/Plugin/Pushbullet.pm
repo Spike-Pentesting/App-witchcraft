@@ -4,6 +4,7 @@ use Deeme::Obj -base;
 use App::witchcraft::Utils qw(info error notice);
 use LWP::UserAgent;
 use HTTP::Request::Common qw(POST);
+use Child;
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -37,30 +38,31 @@ sub bullet {
     my $arg      = shift;
     my $hostname = $App::witchcraft::HOSTNAME;
     my $ua       = LWP::UserAgent->new;
-
     my @BULLET = App::witchcraft->instance->Config->param('ALERT_BULLET');
-    my $req;
-    my $success = @BULLET;
     my $api = $type eq "note" ? "body" : "url";
     foreach my $BULL (@BULLET) {
-        $req = POST 'https://api.pushbullet.com/v2/pushes',
-            [
-            type  => $type,
-            title => "Witchcraft\@$hostname: " . $title,
-            $api  => $arg
-            ];
-        $req->authorization_basic($BULL);
-        my $res = $ua->request($req)->as_string;
-        if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-            notice("Push sent correctly!");
-        }
-        else {
-            error("Error sending the push!");
-            $success--;
-        }
+        Child->new(
+            sub {
+                my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                    [
+                    type  => $type,
+                    title => "Witchcraft\@$hostname: " . $title,
+                    $api  => $arg
+                    ];
+                $req->authorization_basic($BULL);
+                my $res = $ua->request($req)->as_string;
+                if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+                    notice("Push sent correctly!");
+                }
+                else {
+                    error("Error sending the push!");
+                }
+                exit 0;
+            }
+        )->start;
     }
+    local $SIG{CHLD} = 'IGNORE';
 
-    return $success;
 }
 
 1;
