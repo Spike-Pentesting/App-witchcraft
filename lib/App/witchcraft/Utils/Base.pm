@@ -485,8 +485,6 @@ sub eix_sync {
     &log_command("eix-sync");
 }
 
-
-
 ######## END
 
 sub git_sync() {
@@ -705,14 +703,14 @@ sub test_untracked {
     foreach my $new_pos (@Untracked) {
         &info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
         my $atom = $new_pos;
-        $atom = filetoatom($atom);
-        $atom =~ s/\.ebuild//g;
-        push( @Atoms_Installed, $atom );
+
+        #$atom = filetoatom($atom);
         $c++;
         my $result = &test_ebuild( $new_pos, 1, 1, $password );
         $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
 
         if ( $result == 1 ) {
+            push( @Atoms_Installed, $atom );
 
             #  &info( $new_pos . " was correctly installed" );
             push( @Installed, $new_pos );
