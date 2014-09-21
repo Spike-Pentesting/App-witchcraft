@@ -84,6 +84,7 @@ sub run {
         and exit 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );
+    App::witchcraft->instance->emit("irc_exit");    # prevent irc collapse
 
     my $cfg          = App::witchcraft->instance->Config;
     my $HOME         = $ENV{HOME};

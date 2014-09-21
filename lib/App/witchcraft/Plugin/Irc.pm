@@ -29,9 +29,8 @@ sub register {
             $self->irc_msg( "Witchcraft\@$hostname: " . $message );
         }
     );
-    $emitter->on(
-        "on_exit" => sub { $self->socket->kill(12) }
-    );
+    $emitter->on( "on_exit" => sub { $self->socket->kill(12) } );
+    $emitter->on( "irc_exit" => sub { $self->socket->kill(12) } );
 
 }
 
