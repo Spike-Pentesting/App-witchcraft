@@ -14,8 +14,6 @@ sub register {
     $self->socket( $self->irc_start )
         ;    #this would make the bot mantaining the connection
     local $SIG{CHLD} = 'IGNORE';
-    info "<Plugin: IRC> Configured, loading";
-    notice $_ for ( $emitter->Config->param('IRC_CHANNELS') );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
@@ -51,9 +49,9 @@ sub irc_start {
                 or error("Couldn't connect to the irc server")
                 and exit 2;
             info("Sending notification also on IRC");
-            exit 2 unless $socket;
+    #        exit 2 unless $socket;
             $socket->autoflush(1);
-            sleep 2;
+      #      sleep 2;
             printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
             printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
             $SIG{INT} = sub { exit(2) };
@@ -70,7 +68,6 @@ sub irc_start {
             };
 
             while ( my $line = <$socket> ) {
-
                 #  print $line;
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";
@@ -81,7 +78,7 @@ sub irc_start {
                 }
             }
             $socket->close if ( defined $socket );
-
+            print "Process closed\n";
         },
         pipe => 1
     )->start;

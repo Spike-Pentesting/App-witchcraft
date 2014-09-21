@@ -51,9 +51,9 @@ sub run {
     my $self    = shift;
     my $package = shift;
     my $depth   = $self->{depth} // 1;
-    error "You must supply a package"             and exit 1 if ( !$package );
-    error 'You must run it with root permissions' and exit 1 if $> != 0;
-    error "This feature is only available for Sabayon"      and exit 1
+    error "You must supply a package"             and return 1 if ( !$package );
+    error 'You must run it with root permissions' and return 1 if $> != 0;
+    error "This feature is only available for Sabayon"      and return 1
         if App::witchcraft->instance->Config->param("DISTRO")
         and App::witchcraft->instance->Config->param("DISTRO") ne "Sabayon";
 

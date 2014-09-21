@@ -40,7 +40,7 @@ L<App::witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub run {
-    error 'You must run it with root permissions' and exit 1 if $> != 0;
+    error 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
     my $Repo = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info 'Upgrade of the Sabayon repository ' . $Repo;

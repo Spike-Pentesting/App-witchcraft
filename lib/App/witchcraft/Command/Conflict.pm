@@ -46,9 +46,9 @@ sub options {
 
 sub run {
     my $self = shift;
-    error 'You must run it with root permissions' and exit 1 if $> != 0;
+    error 'You must run it with root permissions' and return 1 if $> != 0;
     my $overlay = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    error 'No OVERLAY_NAME defined' and exit 1 if ( !$overlay );
+    error 'No OVERLAY_NAME defined' and return 1 if ( !$overlay );
     info
         'Calculating packages that are already in other sabayon repositories ';
     my @repos = qx|equo repo list -q|;

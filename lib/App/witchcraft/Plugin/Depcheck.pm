@@ -5,7 +5,6 @@ use App::witchcraft::Utils qw(info error send_report);
 
 sub register {
     my ( $self, $emitter ) = @_;
-        info "<Plugin: Depcheck> Loading";
     $emitter->on(
         "after_test" => sub {
             my ( $witchcraft, $ebuild ) = @_;

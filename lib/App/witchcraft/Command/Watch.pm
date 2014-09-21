@@ -64,7 +64,7 @@ sub options {
 
 sub run {
     my $self = shift;
-    error 'You must run it with root permissions' and exit 1 if $> != 0;
+    error 'You must run it with root permissions' and return 1 if $> != 0;
     my $cfg = App::witchcraft->instance->Config;
     info 'Watching overlay '
         . $cfg->param('OVERLAY_NAME')

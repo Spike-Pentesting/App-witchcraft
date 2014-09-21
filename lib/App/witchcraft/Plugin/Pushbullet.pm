@@ -9,7 +9,6 @@ sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('ALERT_BULLET');
-    info "<Plugin: Pushbullet> Configured, loading";
     $emitter->on(
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;

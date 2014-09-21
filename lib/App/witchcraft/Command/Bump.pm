@@ -76,7 +76,7 @@ sub run {
     my @args   = @_;
 
     error "At leat one of this action must be specified: @AVAILABLE_CMDS"
-        and exit 1
+        and return 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );
 
