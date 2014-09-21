@@ -28,6 +28,7 @@ chomp($HOSTNAME);
 
 my $singleton;
 
+
 sub new { $singleton ||= shift->SUPER::new(@_); }
 
 sub load_plugins {

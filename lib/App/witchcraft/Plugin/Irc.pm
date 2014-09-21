@@ -5,8 +5,6 @@ use IO::Socket::INET;
 use App::witchcraft::Utils qw(info error notice);
 use Child;
 
-#use POSIX ":sys_wait_h";
-
 has 'socket';
 
 sub register {
@@ -15,14 +13,7 @@ sub register {
     return undef unless $emitter->Config->param('IRC_CHANNELS');
     $self->socket( $self->irc_start )
         ;    #this would make the bot mantaining the connection
-
-    local $SIG{CHLD} = sub { $self->socket->kill(12); $self->socket->wait };
-
-    #  local $SIG{CHLD} = 'IGNORE';
-    # my $pid;
-    # while (($pid = waitpid(-1, WNOHANG)) > 0) {
-    #     print "where is here,$pid\n";
-    # }
+    local $SIG{CHLD} = 'IGNORE';
     info "<Plugin: IRC> Configured, loading";
     notice $_ for ( $emitter->Config->param('IRC_CHANNELS') );
     $emitter->on(
@@ -37,6 +28,9 @@ sub register {
             my ( $witchcraft, $message ) = @_;
             $self->irc_msg( "Witchcraft\@$hostname: " . $message );
         }
+    );
+    $emitter->on(
+        "on_exit" => sub { $self->socket->kill(12) }
     );
 
 }
@@ -77,7 +71,8 @@ sub irc_start {
             };
 
             while ( my $line = <$socket> ) {
-              #  print $line;
+
+                #  print $line;
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";
                 }
