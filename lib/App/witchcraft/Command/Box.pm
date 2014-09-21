@@ -132,7 +132,7 @@ sub ssh {
             . $ENV{HOME}
             . "\";export VAGRANT_HOME=\""
             . $ENV{VAGRANT_HOME}
-            . "\";cd $box; vagrant ssh'" );
+            . "\";cd $box; vagrant ssh' &" );
 }
 
 sub monitor_start {
