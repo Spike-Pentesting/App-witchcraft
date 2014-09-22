@@ -8,6 +8,8 @@ use Child;
 
 sub register {
     my ( $self, $emitter ) = @_;
+    $SIG{CHLD} = 'IGNORE';
+
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('ALERT_BULLET');
     $emitter->on(
@@ -33,13 +35,14 @@ sub register {
 
 sub bullet {
     shift;
-    my $type     = shift;
-    my $title    = shift;
-    my $arg      = shift;
+    my $type  = shift;
+    my $title = shift;
+    my $arg   = shift;
+
     my $hostname = $App::witchcraft::HOSTNAME;
     my $ua       = LWP::UserAgent->new;
-    my @BULLET = App::witchcraft->instance->Config->param('ALERT_BULLET');
-    my $api = $type eq "note" ? "body" : "url";
+    my @BULLET   = App::witchcraft->instance->Config->param('ALERT_BULLET');
+    my $api      = $type eq "note" ? "body" : "url";
     foreach my $BULL (@BULLET) {
         Child->new(
             sub {
@@ -57,11 +60,9 @@ sub bullet {
                 else {
                     error("Error sending the push!");
                 }
-                exit 0;
             }
         )->start;
     }
-    local $SIG{CHLD} = 'IGNORE';
 
 }
 
