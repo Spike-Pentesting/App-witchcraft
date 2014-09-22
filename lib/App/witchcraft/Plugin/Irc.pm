@@ -2,7 +2,7 @@ package App::witchcraft::Plugin::Irc;
 
 use Deeme::Obj -base;
 use IO::Socket::INET;
-use App::witchcraft::Utils qw(info error notice);
+use App::witchcraft::Utils qw(info error notice send_report);
 use Child;
 
 has 'socket';
@@ -13,7 +13,7 @@ sub register {
     return undef unless $emitter->Config->param('IRC_CHANNELS');
     $self->socket( $self->irc_start )
         ;    #this would make the bot mantaining the connection
-    local $SIG{CHLD} = 'IGNORE';
+
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
@@ -27,7 +27,7 @@ sub register {
             $self->irc_msg( "Witchcraft\@$hostname: " . $message );
         }
     );
-    $emitter->on( "on_exit" => sub { $self->socket->kill(12) } );
+    $emitter->on( "on_exit"  => sub { $self->socket->kill(12) } );
     $emitter->on( "irc_exit" => sub { $self->socket->kill(12) } );
 
 }
@@ -36,6 +36,7 @@ sub irc_start {
     my $cfg = App::witchcraft->instance->Config;
     return Child->new(
         sub {
+            info("Sending notification also on IRC");
             my $self     = shift;
             my $ident    = $cfg->param('IRC_IDENT');
             my $realname = $cfg->param('IRC_REALNAME');
@@ -45,29 +46,31 @@ sub irc_start {
                 PeerPort => $cfg->param('IRC_PORT'),
                 Proto    => "tcp",
                 Timeout  => 10
-                )
-                or error("Couldn't connect to the irc server")
-                and exit 2;
-            info("Sending notification also on IRC");
-    #        exit 2 unless $socket;
+            ) or send_report("Couldn't connect to the irc server");
+            sleep 4;
+            exit 2 unless $socket;
             $socket->autoflush(1);
-      #      sleep 2;
+
+            #      sleep 2;
+            info("IRC: Connected");
+
             printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
             printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
-            $SIG{INT} = sub { exit(2) };
-            $SIG{USR1} = sub {
+            local $SIG{INT} = sub { exit(2) };
+            local $SIG{USR1} = sub {
                 my $in = $self->read();
                 chomp($in);
                 printf $socket "PRIVMSG $_ :$in\r\n" for @channels;
             };
 
-            $SIG{USR2} = sub {
+            local $SIG{USR2} = sub {
                 printf $socket "QUIT\r\n";
                 $socket->close if ( defined $socket );
                 exit 0;
             };
 
             while ( my $line = <$socket> ) {
+
                 #  print $line;
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";

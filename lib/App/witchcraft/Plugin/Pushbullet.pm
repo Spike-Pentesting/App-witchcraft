@@ -8,7 +8,6 @@ use Child;
 
 sub register {
     my ( $self, $emitter ) = @_;
-    $SIG{CHLD} = 'IGNORE';
 
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('ALERT_BULLET');
@@ -44,26 +43,25 @@ sub bullet {
     my @BULLET   = App::witchcraft->instance->Config->param('ALERT_BULLET');
     my $api      = $type eq "note" ? "body" : "url";
     foreach my $BULL (@BULLET) {
-        Child->new(
-            sub {
-                my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                    [
-                    type  => $type,
-                    title => "Witchcraft\@$hostname: " . $title,
-                    $api  => $arg
-                    ];
-                $req->authorization_basic($BULL);
-                my $res = $ua->request($req)->as_string;
-                if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-                    notice("Push sent correctly!");
+            Child->new(
+                sub {
+                    my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                        [
+                        type  => $type,
+                        title => "Witchcraft\@$hostname: " . $title,
+                        $api  => $arg
+                        ];
+                    $req->authorization_basic($BULL);
+                    my $res = $ua->request($req)->as_string;
+                    if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+                        notice("Push sent correctly!");
+                    }
+                    else {
+                        error("Error sending the push!");
+                    }
                 }
-                else {
-                    error("Error sending the push!");
-                }
-            }
-        )->start;
+            )->start
     }
-
 }
 
 1;
