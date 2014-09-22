@@ -2,7 +2,7 @@ package App::witchcraft;
 use strict;
 use 5.008_005;
 use Deeme::Obj 'Deeme';
-use POSIX ":sys_wait_h";
+
 use App::CLI;
 use Config::Simple;
 use App::witchcraft::Loader;
@@ -27,10 +27,9 @@ our $HOSTNAME = `hostname`;
 chomp($HOSTNAME);
 
 my $singleton;
-$SIG{CHLD} = sub {
-    1 while ( ( my $pid = waitpid( -1, WNOHANG ) ) > 0 );
-};
+
 sub new { $singleton ||= shift->SUPER::new(@_); }
+
 
 sub load_plugins {
     my $self   = shift;

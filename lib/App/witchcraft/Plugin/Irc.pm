@@ -3,97 +3,38 @@ package App::witchcraft::Plugin::Irc;
 use Deeme::Obj -base;
 use IO::Socket::INET;
 use App::witchcraft::Utils qw(info error notice send_report);
-use Child;
 
-has 'socket';
+#has 'socket';
+
+#https://github.com/jhthorsen/mojo-irc?
 
 sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('IRC_CHANNELS');
-    $self->socket( $self->irc_start )
-        ;    #this would make the bot mantaining the connection
+  #  $self->socket( $self->irc_start )
+ #       ;    #this would make the bot mantaining the connection
 
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            $self->irc_msg(
+            $self->irc_msg_join_part(
                 "Witchcraft\@$hostname: " . $message . " - " . $url );
         }
     );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
-            $self->irc_msg( "Witchcraft\@$hostname: " . $message );
+            $self->irc_msg_join_part( "Witchcraft\@$hostname: " . $message );
         }
     );
-    $emitter->on( "on_exit"  => sub { $self->socket->kill(12) } );
-    $emitter->on( "irc_exit" => sub { $self->socket->kill(12) } );
+   # $emitter->on( "on_exit"  => sub { $self->socket->kill(12) } );
+  #  $emitter->on( "irc_exit" => sub { $self->socket->kill(12) } );
 
 }
 
-sub irc_start {
-    my $cfg = App::witchcraft->instance->Config;
-    return Child->new(
-        sub {
-            info("Sending notification also on IRC");
-            my $self     = shift;
-            my $ident    = $cfg->param('IRC_IDENT');
-            my $realname = $cfg->param('IRC_REALNAME');
-            my @channels = $cfg->param('IRC_CHANNELS');
-            my $socket   = IO::Socket::INET->new(
-                PeerAddr => $cfg->param('IRC_SERVER'),
-                PeerPort => $cfg->param('IRC_PORT'),
-                Proto    => "tcp",
-                Timeout  => 10
-            ) or send_report("Couldn't connect to the irc server");
-            sleep 4;
-            exit 2 unless $socket;
-            $socket->autoflush(1);
 
-            #      sleep 2;
-            info("IRC: Connected");
 
-            printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
-            printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
-            local $SIG{INT} = sub { exit(2) };
-            local $SIG{USR1} = sub {
-                my $in = $self->read();
-                chomp($in);
-                printf $socket "PRIVMSG $_ :$in\r\n" for @channels;
-            };
-
-            local $SIG{USR2} = sub {
-                printf $socket "QUIT\r\n";
-                $socket->close if ( defined $socket );
-                exit 0;
-            };
-
-            while ( my $line = <$socket> ) {
-
-                #  print $line;
-                if ( $line =~ /^PING \:(.*)/ ) {
-                    print $socket "PONG :$1\n";
-                }
-
-                if ( $line =~ m/^\:(.+?)\s+376/i ) {
-                    printf $socket "JOIN $_\r\n" for @channels;
-                }
-            }
-            $socket->close if ( defined $socket );
-            print "Process closed\n";
-        },
-        pipe => 1
-    )->start;
-
-}
-
-sub irc_msg {
-    my $self    = shift;
-    my $message = shift;
-    $self->socket->say($message);
-    $self->socket->kill(10);
-}
 
 sub irc_msg_join_part {
     shift;
