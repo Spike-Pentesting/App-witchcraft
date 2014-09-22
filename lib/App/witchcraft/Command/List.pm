@@ -39,9 +39,10 @@ L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 
 sub run {
     my $self = shift;
-    my $Repo = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    my $Repo = shift
+        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    App::witchcraft->instance->emit("on_exit");
     exec("equo query list available $Repo -q");
-    exit;
 }
 
 1;
