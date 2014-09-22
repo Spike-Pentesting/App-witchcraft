@@ -5,6 +5,7 @@ requires 'App::Nopaste';
 requires 'Carp::Always';
 requires 'Child';
 requires 'Config::Simple';
+requires 'DateTime';
 requires 'Deeme::Obj';
 requires 'Digest::MD5';
 requires 'Encode';
@@ -17,11 +18,12 @@ requires 'LWP::UserAgent';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'Term::ReadKey';
+requires 'forks';
 requires 'parent';
 requires 'perl', '5.008_005';
 
 on configure => sub {
-    requires 'Module::Build';
+    requires 'Module::Build::Tiny', '0.035';
 };
 
 on test => sub {
