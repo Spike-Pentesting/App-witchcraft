@@ -1,14 +1,14 @@
 package App::witchcraft::Plugin::Depcheck;
 
 use Deeme::Obj -base;
-use App::witchcraft::Utils qw(info error send_report);
+use App::witchcraft::Utils qw(info error send_report uniq);
 
 sub register {
     my ( $self, $emitter ) = @_;
     $emitter->on(
         "after_test" => sub {
             my ( $witchcraft, $ebuild ) = @_;
-            my @RDEPEND = $self->depcheck($ebuild);
+            my @RDEPEND = uniq( $self->depcheck($ebuild) );
             if ( @RDEPEND > 0 ) {
                 error "$ebuild seems missing that RDPENDs: @RDEPEND";
                 send_report( "RDEPEND missing for $ebuild", @RDEPEND );
@@ -18,13 +18,7 @@ sub register {
     $emitter->on(
         "after_emerge" => sub {
             my ( $witchcraft, @EBUILDS ) = @_;
-            foreach my $ebuild (@EBUILDS) {
-                my @RDEPEND = $self->depcheck($ebuild);
-                if ( @RDEPEND > 0 ) {
-                    error "$ebuild seems missing that RDPENDs: @RDEPEND";
-                    send_report( "RDEPEND missing for $ebuild", @RDEPEND );
-                }
-            }
+            $emitter->emit( after_test => $_ ) for @EBUILDS;
         }
     );
 }

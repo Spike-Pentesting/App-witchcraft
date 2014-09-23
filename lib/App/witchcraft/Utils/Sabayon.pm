@@ -104,6 +104,7 @@ sub emerge(@) {
             ],
         );
         if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
+            $Expect->soft_close();
             &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
