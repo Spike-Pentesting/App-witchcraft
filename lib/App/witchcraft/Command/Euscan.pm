@@ -95,7 +95,8 @@ sub options {
 
 sub run {
     my $self = shift;
-    my $Repo = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    my $Repo = shift
+        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info 'Euscan of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
@@ -106,7 +107,8 @@ sub run {
     my $c = 1;
     info "Starting Euscan of " . join( " ", @Packages ) if $self->{verbose};
     my $dir
-        = $self->{root} // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+        = $self->{root}
+        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
 
     foreach my $Package (@Packages) {
@@ -125,11 +127,12 @@ sub run {
     if ( @Updates > 0 ) {
         print $_ . "\n" for @Updates;
     }
-    if ( $self->{git} ) {
+    if ( $self->{git} and @Added > 0 ) {
         if ( emerge( { '-n' => "" }, @Added ) ) {
-            send_report("Successfully committed to sabayon repository");
+            send_report( "Euscan: These packages where correctly emerged",
+                @Added );
         }
-        else { send_report("Error committing on entropy server") }
+        else { send_report( "Euscan: Error emerging", @Added ) }
     }
 }
 
@@ -141,7 +144,8 @@ sub update {
     my @temp = @_;
     return () if ( !$self->{update} and !$self->{check} );
     my $dir
-        = $self->{root} // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+        = $self->{root}
+        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
@@ -150,15 +154,15 @@ sub update {
         and draw_down_line
         and return ()
         if ( !-d $atom );
-    my $pack = shift @{natural_order(@temp)};
-    $pack =~ s/.*?\/(.*?)\:.*/$1/g;#my ebuild name
+    my $pack = shift @{ natural_order(@temp) };
+    $pack =~ s/.*?\/(.*?)\:.*/$1/g;    #my ebuild name
     my $updated = join( '/', $atom, $pack . '.ebuild' );
     info "Searching for $pack";
 
     if ( !-f $updated ) {
         draw_down_line
             and return ()
-            if ( $self->{check});
+            if ( $self->{check} );
         bump( $atom, $updated );
     }
     else {
