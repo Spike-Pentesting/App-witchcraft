@@ -60,6 +60,7 @@ sub bullet {
             else {
                 error("Error sending the push!");
             }
+            threads->exit;
         })->detach;
 
     }

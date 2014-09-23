@@ -3,38 +3,91 @@ package App::witchcraft::Plugin::Irc;
 use Deeme::Obj -base;
 use IO::Socket::INET;
 use App::witchcraft::Utils qw(info error notice send_report);
-
-#has 'socket';
-
-#https://github.com/jhthorsen/mojo-irc?
+use forks;
+has [qw (irc thread)];
 
 sub register {
     my ( $self, $emitter ) = @_;
     my $hostname = $App::witchcraft::HOSTNAME;
     return undef unless $emitter->Config->param('IRC_CHANNELS');
-  #  $self->socket( $self->irc_start )
- #       ;    #this would make the bot mantaining the connection
+
+    $self->irc( $self->_connect );
+    $self->_handle if ( $self->irc );
 
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            $self->irc_msg_join_part(
+            $self->irc_msg(
                 "Witchcraft\@$hostname: " . $message . " - " . $url );
         }
     );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
-            $self->irc_msg_join_part( "Witchcraft\@$hostname: " . $message );
+            $self->irc_msg( "Witchcraft\@$hostname: " . $message );
         }
     );
-   # $emitter->on( "on_exit"  => sub { $self->socket->kill(12) } );
-  #  $emitter->on( "irc_exit" => sub { $self->socket->kill(12) } );
+
+    $emitter->on( "on_exit"  => sub { $emitter->emit("irc_exit") } );
+    $emitter->on( "irc_exit" => sub { $self->thread->kill('SIGUSR1') } );
 
 }
 
+sub irc_msg {
+    my $self    = shift;
+    my $message = shift;
+    if ( $self->irc ) {
+        my $socket = $self->irc;
+        printf $socket "PRIVMSG $_ :$message\r\n"
+            for App::witchcraft->instance->Config->param('IRC_CHANNELS');
+    }
+    else {
+        $self->irc_msg_join_part($message);
+    }
+}
 
+sub _connect {
+    my $cfg    = App::witchcraft->instance->Config;
+    my $self   = shift;
+    my $socket = IO::Socket::INET->new(
+        PeerAddr => $cfg->param('IRC_SERVER'),
+        PeerPort => $cfg->param('IRC_PORT'),
+        Proto    => "tcp",
+        Timeout  => 10
+    );
+    $socket->autoflush(1) if $socket;
+    return $socket;
+}
 
+sub _handle {
+    my $self = shift;
+    return undef unless $self->irc;
+    my $cfg      = App::witchcraft->instance->Config;
+    my $ident    = $cfg->param('IRC_IDENT');
+    my $realname = $cfg->param('IRC_REALNAME');
+    my @channels = $cfg->param('IRC_CHANNELS');
+    my $socket   = $self->irc;
+    printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
+    printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
+    my $thr = threads->new(
+        sub {
+            local $SIG{USR1}
+                = sub { printf $socket "QUIT\r\n"; threads->exit };
+            while ( my $line = <$socket> ) {
+                #print $line;
+                if ( $line =~ /^PING \:(.*)/ ) {
+                    print $socket "PONG :$1\n";
+                }
+                if ( $line =~ m/^\:(.+?)\s+376/i ) {
+                    printf $socket "JOIN $_\r\n" for @channels;
+                }
+            }
+            $socket->close if ( defined $socket );
+        }
+    );
+    $thr->detach;
+    $self->thread($thr);
+}
 
 sub irc_msg_join_part {
     shift;
