@@ -63,6 +63,7 @@ our @EXPORT_OK = (
         vagrant_box_cmd
         log_command
         bump
+        clean_logs
         eix_sync), @EXPORT
 );
 
@@ -216,6 +217,11 @@ sub find_logs {
         unlink($file);
     }
     return @FINAL;
+}
+
+sub clean_logs {
+    system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
+        ;    #spring cleaning!
 }
 
 #
@@ -640,6 +646,7 @@ sub test_ebuild {
         ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
         &info('Manifest created successfully');
+        &clean_logs;
         &draw_down_line
             and return 1
             if ( defined $manifest and !defined $install );
@@ -679,7 +686,15 @@ sub test_ebuild {
             &error("Installation failed") and return 0;
         }
     }
-    else { &error("Manifest failed") and return 0; }
+    else {
+        &send_report(
+            "Manifest phase failed for $ebuild ... be more carefully next time!"
+            )
+            if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+            and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+            == 1;
+        &error("Manifest failed") and return 0;
+    }
 }
 
 sub test_untracked {
