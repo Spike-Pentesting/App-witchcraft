@@ -688,7 +688,7 @@ sub test_ebuild {
     }
     else {
         &send_report(
-            "Manifest phase failed for $specific_ebuild ... be more carefully next time!"
+            "Manifest phase failed for $ebuild ... be more carefully next time!"
             )
             if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
             and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
