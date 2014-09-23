@@ -5,6 +5,7 @@ use App::witchcraft::Utils qw(info error notice);
 use LWP::UserAgent;
 use HTTP::Request::Common qw(POST);
 use forks;
+use constant DEBUG => $ENV{DEBUG} || 0;
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -43,25 +44,25 @@ sub bullet {
     my @BULLET   = App::witchcraft->instance->Config->param('ALERT_BULLET');
     my $api      = $type eq "note" ? "body" : "url";
     foreach my $BULL (@BULLET) {
-        info "Sending to $BULL";
-        threads->new(sub {
-            info "Sending the bullet with $api";
-            my $req = POST 'https://api.pushbullet.com/v2/pushes',
-                [
-                type  => $type,
-                title => "Witchcraft\@$hostname: " . $title,
-                $api  => $arg
-                ];
-            $req->authorization_basic($BULL);
-            my $res = $ua->request($req)->as_string;
-            if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-                notice("Push sent correctly!");
+        threads->new(
+            sub {
+                my $req = POST 'https://api.pushbullet.com/v2/pushes',
+                    [
+                    type  => $type,
+                    title => "Witchcraft\@$hostname: " . $title,
+                    $api  => $arg
+                    ];
+                $req->authorization_basic($BULL);
+                my $res = $ua->request($req)->as_string;
+                if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
+                    notice("Push sent correctly!") if DEBUG;
+                }
+                else {
+                    error("Error sending the push!") if DEBUG;
+                }
+                threads->exit;
             }
-            else {
-                error("Error sending the push!");
-            }
-            threads->exit;
-        })->detach;
+        )->detach;
 
     }
 }

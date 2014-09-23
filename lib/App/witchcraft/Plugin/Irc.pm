@@ -4,6 +4,8 @@ use Deeme::Obj -base;
 use IO::Socket::INET;
 use App::witchcraft::Utils qw(info error notice send_report);
 use forks;
+use constant DEBUG => $ENV{DEBUG} || 0;
+
 has [qw (irc thread)];
 
 sub register {
@@ -74,7 +76,7 @@ sub _handle {
             local $SIG{USR1}
                 = sub { printf $socket "QUIT\r\n"; threads->exit };
             while ( my $line = <$socket> ) {
-                #print $line;
+                print $line  if DEBUG;
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";
                 }
@@ -105,7 +107,7 @@ sub irc_msg_join_part {
         )
         or error("Couldn't connect to the irc server")
         and return undef;
-    info("Sending notification also on IRC");
+    info("Sending notification also on IRC")   if DEBUG;
     return undef unless $socket;
     $socket->autoflush(1);
     sleep 2;
@@ -120,7 +122,7 @@ sub irc_msg_join_part {
         if ( $line =~ m/^\:(.+?)\s+376/i ) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
-                info( "Joining $chan on " . $cfg->param('IRC_SERVER') );
+                info( "Joining $chan on " . $cfg->param('IRC_SERVER') )   if DEBUG;
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
                     for (@MESSAGES);
                 sleep 5;
