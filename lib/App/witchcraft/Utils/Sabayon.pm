@@ -73,6 +73,7 @@ sub emerge(@) {
                 . scalar(@DIFFS)
                 . " packages: "
                 . join( " ", @DIFFS ) );
+        &send_report("Compressing these packages",@DIFFS);
         &conf_update;
         ##EXPECT PER EIT ADD
         my $Expect = Expect->new;
