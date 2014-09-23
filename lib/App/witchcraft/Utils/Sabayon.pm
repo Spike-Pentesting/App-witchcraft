@@ -54,8 +54,7 @@ sub emerge(@) {
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
 
-    system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
-        ;                    #spring cleaning!
+    &clean_logs;
     &entropy_update;
 
 #reticulating splines here...
