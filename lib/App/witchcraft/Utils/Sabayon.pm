@@ -45,7 +45,7 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
-    my $rs     = 1;
+    my $rs     = 0;
     my $EDITOR = $ENV{EDITOR};
     $ENV{EDITOR} = "cat";                                     #quick hack
     $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
@@ -88,21 +88,15 @@ sub emerge(@) {
                     "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
                 );
                 App::witchcraft->instance->emit( after_push => (@DIFFS) );
+                $rs = 1;
                 &entropy_rescue;
                 &entropy_update;
             }
-            else {
-                $rs = 0;
-            }
-        }
-        else {
-            $rs = 0;
         }
     }
     else {
         my @LOGS = &find_logs();
         &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
-        $rs = 0;
     }
 
     #Maintenance stuff
