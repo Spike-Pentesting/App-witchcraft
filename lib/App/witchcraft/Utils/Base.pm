@@ -50,6 +50,7 @@ our @EXPORT_OK = (
     qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
         natural_order
         euscan
+        command
         find_ebuilds
         vagrant_box_status
         filetoatom
@@ -415,6 +416,22 @@ sub log_command {
     else {
         &error("Something went wrong with $command");
         &send_report( "Phase: $command failed", @LOG );
+        return 0;
+    }
+}
+
+sub command {
+    my $command = shift;
+    &info("Phase: $command");
+    App::witchcraft->instance->emit("before_$command");
+    if ( system("$command 2>&1") == 0 ) {
+        &notice("$command succeded");
+        App::witchcraft->instance->emit("after_$command");
+        return 1;
+    }
+    else {
+        &error("Something went wrong with $command");
+        &send_report("Phase: $command failed");
         return 0;
     }
 }

@@ -9,6 +9,7 @@ our @EXPORT_OK = (
     @App::witchcraft::Utils::Base::EXPORT_OK,
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
+use constant DEBUG => $ENV{DEBUG} || 0;
 
 #here functs can be overloaded.
 
@@ -73,12 +74,35 @@ sub emerge(@) {
         &send_report( "Compressing these packages", @DIFFS );
         &conf_update;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
+        my $Expect = Expect->new;
+        $Expect->debug(1) if DEBUG;
 
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
         # $Expect->spawn( "eit", "add", "--quick", @CMD )
-
-        if ( &log_command('echo "\n" | eit commit --quick') ) {
+        $Expect->spawn( "eit", "commit", "--quick" )
+            or send_report("Eit add gives error! Cannot spawn eit: $!\n");
+        $Expect->expect(
+            undef,
+            [   qr/missing dependencies have been found|nano|\?/i => sub {
+                    my $exp = shift;
+                    $exp->send("\cX");
+                    $exp->send("\r");
+                    $exp->send("\r\n");
+                    $exp->send("\r");
+                    $exp->send("\r\n");
+                    $exp->send("\r");
+                    $exp->send("\n");
+                    exp_continue;
+                },
+                'eof' => sub {
+                    my $exp = shift;
+                    $exp->soft_close();
+                    }
+            ],
+        );
+        $Expect->soft_close();
+        if ( $Expect->exitstatus() == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -92,6 +116,10 @@ sub emerge(@) {
                 &entropy_rescue;
                 &entropy_update;
             }
+        }
+        else {
+            &send_report(
+                "Error in compression phase, you have to manually solve it");
         }
     }
     else {
