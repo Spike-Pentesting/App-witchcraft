@@ -72,37 +72,13 @@ sub emerge(@) {
                 . join( " ", @DIFFS ) );
         &send_report( "Compressing these packages", @DIFFS );
         &conf_update;
-        ##EXPECT PER EIT ADD
-        my $Expect = Expect->new;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
         # $Expect->spawn( "eit", "add", "--quick", @CMD )
-        $Expect->log_file( "/tmp/eit.log", "w" );
-        $Expect->spawn( "eit", "commit", "--quick" )
-            or send_report("Eit add gives error! Cannot spawn eit: $!\n");
-        sleep 1;    #time for pty creation, see Expect.pod
-        $Expect->expect(
-            undef,
-            [   qr/missing dependencies have been found|nano|\?/i => sub {
-                    my $exp = shift;
-                    $exp->send("\cX");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\n");
-                    exp_continue;
-                },
-                'eof' => sub {
-                    my $exp = shift;
-                    $exp->soft_close();
-                    }
-            ],
-        );
-        if ( !$Expect->exitstatus() and $Expect->exitstatus() == 0 ) {
+
+        if ( &log_command('echo "\n" | eit commit --quick') ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -120,9 +96,6 @@ sub emerge(@) {
             }
         }
         else {
-            my $logs = &slurp("/tmp/eit.log");
-            unlink("/tmp/eit.log");
-            &send_report( "Error occured during compression phase", $logs );
             $rs = 0;
         }
     }
