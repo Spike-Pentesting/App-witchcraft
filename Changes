@@ -1,5 +1,7 @@
 Revision history for App-witchcraft
 
 {{$NEXT}}
-        - Added Conflict command
+        - Added Conflict, Bump command
         - No more automatic upgrade on mantain command
+        - Separated Sabayon/Gentoo commands
+        - Added Plugins, and event emitter pattern
