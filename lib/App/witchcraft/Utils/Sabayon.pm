@@ -104,7 +104,7 @@ sub emerge(@) {
                     }
             ],
         );
-        if ( $Expect->exitstatus() == 0 ) {
+        if ( !$Expect->exitstatus() and $Expect->exitstatus() == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -116,6 +116,9 @@ sub emerge(@) {
                 App::witchcraft->instance->emit( after_push => (@DIFFS) );
                 &entropy_rescue;
                 &entropy_update;
+            }
+            else {
+                $rs = 0;
             }
 
         }
