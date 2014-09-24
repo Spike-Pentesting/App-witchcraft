@@ -12,7 +12,6 @@ use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
 
 use LWP::UserAgent;
-use Expect;
 use Digest::MD5;
 use IO::Socket::INET;
 use utf8;

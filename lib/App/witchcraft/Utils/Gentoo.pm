@@ -9,11 +9,11 @@ our @EXPORT_OK = (
     @App::witchcraft::Utils::Base::EXPORT_OK,
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
-use Expect;
 use Term::ANSIColor;
 use Encode;
 use utf8;
 use Carp;
+use IPC::Run3;
 
 #here functs can be overloaded.
 sub info {
@@ -39,18 +39,10 @@ sub calculate_missing($$) {
 }
 
 sub conf_update {
-    my $Expect = Expect->new;
-    $Expect->raw_pty(1);
-    $Expect->spawn("sudo dispatch-conf")
-        or send_report(
-        "error executing equo conf update",
-        "Cannot spawn equo conf update: $!\n"
-        );
-
-    $Expect->send("u\n");
+    my $in        = "u\n";
     my @potential = < /etc/conf.d/..*>;
-    $Expect->send("u\n") for @potential;
-    $Expect->soft_close();
+    $in .= "u\n" for @potential;
+    run3( [ 'sudo', 'dispatch-conf' ], \$in );
 }
 
 =head1 emerge(@Atoms,$commit,$usage)

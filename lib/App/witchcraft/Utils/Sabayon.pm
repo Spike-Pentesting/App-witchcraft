@@ -10,7 +10,7 @@ our @EXPORT_OK = (
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
 use constant DEBUG => $ENV{DEBUG} || 0;
-
+use IPC::Run3;
 #here functs can be overloaded.
 
 =head1 emerge(@Atoms,$commit,$usage)
@@ -74,35 +74,17 @@ sub emerge(@) {
         &send_report( "Compressing these packages", @DIFFS );
         &conf_update;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
-        my $Expect = Expect->new;
-        $Expect->debug(1) if DEBUG;
 
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
         # $Expect->spawn( "eit", "add", "--quick", @CMD )
-        $Expect->spawn( "eit", "commit", "--quick" )
-            or send_report("Eit add gives error! Cannot spawn eit: $!\n");
-        $Expect->expect(
-            undef,
-            [   qr/missing dependencies have been found|nano|\?/i => sub {
-                    my $exp = shift;
-                    $exp->send("\cX");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\n");
-                    exp_continue;
-                },
-                'eof' => sub {
-                    my $exp = shift;
-                    $exp->soft_close();
-                    }
-            ],
-        );
-        $Expect->soft_close();
-        if ( $Expect->exitstatus() == 0 ) {
+        #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
+        #   or send_report("Cannot spawn eit: $!\n");
+        my ( $out, $err );
+        run3( [ 'eit', 'commit', '--quick' ], \"Si\n\nYes\n\n", \$out,
+            \$err );
+
+        if ( $? == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -119,7 +101,8 @@ sub emerge(@) {
         }
         else {
             &send_report(
-                "Error in compression phase, you have to manually solve it");
+                "Error in compression phase, you have to manually solve it",
+                $out, $err );
         }
     }
     else {
