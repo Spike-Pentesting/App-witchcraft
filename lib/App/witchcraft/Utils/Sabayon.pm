@@ -37,7 +37,6 @@ sub conf_update {
 sub emerge(@) {
     my $options = shift;
     App::witchcraft->instance->emit( before_emerge => ($options) );
-
     my $emerge_options
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
     $emerge_options
@@ -48,12 +47,10 @@ sub emerge(@) {
     my @equo_install;
     my $rs     = 1;
     my $EDITOR = $ENV{EDITOR};
-    $ENV{EDITOR} = "cat";    #quick hack
-
+    $ENV{EDITOR} = "cat";                                     #quick hack
     $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-
     &clean_logs;
     &entropy_update;
 
@@ -85,6 +82,7 @@ sub emerge(@) {
         $Expect->log_file( "/tmp/eit.log", "w" );
         $Expect->spawn( "eit", "commit", "--quick" )
             or send_report("Eit add gives error! Cannot spawn eit: $!\n");
+        sleep 1;    #time for pty creation, see Expect.pod
         $Expect->expect(
             undef,
             [   qr/missing dependencies have been found|nano|\?/i => sub {
@@ -120,7 +118,6 @@ sub emerge(@) {
             else {
                 $rs = 0;
             }
-
         }
         else {
             my $logs = &slurp("/tmp/eit.log");
