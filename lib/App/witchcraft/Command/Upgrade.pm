@@ -42,12 +42,15 @@ L<App::witchcraft>, L<App::witchcraft::Command::Sync>
 sub run {
     error 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
-    my $Repo = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    my $Repo = shift
+        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info 'Upgrade of the Sabayon repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );
-    return emerge( { '-n' => "" }, @Packages );
+    my $return = emerge( { '-u' => "" }, @Packages );
+    sleep 5;    #assures to propagate the messages
+    return $return ? 0 : 1;
 }
 
 1;
