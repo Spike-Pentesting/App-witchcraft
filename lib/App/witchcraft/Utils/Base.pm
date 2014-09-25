@@ -162,6 +162,7 @@ sub bump {
             . $last
             . ' <===== as a skeleton for the new version' );
     &notice("Copying");
+    &send_report("Automatic bump: $atom -> $updated");
     &info( "Bumped: " . $updated )
         and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
         and return 1
