@@ -47,15 +47,14 @@ sub register {
 sub irc_msg {
     my $self    = shift;
     my $message = shift;
-    if ( $self->irc ) {
-        my $socket = $self->irc;
+    if ( my $socket = $self->irc ) {
         printf $socket "PRIVMSG $_ :$message\r\n"
             for App::witchcraft->instance->Config->param('IRC_CHANNELS');
     }
     else {
         $self->irc_msg_join_part($message);
     }
-    sleep 1; #assures message is delivered at least.
+    sleep 1;    #assures message is delivered at least.
 }
 
 sub _connect {
