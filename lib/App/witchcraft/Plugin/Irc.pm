@@ -19,23 +19,22 @@ sub register {
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            my $string = "Witchcraft\@$hostname: " . $message . " - " . $url;
-            $emitter->emit( send_irc_message => $string );
+            $emitter->emit( send_irc_message => "Witchcraft\@$hostname: "
+                    . $message . " - "
+                    . $url );
         }
     );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
-            my $string = "Witchcraft\@$hostname: " . $message;
-            $emitter->emit( send_irc_message => $string );
+            $emitter->emit(
+                send_irc_message => "Witchcraft\@$hostname: " . $message );
         }
     );
     $emitter->on(
         "send_irc_message" => sub {
-            my ( $witchcraft, $message );
-            $message =~ s/\n/ /;
-            my @pieces = truncate_words( $message, 200 );
-            $self->irc_msg($_) for @pieces;
+            my ( $witchcraft, $message ) = @_;
+            $self->irc_msg($_) for truncate_words( $message, 300 );
         }
     );
 
@@ -47,6 +46,7 @@ sub register {
 sub irc_msg {
     my $self    = shift;
     my $message = shift;
+    notice("Sending >>$message<< on IRC ") if DEBUG;
     if ( my $socket = $self->irc ) {
         printf $socket "PRIVMSG $_ :$message\r\n"
             for App::witchcraft->instance->Config->param('IRC_CHANNELS');

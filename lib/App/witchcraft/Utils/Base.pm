@@ -388,17 +388,7 @@ sub depgraph($$) {
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
-sub truncate_words {
-    my $string = shift;
-    my @pieces;
-    my $maxlength = shift;
-    if ( $string =~ /^(.{0,$maxlength})\b(.*)$/ ) {
-        push( @pieces, "$1..." );
-        push( @pieces, &truncate_words($2,$maxlength) ) if $2;
-    }
-    return @pieces;
-}
-
+sub truncate_words { shift =~ /(.{1,$_[0]}[\W\D])/gms; }
 
 =head1 log_command($command)
 
