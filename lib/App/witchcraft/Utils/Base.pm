@@ -53,6 +53,7 @@ our @EXPORT_OK = (
         find_ebuilds
         vagrant_box_status
         filetoatom
+        truncate_words
         upgrade
         chwn
         filetopackage
@@ -385,6 +386,18 @@ sub depgraph($$) {
         map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
+
+sub truncate_words {
+    my $string = shift;
+    my @pieces;
+    my $maxlength = shift;
+    if ( $string =~ /^(.{0,$maxlength})\b(.*)$/ ) {
+        push( @pieces, "$1..." );
+        push( @pieces, &truncate_words($2,$maxlength) ) if $2;
+    }
+    return @pieces;
+}
+
 
 =head1 log_command($command)
 
