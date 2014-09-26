@@ -48,7 +48,12 @@ sub run {
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );
-    my $return = emerge( { '-u' => "" }, @Packages );
+    my $return = emerge(
+        {   +App::witchcraft->instance->Config->param('EMERGE_UPGRADE_OPTS')
+                // '-n' => ""
+        },
+        @Packages
+    );
     sleep 5;    #assures to propagate the messages
     return $return ? 0 : 1;
 }
