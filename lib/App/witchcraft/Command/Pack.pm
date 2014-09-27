@@ -52,6 +52,10 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 sub run {
     error 'You must run it with root permissions' and return 1 if $> != 0;
+    error "This feature is only available for Sabayon"
+        and return 1
+        if App::witchcraft->instance->Config->param("DISTRO")
+        and App::witchcraft->instance->Config->param("DISTRO") ne "Sabayon";
     my $self     = shift;
     my @EMERGING = @_;
     info 'Emerging & Pushing ' . scalar(@EMERGING) . ' packages';
