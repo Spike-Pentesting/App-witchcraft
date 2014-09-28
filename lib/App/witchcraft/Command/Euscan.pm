@@ -4,6 +4,7 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(stage);
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit push pull);
@@ -177,17 +178,7 @@ sub update {
     $Test =~ s/$dir\/?//g;
     if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
-        if ( $self->{git} ) {
-            if ( ( git_index($Package) )[0] ) {
-                info 'Added to git index of the repository';
-                send_report(
-                    "'witchcraft: automatically updated $Package to remote git repository"
-                );
-            }
-            else {
-                send_report("'Error indexing $pack to remote git repository");
-            }
-        }
+        stage($Package)     if ( $self->{git} );
     }
     else {
         return ();

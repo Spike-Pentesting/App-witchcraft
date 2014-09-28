@@ -4,7 +4,6 @@ use strict;
 use base qw(Exporter);
 use Term::ANSIColor;
 use constant debug => $ENV{DEBUG};
-use Git::Sub;
 use Tie::File;
 use Term::ReadKey;
 use App::Nopaste 'nopaste';
@@ -39,8 +38,6 @@ our @EXPORT = qw( _debug
     daemonize
     depgraph
     emerge
-    git_index
-    git_sync
     natural_order
     bump
 );
@@ -51,14 +48,17 @@ our @EXPORT_OK = (
         euscan
         command
         find_ebuilds
+        index_sync
         vagrant_box_status
         filetoatom
+        dialog_yes_default
         truncate_words
         upgrade
         chwn
         filetopackage
         slurp
         append
+        stage
         spurt
         clean_stash
         vagrant_box_cmd
@@ -299,7 +299,7 @@ sub last_md5() {
         . App::witchcraft->instance->Config->param('MD5_PACKAGES')
         or (
         &send_report(
-            "Errore nella lettura dell'ultimo md5 compilato",
+            "Can't access to last compiled packages md5",
             'Can\'t open '
                 . App::witchcraft->instance->Config->param('MD5_PACKAGES')
                 . ' -> '
@@ -418,7 +418,7 @@ sub log_command {
     }
     else {
         &error("Something went wrong with $command");
-        &send_report( "Phase: $command failed", @LOG );
+        &send_report( "Phase: $command failed", "$command : ",@LOG );
         return 0;
     }
 }
@@ -513,48 +513,12 @@ sub eix_sync {
 
 ######## END
 
-sub git_sync() {
-    chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-    eval {
-        &notice(  "Git pull for ["
-                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
-                . "] "
-                . git::pull );
-    };
-    if ($@) {
-        &error($@);
-    }
+sub index_sync() {
+    App::witchcraft->instance->emit( index_sync => (@_) );
 }
 
-sub git_index(@) {
-    my @Atoms = @_;
-    return ( 1, undef ) if ( @Atoms == 0 );
-    my $cwd    = cwd();
-    my $return = 1;
-    &git_sync;
-    foreach my $atom (@Atoms) {
-        eval { &notice( git::add $atom); };
-        if ($@) {
-            &error($@);
-            $return = 0;
-        }
-        eval {
-            &notice(
-                git::commit -m => 'witchcraft: automatically added/updated '
-                    . $atom );
-        };
-        if ($@) {
-            &error($@);
-            $return = 0;
-        }
-    }
-    eval { &notice(git::push); };
-    if ($@) {
-        &error($@);
-        $return = 0;
-    }
-    chdir($cwd);
-    return ( $return, $@ );
+sub stage(@) {
+    App::witchcraft->instance->emit( stage_changes => (@_) );
 }
 
 sub daemonize($) {
@@ -600,26 +564,11 @@ sub password_dialog {
 }
 
 sub clean_untracked {
-    my $dir = shift;
-    my @Installed;
-    my $cwd = cwd;
-    chdir($dir);
-    system("git ls-files --others --exclude-standard | xargs rm -rfv");
-    &notice(
-        "Launch 'git stash' if you want to rid about all the modifications");
-    chdir($cwd);
-    return $? == 0 ? 1 : 0;
+    App::witchcraft->instance->emit( clean_untracked => (@_) );
 }
 
 sub clean_stash {
-    my $dir = shift;
-    my @Installed;
-    my $cwd = cwd;
-    chdir($dir);
-    system("git stash");
-    &info("$dir stashed") if $? == 0;
-    chdir($cwd);
-    return $? == 0 ? 1 : 0;
+    App::witchcraft->instance->emit( clean_stash => (@_) );
 }
 
 sub uniq {
@@ -696,7 +645,7 @@ sub test_ebuild {
             return 1;
         }
         else {
-            &send_report( "Emerge failed for $specific_ebuild",
+            &send_report( "Emerge failed for $specific_ebuild","Emerge failed $specific_ebuild",
                 join( " ", &find_logs() ) )
                 if App::witchcraft->instance->Config->param(
                 "REPORT_TEST_FAILS")
@@ -718,78 +667,7 @@ sub test_ebuild {
 }
 
 sub test_untracked {
-    my $dir      = shift;
-    my $ignore   = shift || 0;
-    my $password = shift || undef;
-    my @Installed;
-    chdir($dir);
-    my @Failed;
-    my @ignores;
-    my @Untracked = git::ls_files '--others', '--exclude-standard';
-    push( @Untracked, git::diff_files '--name-only' );
-    @Untracked = grep {/\.ebuild$/} @Untracked;
-    &info( "Those are the file that would be tested: "
-            . join( " ", @Untracked ) );
-    system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
-        ;    #spring cleaning!
-    my $c = 1;
-    my @Atoms_Installed;
-
-    foreach my $new_pos (@Untracked) {
-        &info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
-        my $atom = $new_pos;
-
-        #$atom = filetoatom($atom);
-        $c++;
-        my $result = &test_ebuild( $new_pos, 1, 1, $password );
-        $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
-
-        if ( $result == 1 ) {
-            push( @Atoms_Installed, $atom );
-
-            #  &info( $new_pos . " was correctly installed" );
-            push( @Installed, $new_pos );
-        }
-        else {
-            # &error( $new_pos . " installation failed" );
-            push( @Failed, $new_pos );
-        }
-    }
-    if ( $ignore == 1 and @Failed > 0 ) {
-        tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
-            or die( error $!);
-        &send_report(
-            "Witchcraft need your attention, i'm asking you few questions");
-        foreach my $fail (@Failed) {
-            push( @ignores, $fail )
-                if (
-                &dialog_yes_default(
-                    "Add " . $fail . " to the ignore list?"
-                )
-                );
-        }
-    }
-    if ( @Installed > 0 ) {
-        &info(
-            "Those files where correctly installed, maybe you wanna check them: "
-        );
-        my $result;
-        &notice($_) and $result .= " " . $_ for ( &uniq(@Atoms_Installed) );
-        &send_report("These ebuilds where correctly installed: $result");
-        &info("Generating the command for maintenance");
-        &notice("git add $result");
-        &notice("eix-sync");
-        &notice("emerge -av $result");
-        &notice("eit add $result");
-        &notice("eit push");
-        return @Installed;
-    }
-    else {
-        &info(
-            "No files where tested because there weren't untracked files or all packages failed to install"
-        );
-        return ();
-    }
+    App::witchcraft->instance->emit( untracked_test => (@_) );
 }
 
 #################### vagrant functs

@@ -2,7 +2,7 @@ package App::witchcraft::Command::Sync;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(send_report);
+use App::witchcraft::Utils qw(send_report stage index_sync);
 
 use warnings;
 use strict;
@@ -125,12 +125,13 @@ sub run {
         // App::witchcraft->instance->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
         // App::witchcraft->instance->Config->param('REFACTOR_TO');
-    git_sync;
+    index_sync;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
     send_report("Starting to sync: @REMOTES");
+
     foreach my $RepoUrl (@REMOTES) {
         App::witchcraft::Command::Clean->new
             ->run;    #XXX: cleaning before each sync
@@ -257,19 +258,33 @@ sub synchronize {
     );
     notice 'Cleaning' . $temp . '*' if $self->{verbose};
     system( "rm -rfv " . $temp . '*' );
-
     return if ( !$self->{install} );
-    @Installed = test_untracked( $dir, $add, $password );
-    return if ( !$self->{git} );
-    git_index(@Installed);
-    return if ( !$self->{eit} );
-    emerge(
-        { '-n' => '' },
-        map {
-            $_ . "::"
-                . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        } @Installed
-    );
+    test_untracked(
+        {   dir      => $dir,
+            ignore   => $add,
+            password => $password,
+            callback => sub { stage(@_) }
+        }
+    ) if ( $self->{git} and !$self->{eit} );
+    test_untracked(
+        {   dir      => $dir,
+            ignore   => $add,
+            password => $password,
+            callback => sub {
+                stage(@_);
+
+                emerge(
+                    { '-n' => '' },
+                    map {
+                        $_ . "::"
+                            . App::witchcraft->instance->Config->param(
+                            'OVERLAY_NAME')
+                    } @_
+                );
+                }
+        }
+    ) if ( $self->{eit} );
+
 
 }
 
