@@ -466,7 +466,7 @@ sub send_report {
     return undef
         unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
         or App::witchcraft->instance->Config->param('IRC_CHANNELS') );
-    &info("Sending report status");
+    &notice(">> $message ");
 
     #  &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
