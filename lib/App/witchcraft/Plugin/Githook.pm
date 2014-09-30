@@ -6,7 +6,6 @@ use Cwd;
 use Git::Sub;
 use Github::Hooks::Receiver::Declare;
 use App::witchcraft;
-has 'server';
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -20,11 +19,6 @@ sub register {
             notice $event->event;
         }
     );
-    $self->run();
-}
-
-sub server {
-    my $self     = shift;
     my $receiver = Github::Hooks::Receiver->new(
         secret => App::witchcraft->Config->param("SECRET") );
     $receiver->on(
@@ -33,13 +27,7 @@ sub server {
             App::witchcraft->instance->emit( "git_push" => $event );
         }
     );
-    my $psgi = $receiver->to_app;
-    $self->server($psgi);
-}
-
-sub run {
-    my $self = shift;
-    $self->server->run(@_);
+    $receiver->to_app->run();
 }
 
 1;
