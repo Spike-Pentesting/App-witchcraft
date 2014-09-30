@@ -89,6 +89,11 @@ App::witchcraft - Continuous integration tool, repository manager for Gentoo or 
                                 "-e|--eit" => add and push automatically to entropy repository
                                 "-v|--verbose" => be more verbose
 
+    -> Common fix and handling for overlays
+    *   f|fix (ebuild_missing|digest|metagen) [dir]
+                                ebuild_missing => remove atoms that doesn't contain ebuilds at all
+                                digest  => digest each ebuild found
+                                metagen => metagen -vm each atom that doesn't have it
 
     --> Install dependencies of a packages (if available) using equo
     *   d|depinstall   [package]
