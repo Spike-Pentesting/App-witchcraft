@@ -193,9 +193,7 @@ sub synchronize {
                 and $file_name =~ /\.ebuild$/ )
             {
                 info "[File] analyzing $file " if $self->{verbose};
-
                 my $new_pos = $file;
-
                 # $new_pos =~ s/$l_r/$l_t/gi;
                 # move( $file, $new_pos );
                 # notice "$file moved to $new_pos";
@@ -203,7 +201,6 @@ sub synchronize {
                 open FILE, "<$new_pos";
                 my @LINES = <FILE>;
                 close FILE;
-
                 for (@LINES) {
                     next
                         if (
@@ -227,20 +224,15 @@ sub synchronize {
                 open FILE, ">$new_pos";
                 print FILE @LINES;
                 close FILE;
-
             }
             elsif ( $self->{verbose} ) {
                 notice "$file ignored";
             }
-
         },
         $temp
     );
-
-    #unlink( $temp . "/.svn" );
     remove_tree( $temp . '/.svn' );
     remove_tree( $temp . '/.git' );
-
     return if ( !$self->{update} );
     info "Copying content to git directory" if $self->{verbose};
     my $dir
@@ -248,10 +240,6 @@ sub synchronize {
         // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
-
-    #   info $self->{'ignore-existing'}
-    #      ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
-    #     : "rsync --progress --update -avp " . $temp . "/* $dir\/";
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
         : "rsync --progress --update -avp " . $temp . "/* $dir\/"
@@ -272,7 +260,6 @@ sub synchronize {
             password => $password,
             callback => sub {
                 stage(@_);
-
                 emerge(
                     { '-n' => '' },
                     map {
@@ -284,8 +271,6 @@ sub synchronize {
                 }
         }
     ) if ( $self->{eit} );
-
-
 }
 
 1;

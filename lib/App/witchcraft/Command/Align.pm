@@ -52,7 +52,7 @@ it under the same terms as Perl itself.
 L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 =cut
-
+#XXX:: Still uses git
 sub run {
     error 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
