@@ -283,7 +283,6 @@ You usually don't need to touch these options, but here there are for the most c
 
     #Going to drop it soon, don't rely on it
     GIT_MASTER_FILE: .git/refs/heads/master
-    GIT_HISTORY_FILE: .git/logs/refs/heads/master
 
     #temporary directory, used during cvs/git clone phases (merging)
     CVS_TMP:/var/tmp/spike-trunk
