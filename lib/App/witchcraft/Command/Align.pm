@@ -7,7 +7,6 @@ use App::witchcraft::Utils
 use App::witchcraft::Command::Clean;
 use warnings;
 use strict;
-use Git::Sub qw(diff stash);
 
 =encoding utf-8
 
@@ -63,27 +62,8 @@ sub run {
     send_report("Align start, building commit from $last_commit");
     my $cfg = App::witchcraft->instance->Config;
     eix_sync;
-    chdir( $cfg->param('OVERLAY_PATH') );
-    my @FILES = map {
-        $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
-        atom($_);                      #converting to atom
-        $_ =~ s/.*\K\/Manifest$//g;    #removing manifest
-        $_
-        } grep {
-        /Manifest$/i                   #Only with the manifest are interesting
-        } git::diff( $last_commit, '--name-only' );
-    #  system("git stash");
-    #my $Clean = App::witchcraft::Command::Clean->new;
-    #$Clean->run;
-    my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
-        grep { -d $_ } @FILES;
-    notice 'Those are the packages that would be processed:';
-    draw_up_line;
-    info "\t" . $_ for @EMERGING;
-    draw_down_line;
-    $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
-        $cfg->param('GIT_MASTER_FILE') );
-    process( @EMERGING, $last_commit, 0 );
+    App::witchcraft->instance->emit("align_to" => $last_commit);
+
 }
 
 1;

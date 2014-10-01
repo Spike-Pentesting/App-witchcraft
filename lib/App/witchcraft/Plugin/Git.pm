@@ -2,13 +2,14 @@ package App::witchcraft::Plugin::Git;
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append dialog_yes_default send_report spurt chwn index_sync test_ebuild clean_logs uniq);
+    qw(info error notice append dialog_yes_default send_report spurt chwn index_sync test_ebuild clean_logs uniq last_commit process draw_up_line draw_down_line);
 use Cwd;
 use Git::Sub;
+use Git::Sub qw(diff stash);
 
 sub register {
     my ( $self, $emitter ) = @_;
-
+    my $cfg = App::witchcraft->instance->Config;
     $emitter->on(
         "index_sync" => sub {
             chdir(
@@ -151,6 +152,37 @@ sub register {
                     "No files where tested because there weren't untracked files or all packages failed to install"
                 );
             }
+            chdir($cwd);
+        }
+    );
+
+    $emitter->on(
+        "align_to" => sub {
+            shift;
+            my $last_commit = shift;
+            my $cwd=cwd;
+            chdir( $cfg->param('OVERLAY_PATH') );
+            my @FILES = map {
+                $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
+                atom($_);                      #converting to atom
+                $_ =~ s/.*\K\/Manifest$//g;    #removing manifest
+                $_
+                } grep {
+                /Manifest$/i    #Only with the manifest are interesting
+                } git::diff( $last_commit, '--name-only' );
+
+            #  system("git stash");
+            #my $Clean = App::witchcraft::Command::Clean->new;
+            #$Clean->run;
+            my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
+                grep { -d $_ } @FILES;
+            notice 'Those are the packages that would be processed:';
+            draw_up_line;
+            info "\t" . $_ for @EMERGING;
+            draw_down_line;
+            $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
+                $cfg->param('GIT_MASTER_FILE') );
+            process( @EMERGING, $last_commit, 0 );
             chdir($cwd);
         }
     );
