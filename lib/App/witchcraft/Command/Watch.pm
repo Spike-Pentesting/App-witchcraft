@@ -8,6 +8,7 @@ use warnings;
 use strict;
 use File::Find;
 use Regexp::Common qw/URI/;
+use App::witchcraft::Command::Align;
 use Tie::File;
 
 =encoding utf-8
@@ -71,7 +72,7 @@ sub run {
         . ' every '
         . $cfg->param('SLEEP_TIME') . ' s';
     daemonize($0) if $self->{daemon};
-    send_report("I'm up!");
+    send_report("Watching the repo forever");
     while (1) {
         info "Checking for updates, and merging up!";
         draw_up_line;
@@ -152,17 +153,8 @@ sub update($$) {
         );
     }
     else {
-        notice("Commits seems differents, calculating the differencies.");
-        chdir( $cfg->param('OVERLAY_PATH') );
-        my @DIFFS = find_diff( $overlay, $master_file );
-        info(     "A total of "
-                . scalar(@DIFFS)
-                . " real changes were found, proceeding to compile them." );
-        my $overlay_name = $cfg->param('OVERLAY_NAME');
-        my @EMERGING
-            = map { $_ . "::" . $overlay_name } grep { -d $_ } @DIFFS;
-        process( @EMERGING, $commit, 0 )
-            ;    # 0 to use with git, 1 with manual use
+        my $Align = App::witchcraft::Command::Align->new;
+        $Align->run();
     }
 }
 1;
