@@ -78,7 +78,7 @@ sub run {
         draw_up_line;
         if (eix_sync) {    #Launch layman -S first.
             entropy_update;
-            update;
+            update();
             manual_update( $cfg->param('OVERLAY_PATH') );
         }
         draw_down_line;
