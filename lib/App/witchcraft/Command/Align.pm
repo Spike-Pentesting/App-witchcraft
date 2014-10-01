@@ -3,7 +3,7 @@ package App::witchcraft::Command::Align;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(error info notice draw_down_line draw_up_line send_report process last_commit atom compiled_commit eix_sync);
+    qw(error info notice draw_down_line draw_up_line send_report process atom compiled_commit eix_sync);
 use App::witchcraft::Command::Clean;
 use warnings;
 use strict;

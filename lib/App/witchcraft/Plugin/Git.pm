@@ -2,10 +2,36 @@ package App::witchcraft::Plugin::Git;
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append dialog_yes_default send_report spurt chwn index_sync test_ebuild clean_logs uniq last_commit process draw_up_line draw_down_line);
+    qw(info error notice append dialog_yes_default send_report spurt chwn index_sync test_ebuild clean_logs uniq compiled_commit  process draw_up_line draw_down_line);
 use Cwd;
 use Git::Sub;
 use Git::Sub qw(diff stash);
+#
+#  name: last_commit
+#  input: git_path_repository, master
+#  output: last_commit
+# Given a path of a git repo and his master file, it returns the last commit id
+
+sub last_commit($$) {
+    my $git_repository_path = $_[0];
+    my $master              = $_[1];
+    open my $FH,
+          "<"
+        . $git_repository_path . "/"
+        . $master
+        or (
+        &error(
+                  'Something is terribly wrong, cannot open '
+                . $git_repository_path . "/"
+                . $master
+        )
+        and exit 1
+        );
+    my @FILE = <$FH>;
+    chomp(@FILE);
+    close $FH;
+    return $FILE[0];
+}
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -159,8 +185,16 @@ sub register {
     $emitter->on(
         "align_to" => sub {
             shift;
-            my $last_commit = shift;
-            my $cwd=cwd;
+            my $last_commit = shift // compiled_commit();
+            error 'No compiled commit could be found, you must specify it'
+                and return 1
+                if ( !defined $last_commit );
+            info 'Emerging packages from commit ' . $last_commit;
+            send_report("Align start, building commit from $last_commit");
+            my $cfg = App::witchcraft->instance->Config;
+            eix_sync;
+
+            my $cwd = cwd;
             chdir( $cfg->param('OVERLAY_PATH') );
             my @FILES = map {
                 $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
