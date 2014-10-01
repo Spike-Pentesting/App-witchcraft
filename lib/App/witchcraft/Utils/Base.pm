@@ -43,7 +43,7 @@ our @EXPORT = qw( _debug
 );
 
 our @EXPORT_OK = (
-    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
+    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs last_md5 compiled_commit
         natural_order
         euscan
         command
@@ -245,32 +245,7 @@ sub to_ebuild(@) {
     return @TO_EMERGE;
 }
 
-#
-#  name: last_commit
-#  input: git_path_repository, master
-#  output: last_commit
-# Given a path of a git repo and his master file, it returns the last commit id
 
-sub last_commit($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    open my $FH,
-          "<"
-        . $git_repository_path . "/"
-        . $master
-        or (
-        &error(
-                  'Something is terribly wrong, cannot open '
-                . $git_repository_path . "/"
-                . $master
-        )
-        and exit 1
-        );
-    my @FILE = <$FH>;
-    chomp(@FILE);
-    close $FH;
-    return $FILE[0];
-}
 
 sub previous_commit($$) {
     my $git_repository_path = $_[0];
@@ -296,7 +271,7 @@ sub previous_commit($$) {
 sub last_md5() {
     open my $last,
         "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES')
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES').App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or (
         &send_report(
             "Can't access to last compiled packages md5",
@@ -318,7 +293,7 @@ sub last_md5() {
 #  output: last commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT')
+    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT'). App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or ( &notice("Nothing was previously compiled") and return undef );
     my @LAST = <FILE>;
     close FILE;
@@ -332,40 +307,15 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT');
+    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT'). App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES');
+    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES'). App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
-}
-
-#
-#  name: find_diff
-#  input: git_path_repository, master
-#  output: @DIFFS
-# takes as argument the git path repository and the master file
-# generate  diff from the last build and returns the packages to compile
-# XXX: Needs to be reworked for switchable repos
-sub find_diff($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    my $commit = &compiled_commit // &previous_commit( $git_repository_path,
-        App::witchcraft->instance->Config->param('GIT_HISTORY_FILE') );
-    my $git_cmd
-        = App::witchcraft->instance->Config->param('GIT_DIFF_COMMAND');
-    $git_cmd =~ s/\[COMMIT\]/$commit/g;
-    my @DIFFS;
-    open CMD, "cd $git_repository_path;$git_cmd | ";  # Parsing the git output
-    while (<CMD>) {
-        my ( $diff, $all ) = split( / /, substr( $_, 1, -3 ) );
-        push( @DIFFS, $1 ) if $diff =~ /(.*)\/Manifest/;
-    }
-    chomp(@DIFFS);
-    return ( &uniq(@DIFFS) );
 }
 
 sub find_ebuilds($) {
