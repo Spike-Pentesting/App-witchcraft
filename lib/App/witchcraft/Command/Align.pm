@@ -51,19 +51,11 @@ it under the same terms as Perl itself.
 L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 =cut
-#XXX:: Still uses git
 sub run {
     error 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
-    my $last_commit = shift // compiled_commit();
-    error 'No compiled commit could be found, you must specify it' and return 1
-        if ( !defined $last_commit );
-    info 'Emerging packages from commit ' . $last_commit;
-    send_report("Align start, building commit from $last_commit");
-    my $cfg = App::witchcraft->instance->Config;
-    eix_sync;
+    my $last_commit = shift;
     App::witchcraft->instance->emit("align_to" => $last_commit);
-
 }
 
 1;
