@@ -104,17 +104,6 @@ You can also setup up more configuration files, and specifying them using WITCHC
 
 Just run ./Build and ./Build install
 
-For sabayon vm:
-ensure to have all licenses accepted into your machine adding inside make.conf
-
-    ACCEPT_LICENSE="*"
-
-and then run this:
-
-    ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
-
-to have all licenses accepted in entropy
-
 # STRUCTURE
 
 The software has two common use cases:
@@ -295,9 +284,25 @@ The log plugin, enables logging:
 
 Those configuration options are explicitally needed, but you can leave as default if you don't know what are you doing.
 
+# NOTES
+For sabayon vm:
+ensure to have all licenses accepted into your machine adding inside make.conf
+
+    ACCEPT_LICENSE="*"
+
+and then run this:
+
+    ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
+
+to have all licenses accepted in entropy
+
 # AUTHOR
 
 mudler <mudler@dark-lab.net>, skullbocks <skullbocks@dark-lab.net>
+
+# IRC
+
+chat.freenode.net - #spike-pentesting-dev
 
 # COPYRIGHT
 
