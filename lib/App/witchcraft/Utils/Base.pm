@@ -349,7 +349,7 @@ sub save_compiled_packages($) {
 #  output: @DIFFS
 # takes as argument the git path repository and the master file
 # generate  diff from the last build and returns the packages to compile
-
+# XXX: Needs to be reworked for switchable repos
 sub find_diff($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
