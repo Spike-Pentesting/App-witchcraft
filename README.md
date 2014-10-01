@@ -109,7 +109,7 @@ Just run ./Build and ./Build install
 The software has two common use cases:
 
 - standalone client for the developer (fixing ebuilds, testing, manual bump, repository mantainance)
-=item agent mode on boot inside a vm
+- agent mode on boot inside a vm
 
 Witchcraft operates over a set of vagrant vm (that can be set up also on a different path/user), bringing em up and starting the agent to the desired routine commands, for the operations customization, have a look at [App::witchcraft::Command::Mantain](https://metacpan.org/pod/App::witchcraft::Command::Mantain).
 
@@ -214,7 +214,7 @@ For example, if you wish to have the default directories of vagrant in another l
     FAKE_ENV_VAGRANT_HOME: /mnt/usb/vagrantuser/.vagrant.d
     VAGRANT_BOXES: /mnt/usb/vagrantuser/Builder64,/mnt/usb/vagrantuser/Builder32
 
-### DEFAULT / ADVANCED OPTIONS
+### Advanced options
 
 You usually don't need to touch these options, but here there are for the most curious:
 
@@ -225,7 +225,6 @@ You usually don't need to touch these options, but here there are for the most c
 
     #Going to drop it soon, don't rely on it
     GIT_MASTER_FILE: .git/refs/heads/master
-    GIT_HISTORY_FILE: .git/logs/refs/heads/master
 
     #temporary directory, used during cvs/git clone phases (merging)
     CVS_TMP:/var/tmp/spike-trunk

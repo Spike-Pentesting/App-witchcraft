@@ -165,6 +165,7 @@ The software has two common use cases:
 =over
 
 =item standalone client for the developer (fixing ebuilds, testing, manual bump, repository mantainance)
+
 =item agent mode on boot inside a vm
 
 =back
@@ -272,7 +273,7 @@ For example, if you wish to have the default directories of vagrant in another l
     FAKE_ENV_VAGRANT_HOME: /mnt/usb/vagrantuser/.vagrant.d
     VAGRANT_BOXES: /mnt/usb/vagrantuser/Builder64,/mnt/usb/vagrantuser/Builder32
 
-=head3 DEFAULT / ADVANCED OPTIONS
+=head3 Advanced options
 
 You usually don't need to touch these options, but here there are for the most curious:
 
