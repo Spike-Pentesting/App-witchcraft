@@ -271,7 +271,7 @@ sub previous_commit($$) {
 sub last_md5() {
     open my $last,
         "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES').App::witchcraft->instance->Config->param('OVERLAY_NAME')
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES').".".App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or (
         &send_report(
             "Can't access to last compiled packages md5",
@@ -293,7 +293,7 @@ sub last_md5() {
 #  output: last commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT'). App::witchcraft->instance->Config->param('OVERLAY_NAME')
+    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT').".". App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or ( &notice("Nothing was previously compiled") and return undef );
     my @LAST = <FILE>;
     close FILE;
@@ -307,13 +307,13 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT'). App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT').".". App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES'). App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES').".". App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
