@@ -277,13 +277,8 @@ For example, if you wish to have the default directories of vagrant in another l
 
 You usually don't need to touch these options, but here there are for the most curious:
 
-    GIT_DIFF_COMMAND: git diff --stat [COMMIT] # the command used to retrieve file diffs
-
     LAST_COMMIT: /var/tmp/lastcommit.witchcraft # here relies the last successfull compiled commit
     MD5_PACKAGES: /var/tmp/md5_packages.witchcraft # here it's stored the md5 of the OVERLAY_MANUAL_COMPILE_FILE
-
-    #Going to drop it soon, don't rely on it
-    GIT_MASTER_FILE: .git/refs/heads/master
 
     #temporary directory, used during cvs/git clone phases (merging)
     CVS_TMP:/var/tmp/spike-trunk
