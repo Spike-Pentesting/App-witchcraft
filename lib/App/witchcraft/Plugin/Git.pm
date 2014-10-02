@@ -215,7 +215,7 @@ sub register {
             info "\t" . $_ for @EMERGING;
             draw_down_line;
             $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
-                $cfg->param('GIT_MASTER_FILE') );
+                ".git/refs/heads/master" );
             process( @EMERGING, $last_commit, 0 );
             chdir($cwd);
         }
