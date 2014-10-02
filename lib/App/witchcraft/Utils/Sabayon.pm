@@ -127,7 +127,7 @@ sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
     my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( scalar(@Packages) . " dependencies found " );
+    &info( "$package: has " . scalar(@Packages) . " dependencies " );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
