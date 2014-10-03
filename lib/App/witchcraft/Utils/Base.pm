@@ -4,7 +4,6 @@ use strict;
 use base qw(Exporter);
 use Term::ANSIColor;
 use constant debug => $ENV{DEBUG};
-use Git::Sub;
 use Tie::File;
 use Term::ReadKey;
 use App::Nopaste 'nopaste';
@@ -39,26 +38,27 @@ our @EXPORT = qw( _debug
     daemonize
     depgraph
     emerge
-    git_index
-    git_sync
     natural_order
     bump
 );
 
 our @EXPORT_OK = (
-    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
+    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs last_md5 compiled_commit
         natural_order
         euscan
         command
         find_ebuilds
+        index_sync
         vagrant_box_status
         filetoatom
+        dialog_yes_default
         truncate_words
         upgrade
         chwn
         filetopackage
         slurp
         append
+        stage
         spurt
         clean_stash
         vagrant_box_cmd
@@ -245,32 +245,7 @@ sub to_ebuild(@) {
     return @TO_EMERGE;
 }
 
-#
-#  name: last_commit
-#  input: git_path_repository, master
-#  output: last_commit
-# Given a path of a git repo and his master file, it returns the last commit id
 
-sub last_commit($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    open my $FH,
-          "<"
-        . $git_repository_path . "/"
-        . $master
-        or (
-        &error(
-                  'Something is terribly wrong, cannot open '
-                . $git_repository_path . "/"
-                . $master
-        )
-        and exit 1
-        );
-    my @FILE = <$FH>;
-    chomp(@FILE);
-    close $FH;
-    return $FILE[0];
-}
 
 sub previous_commit($$) {
     my $git_repository_path = $_[0];
@@ -296,10 +271,10 @@ sub previous_commit($$) {
 sub last_md5() {
     open my $last,
         "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES')
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES').".".App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or (
         &send_report(
-            "Errore nella lettura dell'ultimo md5 compilato",
+            "Can't access to last compiled packages md5",
             'Can\'t open '
                 . App::witchcraft->instance->Config->param('MD5_PACKAGES')
                 . ' -> '
@@ -318,7 +293,7 @@ sub last_md5() {
 #  output: last commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT')
+    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT').".". App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or ( &notice("Nothing was previously compiled") and return undef );
     my @LAST = <FILE>;
     close FILE;
@@ -332,40 +307,15 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT');
+    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT').".". App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES');
+    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES').".". App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
-}
-
-#
-#  name: find_diff
-#  input: git_path_repository, master
-#  output: @DIFFS
-# takes as argument the git path repository and the master file
-# generate  diff from the last build and returns the packages to compile
-
-sub find_diff($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    my $commit = &compiled_commit // &previous_commit( $git_repository_path,
-        App::witchcraft->instance->Config->param('GIT_HISTORY_FILE') );
-    my $git_cmd
-        = App::witchcraft->instance->Config->param('GIT_DIFF_COMMAND');
-    $git_cmd =~ s/\[COMMIT\]/$commit/g;
-    my @DIFFS;
-    open CMD, "cd $git_repository_path;$git_cmd | ";  # Parsing the git output
-    while (<CMD>) {
-        my ( $diff, $all ) = split( / /, substr( $_, 1, -3 ) );
-        push( @DIFFS, $1 ) if $diff =~ /(.*)\/Manifest/;
-    }
-    chomp(@DIFFS);
-    return ( &uniq(@DIFFS) );
 }
 
 sub find_ebuilds($) {
@@ -418,7 +368,7 @@ sub log_command {
     }
     else {
         &error("Something went wrong with $command");
-        &send_report( "Phase: $command failed", @LOG );
+        &send_report( "Phase: $command failed", "$command : ",@LOG );
         return 0;
     }
 }
@@ -466,7 +416,7 @@ sub send_report {
     return undef
         unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
         or App::witchcraft->instance->Config->param('IRC_CHANNELS') );
-    &info("Sending report status");
+    &notice(">> $message ");
 
     #  &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
@@ -513,48 +463,12 @@ sub eix_sync {
 
 ######## END
 
-sub git_sync() {
-    chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-    eval {
-        &notice(  "Git pull for ["
-                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
-                . "] "
-                . git::pull );
-    };
-    if ($@) {
-        &error($@);
-    }
+sub index_sync() {
+    App::witchcraft->instance->emit( index_sync => (@_) );
 }
 
-sub git_index(@) {
-    my @Atoms = @_;
-    return ( 1, undef ) if ( @Atoms == 0 );
-    my $cwd    = cwd();
-    my $return = 1;
-    &git_sync;
-    foreach my $atom (@Atoms) {
-        eval { &notice( git::add $atom); };
-        if ($@) {
-            &error($@);
-            $return = 0;
-        }
-        eval {
-            &notice(
-                git::commit -m => 'witchcraft: automatically added/updated '
-                    . $atom );
-        };
-        if ($@) {
-            &error($@);
-            $return = 0;
-        }
-    }
-    eval { &notice(git::push); };
-    if ($@) {
-        &error($@);
-        $return = 0;
-    }
-    chdir($cwd);
-    return ( $return, $@ );
+sub stage(@) {
+    App::witchcraft->instance->emit( stage_changes => (@_) );
 }
 
 sub daemonize($) {
@@ -600,26 +514,11 @@ sub password_dialog {
 }
 
 sub clean_untracked {
-    my $dir = shift;
-    my @Installed;
-    my $cwd = cwd;
-    chdir($dir);
-    system("git ls-files --others --exclude-standard | xargs rm -rfv");
-    &notice(
-        "Launch 'git stash' if you want to rid about all the modifications");
-    chdir($cwd);
-    return $? == 0 ? 1 : 0;
+    App::witchcraft->instance->emit( clean_untracked => (@_) );
 }
 
 sub clean_stash {
-    my $dir = shift;
-    my @Installed;
-    my $cwd = cwd;
-    chdir($dir);
-    system("git stash");
-    &info("$dir stashed") if $? == 0;
-    chdir($cwd);
-    return $? == 0 ? 1 : 0;
+    App::witchcraft->instance->emit( clean_stash => (@_) );
 }
 
 sub uniq {
@@ -696,7 +595,7 @@ sub test_ebuild {
             return 1;
         }
         else {
-            &send_report( "Emerge failed for $specific_ebuild",
+            &send_report( "Emerge failed for $specific_ebuild","Emerge failed $specific_ebuild",
                 join( " ", &find_logs() ) )
                 if App::witchcraft->instance->Config->param(
                 "REPORT_TEST_FAILS")
@@ -718,78 +617,7 @@ sub test_ebuild {
 }
 
 sub test_untracked {
-    my $dir      = shift;
-    my $ignore   = shift || 0;
-    my $password = shift || undef;
-    my @Installed;
-    chdir($dir);
-    my @Failed;
-    my @ignores;
-    my @Untracked = git::ls_files '--others', '--exclude-standard';
-    push( @Untracked, git::diff_files '--name-only' );
-    @Untracked = grep {/\.ebuild$/} @Untracked;
-    &info( "Those are the file that would be tested: "
-            . join( " ", @Untracked ) );
-    system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
-        ;    #spring cleaning!
-    my $c = 1;
-    my @Atoms_Installed;
-
-    foreach my $new_pos (@Untracked) {
-        &info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
-        my $atom = $new_pos;
-
-        #$atom = filetoatom($atom);
-        $c++;
-        my $result = &test_ebuild( $new_pos, 1, 1, $password );
-        $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
-
-        if ( $result == 1 ) {
-            push( @Atoms_Installed, $atom );
-
-            #  &info( $new_pos . " was correctly installed" );
-            push( @Installed, $new_pos );
-        }
-        else {
-            # &error( $new_pos . " installation failed" );
-            push( @Failed, $new_pos );
-        }
-    }
-    if ( $ignore == 1 and @Failed > 0 ) {
-        tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
-            or die( error $!);
-        &send_report(
-            "Witchcraft need your attention, i'm asking you few questions");
-        foreach my $fail (@Failed) {
-            push( @ignores, $fail )
-                if (
-                &dialog_yes_default(
-                    "Add " . $fail . " to the ignore list?"
-                )
-                );
-        }
-    }
-    if ( @Installed > 0 ) {
-        &info(
-            "Those files where correctly installed, maybe you wanna check them: "
-        );
-        my $result;
-        &notice($_) and $result .= " " . $_ for ( &uniq(@Atoms_Installed) );
-        &send_report("These ebuilds where correctly installed: $result");
-        &info("Generating the command for maintenance");
-        &notice("git add $result");
-        &notice("eix-sync");
-        &notice("emerge -av $result");
-        &notice("eit add $result");
-        &notice("eit push");
-        return @Installed;
-    }
-    else {
-        &info(
-            "No files where tested because there weren't untracked files or all packages failed to install"
-        );
-        return ();
-    }
+    App::witchcraft->instance->emit( untracked_test => (@_) );
 }
 
 #################### vagrant functs

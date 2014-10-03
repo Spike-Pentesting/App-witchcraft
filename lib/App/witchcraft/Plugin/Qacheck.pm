@@ -1,7 +1,7 @@
 package App::witchcraft::Plugin::Qacheck;
 
 use Deeme::Obj -base;
-use App::witchcraft::Utils qw(info error send_report uniq atom);
+use App::witchcraft::Utils qw(info error send_report uniq atom log_command);
 use Cwd;
 
 sub register {
@@ -10,7 +10,7 @@ sub register {
         "after_test" => sub {
             my ( $witchcraft, $ebuild ) = @_;
             send_report(
-                "Repoman output",
+                "Repoman output for $ebuild",
                 "Repoman output for $ebuild",
                 $self->repoman($ebuild)
             );
@@ -25,10 +25,10 @@ sub register {
 }
 
 sub repoman {
-    my $self = shift;
-    my $cwd  = cwd;
+    shift;
+    my $cwd = cwd;
     local $_ = shift;
-    atom();
+    atom;
     chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') . "/"
             . $_ );
     my @repoman = qx/repoman scan/;

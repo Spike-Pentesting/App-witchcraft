@@ -2,7 +2,7 @@ package App::witchcraft::Command::Sync;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(send_report);
+use App::witchcraft::Utils qw(send_report stage index_sync);
 
 use warnings;
 use strict;
@@ -125,12 +125,13 @@ sub run {
         // App::witchcraft->instance->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
         // App::witchcraft->instance->Config->param('REFACTOR_TO');
-    git_sync;
+    index_sync;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
     send_report("Starting to sync: @REMOTES");
+
     foreach my $RepoUrl (@REMOTES) {
         App::witchcraft::Command::Clean->new
             ->run;    #XXX: cleaning before each sync
@@ -192,9 +193,7 @@ sub synchronize {
                 and $file_name =~ /\.ebuild$/ )
             {
                 info "[File] analyzing $file " if $self->{verbose};
-
                 my $new_pos = $file;
-
                 # $new_pos =~ s/$l_r/$l_t/gi;
                 # move( $file, $new_pos );
                 # notice "$file moved to $new_pos";
@@ -202,7 +201,6 @@ sub synchronize {
                 open FILE, "<$new_pos";
                 my @LINES = <FILE>;
                 close FILE;
-
                 for (@LINES) {
                     next
                         if (
@@ -226,20 +224,15 @@ sub synchronize {
                 open FILE, ">$new_pos";
                 print FILE @LINES;
                 close FILE;
-
             }
             elsif ( $self->{verbose} ) {
                 notice "$file ignored";
             }
-
         },
         $temp
     );
-
-    #unlink( $temp . "/.svn" );
     remove_tree( $temp . '/.svn' );
     remove_tree( $temp . '/.git' );
-
     return if ( !$self->{update} );
     info "Copying content to git directory" if $self->{verbose};
     my $dir
@@ -247,30 +240,37 @@ sub synchronize {
         // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
-
-    #   info $self->{'ignore-existing'}
-    #      ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
-    #     : "rsync --progress --update -avp " . $temp . "/* $dir\/";
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
         : "rsync --progress --update -avp " . $temp . "/* $dir\/"
     );
     notice 'Cleaning' . $temp . '*' if $self->{verbose};
     system( "rm -rfv " . $temp . '*' );
-
     return if ( !$self->{install} );
-    @Installed = test_untracked( $dir, $add, $password );
-    return if ( !$self->{git} );
-    git_index(@Installed);
-    return if ( !$self->{eit} );
-    emerge(
-        { '-n' => '' },
-        map {
-            $_ . "::"
-                . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        } @Installed
-    );
-
+    test_untracked(
+        {   dir      => $dir,
+            ignore   => $add,
+            password => $password,
+            callback => sub { stage(@_) }
+        }
+    ) if ( $self->{git} and !$self->{eit} );
+    test_untracked(
+        {   dir      => $dir,
+            ignore   => $add,
+            password => $password,
+            callback => sub {
+                stage(@_);
+                emerge(
+                    { '-n' => '' },
+                    map {
+                        $_ . "::"
+                            . App::witchcraft->instance->Config->param(
+                            'OVERLAY_NAME')
+                    } @_
+                );
+                }
+        }
+    ) if ( $self->{eit} );
 }
 
 1;

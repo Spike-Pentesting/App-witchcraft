@@ -11,6 +11,7 @@ our @EXPORT_OK = (
 );
 use constant DEBUG => $ENV{DEBUG} || 0;
 use IPC::Run3;
+
 #here functs can be overloaded.
 
 =head1 emerge(@Atoms,$commit,$usage)
@@ -55,14 +56,20 @@ sub emerge(@) {
     &clean_logs;
     &entropy_update;
 
-#reticulating splines here...
-#  push(@equo_install, &calculate_missing($_,1)) for @CMD;
-# &info(scalar(@equo_install)
-#      . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
-#  my $Installs = join( " ", @equo_install );
-#  &info("Installing: ");
-#  &notice($_) for @equo_install;
-#  system("sudo equo i -q --relaxed $Installs");
+    if (    App::witchcraft->instance->Config->param('EQUO_DEPINSTALL')
+        and App::witchcraft->instance->Config->param('EQUO_DEPINSTALL') == 1 )
+    {
+        #reticulating splines here...
+        push( @equo_install, &calculate_missing( $_, 1 ) ) for @CMD;
+        &info(
+            scalar(@equo_install)
+                . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)"
+        );
+        my $Installs = join( " ", @equo_install );
+        &info("Installing: ");
+        &notice($_) for @equo_install;
+        system("sudo equo i -q --relaxed $Installs");
+    }
 
     &conf_update;    #EXPECT per DISPATCH-CONF
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
@@ -120,7 +127,7 @@ sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
     my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( scalar(@Packages) . " dependencies found " );
+    &info( "$package: has " . scalar(@Packages) . " dependencies " );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;

@@ -3,11 +3,12 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit eix_sync entropy_update);
+    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs last_md5 eix_sync entropy_update);
 use warnings;
 use strict;
 use File::Find;
 use Regexp::Common qw/URI/;
+use App::witchcraft::Command::Align;
 use Tie::File;
 
 =encoding utf-8
@@ -71,14 +72,13 @@ sub run {
         . ' every '
         . $cfg->param('SLEEP_TIME') . ' s';
     daemonize($0) if $self->{daemon};
-    send_report("I'm up!");
+    send_report("Watching the repo forever");
     while (1) {
         info "Checking for updates, and merging up!";
         draw_up_line;
         if (eix_sync) {    #Launch layman -S first.
             entropy_update;
-            update( $cfg->param('OVERLAY_PATH'),
-                $cfg->param('GIT_MASTER_FILE') );
+            update();
             manual_update( $cfg->param('OVERLAY_PATH') );
         }
         draw_down_line;
@@ -131,38 +131,8 @@ sub manual_update($) {
     }
 }
 
-#
-#  name: update
-#  input: $overlay,$master_file
-#  output: void
-# handles the calls to the functions using git to find diffs
-
-sub update($$) {
-    my $overlay     = shift;
-    my $master_file = shift;
-    my $cfg         = App::witchcraft->instance->Config;
-
-    my $commit = last_commit( $overlay, $master_file );
-    info("Last commit: $commit");
-    my $compiled_commit = compiled_commit();
-    info("Last COMPILED commit: $compiled_commit") if $compiled_commit;
-    if ( defined $compiled_commit and $commit eq $compiled_commit ) {
-        info(
-            "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
-        );
-    }
-    else {
-        notice("Commits seems differents, calculating the differencies.");
-        chdir( $cfg->param('OVERLAY_PATH') );
-        my @DIFFS = find_diff( $overlay, $master_file );
-        info(     "A total of "
-                . scalar(@DIFFS)
-                . " real changes were found, proceeding to compile them." );
-        my $overlay_name = $cfg->param('OVERLAY_NAME');
-        my @EMERGING
-            = map { $_ . "::" . $overlay_name } grep { -d $_ } @DIFFS;
-        process( @EMERGING, $commit, 0 )
-            ;    # 0 to use with git, 1 with manual use
-    }
+sub update() {
+    my $Align = App::witchcraft::Command::Align->new;
+    $Align->run();
 }
 1;
