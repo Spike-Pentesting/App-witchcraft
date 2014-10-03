@@ -63,34 +63,32 @@ sub register {
             my $return = 1;
             index_sync;
             foreach my $atom (@Atoms) {
-                eval { send_report( "Indexing: add", git::add $atom); };
+                eval { git::add $atom; };
                 if ($@) {
                     send_report( "'Error indexing $atom to remote repository",
                         $@ );
                     error($@);
-                    $return = 0;
                 }
                 eval {
-                    send_report(
-                        "Indexing: commit",
-                        git::commit -m =>
-                            'witchcraft: automatically added/updated '
-                            . $atom
-                    );
+                          git::commit -m => '['
+                        . $atom
+                        . '] automatically added/updated by witchcraft';
                 };
                 if ($@) {
                     send_report(
                         "'Error committing $atom to remote repository", $@ );
                     error($@);
-                    $return = 0;
                 }
-
-                eval { send_report( "Indexing: push", git::push ); };
+                else {
+                    send_report(
+                        "Indexing: commit for $atom"
+                    );
+                }
+                eval { git::push; };
                 if ($@) {
                     send_report( "'Error pushing $atom to remote repository",
                         $@ );
                     error($@);
-                    $return = 0;
                 }
             }
             chdir($cwd);
