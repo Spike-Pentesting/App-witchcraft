@@ -294,13 +294,23 @@ e.g.
 
 will load:
 
-* *depcheck* plugin for RDEPEND checks
-* *irc* for irc notifications
-* *pushbullet* uses pushbullet.com api to deliver pushes notifications
-* *log* enable logging on /var/log/witchcraft
-* *git* tells to witchcraft that the repo to handle it's a git one
-* *Qacheck* calls repoman on each passed ebuild
-* ...
+=over
+
+=item depcheck plugin for RDEPEND checks
+
+=item irc for irc notifications
+
+=item pushbullet uses pushbullet.com api to deliver pushes notifications
+
+=item log enable logging on /var/log/witchcraft
+
+=item git tells to witchcraft that the repo to handle it's a git one
+
+=item Qacheck calls repoman on each passed ebuild
+
+=item ...
+
+=back
 
 =head3 Plugin configuration
 
