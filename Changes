@@ -1,7 +1,7 @@
 Revision history for App-witchcraft
 
 {{$NEXT}}
-        - Added Conflict, Bump command
-        - No more automatic upgrade on mantain command
-        - Separated Sabayon/Gentoo commands
-        - Added Plugins, and event emitter pattern
+        - Core enhancements
+        - Divided Git commands, allowing other scm(s) - MOAR BIFURCATION
+        - Added QA check plugin
+        - Starting Githook plugin

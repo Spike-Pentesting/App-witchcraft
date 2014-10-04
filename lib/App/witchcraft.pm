@@ -6,7 +6,7 @@ use Deeme::Obj 'Deeme';
 use App::CLI;
 use Config::Simple;
 use App::witchcraft::Loader;
-our $VERSION = 0.014;
+our $VERSION = 0.015;
 our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
     ;    #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
