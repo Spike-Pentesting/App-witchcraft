@@ -15,6 +15,10 @@ use utf8;
 use Carp;
 use IPC::Run3;
 
+sub distrocheck{
+    return App::witchcraft->instance->Config->param("DISTRO") =~/gentoo/i ? 1: 0;
+}
+
 #here functs can be overloaded.
 sub info {
     my @msg = @_;

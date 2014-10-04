@@ -1,7 +1,7 @@
 package App::witchcraft::Command::Depinstall;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils qw(calculate_missing info log_command
+use App::witchcraft::Utils qw(calculate_missing info log_command distrocheck
     error notice);
 use warnings;
 use strict;
@@ -51,11 +51,11 @@ sub run {
     my $self    = shift;
     my $package = shift;
     my $depth   = $self->{depth} // 1;
-    error "You must supply a package"             and return 1 if ( !$package );
+    error "You must supply a package" and return 1 if ( !$package );
     error 'You must run it with root permissions' and return 1 if $> != 0;
-    error "This feature is only available for Sabayon"      and return 1
-        if App::witchcraft->instance->Config->param("DISTRO")
-        and App::witchcraft->instance->Config->param("DISTRO") ne "Sabayon";
+    error "This feature is only available for Sabayon"
+        and return 1
+        unless distrocheck("sabayon");
 
     info 'Installing all dependencies for '
         . $package

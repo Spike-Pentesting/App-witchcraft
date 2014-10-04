@@ -3,7 +3,7 @@ package App::witchcraft::Command::Pack;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(error info notice draw_down_line draw_up_line  emerge eix_sync);
+    qw(error info notice draw_down_line draw_up_line  emerge eix_sync distrocheck);
 use warnings;
 use strict;
 
@@ -54,8 +54,7 @@ sub run {
     error 'You must run it with root permissions' and return 1 if $> != 0;
     error "This feature is only available for Sabayon"
         and return 1
-        if App::witchcraft->instance->Config->param("DISTRO")
-        and App::witchcraft->instance->Config->param("DISTRO") ne "Sabayon";
+        unless distrocheck("sabayon");
     my $self     = shift;
     my @EMERGING = @_;
     info 'Emerging & Pushing ' . scalar(@EMERGING) . ' packages';

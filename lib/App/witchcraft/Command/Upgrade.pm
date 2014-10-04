@@ -44,7 +44,7 @@ sub run {
     my $self = shift;
     my $Repo = shift
         // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    info 'Upgrade of the Sabayon repository ' . $Repo;
+    info 'Upgrade of the repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );

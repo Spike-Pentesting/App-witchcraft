@@ -51,6 +51,7 @@ our @EXPORT_OK = (
         index_sync
         vagrant_box_status
         filetoatom
+        distrocheck
         dialog_yes_default
         truncate_words
         upgrade
@@ -129,7 +130,12 @@ sub chwn {
 
 sub conf_update {
     croak
-        "conf_update is not implemented by App::witchcraftUtils::Base class";
+        "conf_update is not implemented by App::witchcraft::Utils::Base class";
+}
+
+sub distrocheck {
+    croak
+        "distrocheck is not implemented by App::witchcraft::Utils::Base class";
 }
 
 =head1 bump($atom,$newfile)
@@ -194,11 +200,11 @@ sub natural_order {
 }
 
 sub process(@) {
-    croak "process is not implemented by App::witchcraftUtils::Base class";
+    croak "process is not implemented by App::witchcraft::Utils::Base class";
 }
 
 sub emerge(@) {
-    croak "emerge is not implemented by App::witchcraftUtils::Base class";
+    croak "emerge is not implemented by App::witchcraft::Utils::Base class";
 }
 
 sub find_logs {
@@ -245,8 +251,6 @@ sub to_ebuild(@) {
     return @TO_EMERGE;
 }
 
-
-
 sub previous_commit($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
@@ -270,8 +274,9 @@ sub previous_commit($$) {
 
 sub last_md5() {
     open my $last,
-        "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES').".".App::witchcraft->instance->Config->param('OVERLAY_NAME')
+          "<"
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or (
         &send_report(
             "Can't access to last compiled packages md5",
@@ -293,7 +298,10 @@ sub last_md5() {
 #  output: last commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT').".". App::witchcraft->instance->Config->param('OVERLAY_NAME')
+    open FILE,
+          "<"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or ( &notice("Nothing was previously compiled") and return undef );
     my @LAST = <FILE>;
     close FILE;
@@ -307,13 +315,19 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT').".". App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES').".". App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
@@ -368,7 +382,7 @@ sub log_command {
     }
     else {
         &error("Something went wrong with $command");
-        &send_report( "Phase: $command failed", "$command : ",@LOG );
+        &send_report( "Phase: $command failed", "$command : ", @LOG );
         return 0;
     }
 }
@@ -595,8 +609,11 @@ sub test_ebuild {
             return 1;
         }
         else {
-            &send_report( "Emerge failed for $specific_ebuild","Emerge failed $specific_ebuild",
-                join( " ", &find_logs() ) )
+            &send_report(
+                "Emerge failed for $specific_ebuild",
+                "Emerge failed $specific_ebuild",
+                join( " ", &find_logs() )
+                )
                 if App::witchcraft->instance->Config->param(
                 "REPORT_TEST_FAILS")
                 and

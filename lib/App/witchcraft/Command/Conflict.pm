@@ -2,7 +2,7 @@ package App::witchcraft::Command::Conflict;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils
-    qw(send_report list_available error info notice uniq log_command);
+    qw(send_report list_available error info notice uniq distrocheck log_command);
 
 use warnings;
 use strict;
@@ -49,6 +49,9 @@ sub run {
     error 'You must run it with root permissions' and return 1 if $> != 0;
     my $overlay = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     error 'No OVERLAY_NAME defined' and return 1 if ( !$overlay );
+       error "This feature is only available for Sabayon"
+        and return 1
+        unless distrocheck("sabayon");
     info
         'Calculating packages that are already in other sabayon repositories ';
     my @repos = qx|equo repo list -q|;

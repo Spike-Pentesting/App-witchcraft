@@ -35,6 +35,9 @@ emerges the given atoms
 sub conf_update {
     &log_command("echo -5 | equo conf update");
 }
+sub distrocheck{
+    return App::witchcraft->instance->Config->param("DISTRO") =~/sabayon/i ? 1: 0;
+}
 
 sub emerge(@) {
     my $options = shift;

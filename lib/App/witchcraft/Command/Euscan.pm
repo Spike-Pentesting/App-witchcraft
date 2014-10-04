@@ -98,7 +98,7 @@ sub run {
     my $self = shift;
     my $Repo = shift
         // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    info 'Euscan of the Sabayon repository ' . $Repo;
+    info 'Euscan of the repository ' . $Repo;
     my $password = password_dialog();
     info "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = uniq(`equo query list available $Repo -q`);
