@@ -76,18 +76,7 @@ sub emerge(@) {
     $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-
     &clean_logs;
-
-#reticulating splines here...
-#  push(@equo_install, &calculate_missing($_,1)) for @CMD;
-# &info(scalar(@equo_install)
-#      . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
-#  my $Installs = join( " ", @equo_install );
-#  &info("Installing: ");
-#  &notice($_) for @equo_install;
-#  system("sudo equo i -q --relaxed $Installs");
-
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         &info("All went smooth, HURRAY! packages merged correctly");
         &send_report( "Packages merged successfully", @DIFFS );
