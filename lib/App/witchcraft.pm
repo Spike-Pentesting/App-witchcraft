@@ -6,7 +6,7 @@ use Deeme::Obj 'Deeme';
 use App::CLI;
 use Config::Simple;
 use App::witchcraft::Loader;
-our $VERSION = 0.015;
+our $VERSION = 0.016;
 our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
     ;    #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
@@ -262,6 +262,8 @@ Enables cpanm automatic updates at each mantain, specifying the url of the modul
 
     #This will make automatic updates, synced with the github repo
     WITCHCRAFT_GIT: ssh://git@github.com:Spike-Pentesting/App-Witchcraft.git
+
+Note: you can also use pinto urls, this argument is just being passed at cpanm
 
 =head3 FAKE_ENV_HOME, FAKE_ENV_VAGRANT_HOME , VAGRANT_BOXES
 

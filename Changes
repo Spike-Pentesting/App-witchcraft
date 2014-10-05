@@ -1,7 +1,5 @@
 Revision history for App-witchcraft
 
 {{$NEXT}}
-        - Core enhancements
-        - Divided Git commands, allowing other scm(s) - MOAR BIFURCATION
-        - Added QA check plugin
-        - Starting Githook plugin
+        - minor fixes
+        - fixed Plugin::Qacheck

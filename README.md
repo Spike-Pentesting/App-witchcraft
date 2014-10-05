@@ -204,6 +204,8 @@ Enables cpanm automatic updates at each mantain, specifying the url of the modul
     #This will make automatic updates, synced with the github repo
     WITCHCRAFT_GIT: ssh://git@github.com:Spike-Pentesting/App-Witchcraft.git
 
+Note: you can also use pinto urls, this argument is just being passed at cpanm
+
 ### FAKE\_ENV\_HOME, FAKE\_ENV\_VAGRANT\_HOME , VAGRANT\_BOXES
 
 To set up your vagrant boxes, you have also the possibility to fake a vagrant environment.
