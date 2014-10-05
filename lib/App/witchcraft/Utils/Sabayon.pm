@@ -35,8 +35,11 @@ emerges the given atoms
 sub conf_update {
     &log_command("echo -5 | equo conf update");
 }
-sub distrocheck{
-    return App::witchcraft->instance->Config->param("DISTRO") =~/sabayon/i ? 1: 0;
+
+sub distrocheck {
+    return App::witchcraft->instance->Config->param("DISTRO") =~ /sabayon/i
+        ? 1
+        : 0;
 }
 
 sub emerge(@) {
@@ -54,7 +57,7 @@ sub emerge(@) {
     my $EDITOR = $ENV{EDITOR};
     $ENV{EDITOR} = "cat";                                     #quick hack
     $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
     &clean_logs;
     &entropy_update;
@@ -92,8 +95,11 @@ sub emerge(@) {
         #   or send_report("Cannot spawn eit: $!\n");
         sleep 1;
         my ( $out, $err );
-        run3( [ 'eit', 'commit', '--quick' ], \"Si\n\nYes\n\nSi\n\nYes\n\n", \$out,
-            \$err );
+        run3(
+            [ 'eit', 'commit', '--quick' ],
+            \"Si\n\nYes\n\nSi\n\nYes\n\n",
+            \$out, \$err
+        );
 
         if ( $? == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
@@ -166,8 +172,8 @@ sub process(@) {
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
-    App::witchcraft->instance->emit( before_process => ($commit,@CMD) );
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
+    App::witchcraft->instance->emit( before_process => ( $commit, @CMD ) );
     my @ebuilds = &to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {

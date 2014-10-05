@@ -80,7 +80,7 @@ sub emerge(@) {
     $ENV{EDITOR} = "cat";    #quick hack
 
     $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
     &clean_logs;
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
@@ -126,7 +126,7 @@ sub process(@) {
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
     App::witchcraft->instance->emit( before_process => ( $commit, @CMD ) );
     my @ebuilds = &to_ebuild(@CMD);
 

@@ -1,7 +1,8 @@
 package App::witchcraft::Plugin::Qacheck;
 
 use Deeme::Obj -base;
-use App::witchcraft::Utils qw(info error send_report uniq atom log_command);
+use App::witchcraft::Utils
+    qw(info error send_report uniq atom log_command stripoverlay);
 use Cwd;
 
 sub register {
@@ -28,7 +29,7 @@ sub repoman {
     shift;
     my $cwd = cwd;
     local $_ = shift;
-    s/\:\:.*//g;
+    stripoverlay;
     atom;
     chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') . "/"
             . $_ );

@@ -59,6 +59,7 @@ our @EXPORT_OK = (
         filetopackage
         slurp
         append
+        stripoverlay
         stage
         spurt
         clean_stash
@@ -507,6 +508,8 @@ sub daemonize($) {
 }
 
 sub atom { s/-[0-9]{1,}.*$//; }
+
+sub stripoverlay { s/\:\:.*//g; }
 
 sub _debug {
     print STDERR @_, "\n" if debug;
