@@ -191,7 +191,8 @@ sub register {
             send_report("Align start, building commit from $last_commit");
             my $cfg = App::witchcraft->instance->Config;
             eix_sync;
-
+      $emitter->emit(
+                build_start => $last_commit);
             my $cwd = cwd;
             chdir( $cfg->param('OVERLAY_PATH') );
             my @FILES = map {
