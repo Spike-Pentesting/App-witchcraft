@@ -28,6 +28,7 @@ sub repoman {
     shift;
     my $cwd = cwd;
     local $_ = shift;
+    s/\:\:.*//g;
     atom;
     chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') . "/"
             . $_ );
