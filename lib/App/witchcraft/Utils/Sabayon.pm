@@ -53,10 +53,8 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
-    my $rs     = 0;
-    my $EDITOR = $ENV{EDITOR};
-    $ENV{EDITOR} = "cat";                                     #quick hack
-    $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
+    my $rs = 0;
+    local $ENV{EDITOR} = "cat";    #quick hack
     @CMD = map { &stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
     &clean_logs;
@@ -84,7 +82,6 @@ sub emerge(@) {
                 . scalar(@DIFFS)
                 . " packages: "
                 . join( " ", @DIFFS ) );
-        &send_report( "Compressing these packages", @DIFFS );
         &conf_update;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -94,10 +91,12 @@ sub emerge(@) {
         #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
         #   or send_report("Cannot spawn eit: $!\n");
         sleep 1;
+        &send_report( "Compressing these packages", @DIFFS );
+
         my ( $out, $err );
         run3(
             [ 'eit', 'commit', '--quick' ],
-            \"Si\n\nYes\n\nSi\n\nYes\n\n",
+            \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
             \$out, \$err
         );
 
@@ -129,7 +128,6 @@ sub emerge(@) {
 
     #Maintenance stuff
     &upgrade;
-    $ENV{EDITOR} = $EDITOR;    #quick hack
     return $rs;
 }
 
