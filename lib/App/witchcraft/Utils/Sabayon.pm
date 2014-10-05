@@ -35,11 +35,8 @@ emerges the given atoms
 sub conf_update {
     &log_command("echo -5 | equo conf update");
 }
-
-sub distrocheck {
-    return App::witchcraft->instance->Config->param("DISTRO") =~ /sabayon/i
-        ? 1
-        : 0;
+sub distrocheck{
+    return App::witchcraft->instance->Config->param("DISTRO") =~/sabayon/i ? 1: 0;
 }
 
 sub emerge(@) {
@@ -93,8 +90,9 @@ sub emerge(@) {
         # $Expect->spawn( "eit", "add", "--quick", @CMD )
         #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
         #   or send_report("Cannot spawn eit: $!\n");
+        sleep 1;
         my ( $out, $err );
-        run3( [ 'eit', 'commit', '--quick' ], \"Si\n\nYes\n\n", \$out,
+        run3( [ 'eit', 'commit', '--quick' ], \"Si\n\nYes\n\nSi\n\nYes\n\n", \$out,
             \$err );
 
         if ( $? == 0 ) {
@@ -169,7 +167,7 @@ sub process(@) {
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
     @CMD = map { s/\:\:.*//g; $_ } @CMD;
-    App::witchcraft->instance->emit( before_process => ( $commit, @CMD ) );
+    App::witchcraft->instance->emit( before_process => ($commit,@CMD) );
     my @ebuilds = &to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
@@ -185,8 +183,7 @@ sub process(@) {
         &send_report( "Emerge in progress for $commit", @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
             &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
-            App::witchcraft->instance->emit(
-                after_process => ( $commit, @DIFFS ) );
+            App::witchcraft->instance->emit( after_process => (@DIFFS) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
             }
