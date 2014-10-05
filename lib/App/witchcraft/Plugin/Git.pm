@@ -80,9 +80,7 @@ sub register {
                     error($@);
                 }
                 else {
-                    send_report(
-                        "Indexing: commit for $atom"
-                    );
+                    send_report("Indexing: commit for $atom");
                 }
                 eval { git::push; };
                 if ($@) {
@@ -191,8 +189,7 @@ sub register {
             send_report("Align start, building commit from $last_commit");
             my $cfg = App::witchcraft->instance->Config;
             eix_sync;
-      $emitter->emit(
-                build_start => $last_commit);
+            $emitter->emit( build_start => $last_commit );
             my $cwd = cwd;
             chdir( $cfg->param('OVERLAY_PATH') );
             my @FILES = map {
@@ -209,10 +206,15 @@ sub register {
             #$Clean->run;
             my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
                 grep { -d $_ } @FILES;
-            notice 'Those are the packages that would be processed:';
-            draw_up_line;
-            info "\t" . $_ for @EMERGING;
-            draw_down_line;
+            if ( @EMERGING > 0 ) {
+                notice 'These are the packages that would be processed:';
+                draw_up_line;
+                info "\t* " . $_ for @EMERGING;
+                draw_down_line;
+            }
+            else {
+                notice "No packages to emerge";
+            }
             $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
                 ".git/refs/heads/master" );
             process( @EMERGING, $last_commit, 0 );
