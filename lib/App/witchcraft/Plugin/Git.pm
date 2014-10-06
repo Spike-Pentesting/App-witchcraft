@@ -6,12 +6,12 @@ use App::witchcraft::Utils
 use Cwd;
 use Git::Sub;
 use Git::Sub qw(diff stash);
-#
+
+
 #  name: last_commit
 #  input: git_path_repository, master
 #  output: last_commit
 # Given a path of a git repo and his master file, it returns the last commit id
-
 sub last_commit($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
@@ -128,12 +128,9 @@ sub register {
 
                 if ( $result == 1 ) {
                     push( @Atoms_Installed, $atom );
-
-                    #  &info( $new_pos . " was correctly installed" );
                     push( @Installed, $new_pos );
                 }
                 else {
-                    # &error( $new_pos . " installation failed" );
                     push( @Failed, $new_pos );
                 }
             }
