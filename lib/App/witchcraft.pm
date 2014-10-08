@@ -2,7 +2,6 @@ package App::witchcraft;
 use strict;
 use 5.008_005;
 use Deeme::Obj 'Deeme';
-
 use App::CLI;
 use Config::Simple;
 use App::witchcraft::Loader;

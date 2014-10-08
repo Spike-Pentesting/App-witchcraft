@@ -11,6 +11,7 @@ our @EXPORT_OK = (
 );
 use constant DEBUG => $ENV{DEBUG} || 0;
 use IPC::Run3;
+use Locale::TextDomain 'App-Witchcraft';
 
 #here functs can be overloaded.
 
@@ -66,11 +67,15 @@ sub emerge(@) {
         #reticulating splines here...
         push( @equo_install, &calculate_missing( $_, 1 ) ) for @CMD;
         &info(
-            scalar(@equo_install)
-                . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)"
+            __xn(
+                "One dependency of the package is not present in the system, installing them with equo",
+                "{count} dependencies of the package are not present in the system, installing them with equo",
+                scalar(@equo_install),
+                count => scalar(@equo_install)
+            )
         );
         my $Installs = join( " ", @equo_install );
-        &info("Installing: ");
+        &info( __ "Installing: " );
         &notice($_) for @equo_install;
         system("sudo equo i -q --relaxed $Installs");
     }
@@ -78,10 +83,12 @@ sub emerge(@) {
     &conf_update;    #EXPECT per DISPATCH-CONF
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
-        &info(    "Compressing "
-                . scalar(@DIFFS)
-                . " packages: "
-                . join( " ", @DIFFS ) );
+        &info(
+            __x("Compressing {count} packages: {packages}",
+                count    => scalar(@DIFFS),
+                packages => @DIFFS
+            )
+        );
         &conf_update;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -91,7 +98,7 @@ sub emerge(@) {
         #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
         #   or send_report("Cannot spawn eit: $!\n");
         sleep 1;
-        &send_report( "Compressing these packages", @DIFFS );
+        &send_report( __("Compressing packages"), @DIFFS );
 
         my ( $out, $err );
         run3(
@@ -105,9 +112,10 @@ sub emerge(@) {
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
             if ( &log_command("eit push --quick") ) {
-                &info("All went smooth, HURRAY!");
+                &info( __("All went smooth, HURRAY!") );
                 &send_report(
-                    "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                    __( "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                    )
                 );
                 App::witchcraft->instance->emit( after_push => (@DIFFS) );
                 $rs = 1;
@@ -117,13 +125,16 @@ sub emerge(@) {
         }
         else {
             &send_report(
-                "Error in compression phase, you have to manually solve it",
-                $out, $err );
+                __( "Error in compression phase, you have to manually solve it"
+                ),
+                $out, $err
+            );
         }
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
+        &send_report( __x( "Logs for {diffs} ", diffs => @DIFFS ),
+            join( " ", @LOGS ) );
     }
 
     #Maintenance stuff
@@ -135,7 +146,12 @@ sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
     my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( "$package: has " . scalar(@Packages) . " dependencies " );
+    &info(
+        __x("{package}: has {deps} dependencies ",
+            package => $package,
+            deps    => scalar(@Packages)
+        )
+    );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
@@ -166,7 +182,7 @@ sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
     my @DIFFS  = @_;
-    &notice( "Processing " . join( " ", @DIFFS ) );
+    &notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
@@ -184,9 +200,16 @@ sub process(@) {
     }
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
-        &send_report( "Emerge in progress for $commit", @DIFFS );
+        &send_report(
+            __x( "Emerge in progress for {commit}", commit => $commit ),
+            @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
-            &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
+            &send_report(
+                __x("<{commit}> Compiled: {diffs}",
+                    commit => $commit,
+                    diffs  => @DIFFS
+                )
+            );
             App::witchcraft->instance->emit( after_process => (@DIFFS) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);

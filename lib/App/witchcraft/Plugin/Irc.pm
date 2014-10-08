@@ -1,4 +1,5 @@
 package App::witchcraft::Plugin::Irc;
+use Locale::TextDomain 'App-Witchcraft';
 
 use Deeme::Obj -base;
 use IO::Socket::INET;
@@ -46,7 +47,8 @@ sub register {
 sub irc_msg {
     my $self    = shift;
     my $message = shift;
-    notice("Sending >>$message<< on IRC ") if DEBUG;
+    notice( __x( "Sending >>{message}<< on IRC ", message => $message ) )
+        if DEBUG;
     if ( my $socket = $self->irc ) {
         printf $socket "PRIVMSG $_ :$message\r\n"
             for App::witchcraft->instance->Config->param('IRC_CHANNELS');
@@ -114,9 +116,9 @@ sub irc_msg_join_part {
         Proto    => "tcp",
         Timeout  => 10
         )
-        or error("Couldn't connect to the irc server")
+        or error( __ "Couldn't connect to the irc server" )
         and return undef;
-    info("Sending notification also on IRC") if DEBUG;
+    info( __ "Sending notification also on IRC" ) if DEBUG;
     return undef unless $socket;
     $socket->autoflush(1);
     sleep 2;
@@ -131,8 +133,12 @@ sub irc_msg_join_part {
         if ( $line =~ m/^\:(.+?)\s+376/i ) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
-                info( "Joining $chan on " . $cfg->param('IRC_SERVER') )
-                    if DEBUG;
+                info(
+                    __x("Joining {chan} on {server}",
+                        chan   => $chan,
+                        server => $cfg->param('IRC_SERVER')
+                    )
+                ) if DEBUG;
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
                     for (@MESSAGES);
                 sleep 5;

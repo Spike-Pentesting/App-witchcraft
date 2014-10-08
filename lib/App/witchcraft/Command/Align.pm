@@ -7,6 +7,7 @@ use App::witchcraft::Utils
 use App::witchcraft::Command::Clean;
 use warnings;
 use strict;
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -52,7 +53,7 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 =cut
 sub run {
-    error 'You must run it with root permissions' and return 1 if $> != 0;
+    error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
     my $last_commit = shift;
     App::witchcraft->instance->emit("align_to" => $last_commit);

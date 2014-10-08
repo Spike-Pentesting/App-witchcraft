@@ -6,6 +6,7 @@ use warnings;
 use strict;
 use File::Find;
 use Cwd;
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -65,7 +66,7 @@ our @AVAILABLE_CMDS = qw(metagen ebuild_missing digest);
 sub run {
     my ( $self, $action, $dir ) = @_;
     my $cfg = App::witchcraft->new->Config;
-    error "At leat one of this action must be specified: @AVAILABLE_CMDS"
+    error __x("At leat one of this action must be specified: {cmds}", cmds=>@AVAILABLE_CMDS)
         and return 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );

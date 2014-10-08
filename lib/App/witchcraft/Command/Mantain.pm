@@ -6,7 +6,7 @@ use warnings;
 use strict;
 use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(upgrade);
-
+use Locale::TextDomain 'App-Witchcraft';
 use App::witchcraft::Command::Align;
 use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;
@@ -97,7 +97,7 @@ sub options {
 }
 
 sub run {
-    error 'You must run it with root permissions' and return 1 if $> != 0;
+    error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
     if ( $self->{'loop'} ) {
         while (1) {

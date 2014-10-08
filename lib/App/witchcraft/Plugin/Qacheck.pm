@@ -4,6 +4,7 @@ use Deeme::Obj -base;
 use App::witchcraft::Utils
     qw(info error send_report uniq atom log_command stripoverlay);
 use Cwd;
+use Locale::TextDomain 'App-Witchcraft';
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -11,8 +12,8 @@ sub register {
         "after_test" => sub {
             my ( $witchcraft, $ebuild ) = @_;
             send_report(
-                "Repoman output for $ebuild",
-                "Repoman output for $ebuild",
+                __x("Repoman output for {ebuild}",ebuild=>$ebuild),
+                __x("Repoman output for {ebuild}",ebuild=>$ebuild),
                 $self->repoman($ebuild)
             );
         }

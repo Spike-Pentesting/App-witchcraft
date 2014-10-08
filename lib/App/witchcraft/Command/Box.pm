@@ -2,6 +2,7 @@ package App::witchcraft::Command::Box;
 
 use base qw(App::witchcraft::Command);
 use Carp::Always;
+use Locale::TextDomain 'App-Witchcraft';
 use App::witchcraft::Utils
     qw(error info notice draw_down_line draw_up_line send_report vagrant_box_status vagrant_box_cmd);
 use warnings;
@@ -80,7 +81,7 @@ sub run {
     my $self   = shift;
     my $action = shift;
     my @args   = @_;
-    error "At leat one of this action must be specified: @AVAILABLE_CMDS"
+    error __x("At least one of this action must be specified: {cmds}", cmds=>@AVAILABLE_CMDS)
         and return 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );
@@ -112,15 +113,15 @@ sub list { notice $_[1]; }
 sub status { info $_[1] . ": " . vagrant_box_status( $_[1] ); }
 
 sub up {
-    error $_[1] . ": box is already running" and return 1
+    error $_[1] . ": " . __ "box is already running" and return 1
         if ( vagrant_box_status( $_[1] ) eq "running" );
-    info "Starting up " . $_[1];
+    info __ "Starting up " . $_[1];
     info $_[1] . ": ";
     notice join( "\n", @{ ( vagrant_box_cmd( "up", $_[1] ) )[1] } );
 }
 
 sub halt {
-    info "Stopping " . $_[1];
+    info __ "Stopping " . $_[1];
     info $_[1] . ": ";
     notice join( "\n", @{ ( vagrant_box_cmd( "halt", $_[1] ) )[1] } );
 }
@@ -128,7 +129,7 @@ sub halt {
 sub ssh {
     my $self = shift;
     my $box  = shift;
-    info "Spawning ssh on $box";
+    info __x( "Spawning ssh on {box}", box => $box );
     system(   "tmux new-window 'export HOME=\""
             . $ENV{HOME}
             . "\";export VAGRANT_HOME=\""
@@ -143,10 +144,12 @@ sub monitor_start {
     my $secs = $min * 60;
 
     $self->_clean_monitor($box) if ( -e "$box/.monitor.pid" );
-    error "it seems that a monitor is already up for $box" and return 0
+    error __x( "it seems that a monitor is already up for {box}",
+        box => $box )
+        and return 0
         unless ( !-e "$box/.monitor.pid" );
 
-    info "Monitoring $box for $min m ";
+    info __x( "Monitoring {box} for {min} m ", box => $box, min => $min );
 
     my $child = Child->new(
         sub {
@@ -169,12 +172,18 @@ sub monitor_stop {
     my $box  = shift;
     my $min  = shift || 60;
     my $secs = $min * 60;
-    error "it seems that there isn't a monitor running for $box" and return 0
+    error __x( "it seems that there isn't a monitor running for {box}",
+        box => $box )
+        and return 0
         unless ( -e "$box/.monitor.pid" );
     open my $PIDFILE, "<$box/.monitor.pid";
     my $PID = <$PIDFILE>;
     close $PIDFILE;
-    info "stopping monitoring for $box, $PID process";
+    info __x(
+        "stopping monitoring for {box}, {pid} process",
+        box => $box,
+        pid => $PID
+    );
     kill 9, $PID;
     unlink("$box/.monitor.pid");
 }

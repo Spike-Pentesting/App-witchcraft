@@ -3,7 +3,8 @@ package App::witchcraft::Command::List;
 use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
-use App::witchcraft::Utils qw(distrocheck error);
+use App::witchcraft::Utils qw(distrocheck error info);
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -42,7 +43,7 @@ sub run {
     my $self = shift;
     my $Repo = shift
         // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    error "This feature is only available for Sabayon"
+    error __ "This feature is only available for Sabayon"
         and return 1
         unless distrocheck("sabayon");
     App::witchcraft->instance->emit("on_exit");

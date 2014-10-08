@@ -9,6 +9,7 @@ our @EXPORT_OK = (
     @App::witchcraft::Utils::Base::EXPORT_OK,
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
+use Locale::TextDomain 'App-Witchcraft';
 use Term::ANSIColor;
 use Encode;
 use utf8;
@@ -35,7 +36,14 @@ sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
     my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( scalar(@Packages) . " dependencies found " );
+    &info(
+        __xn(
+            "One dependency found",
+            "{count} dependencies found ",
+            scalar(@Packages),
+            count => scalar(@Packages)
+        )
+    );
     my @Installed_Packages = qx/EIX_LIMIT_COMPACT=0 eix -Inc -#/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
@@ -84,13 +92,14 @@ sub emerge(@) {
     my $args = $emerge_options . " " . join( " ", @DIFFS );
     &clean_logs;
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
-        &info("All went smooth, HURRAY! packages merged correctly");
-        &send_report( "Packages merged successfully", @DIFFS );
+        &info( __ "All went smooth, HURRAY! packages merged correctly" );
+        &send_report( __("Packages merged successfully"), @DIFFS );
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
+        &send_report( __x( "Logs for {diffs}", diffs => @DIFFS ),
+            join( " ", @LOGS ) );
         $rs = 0;
     }
 
@@ -122,7 +131,7 @@ sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
     my @DIFFS  = @_;
-    &notice( "Processing " . join( " ", @DIFFS ) );
+    &notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
@@ -140,10 +149,18 @@ sub process(@) {
     }
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
-        &send_report( "Emerge in progress for $commit", @DIFFS );
+        &send_report(
+            __x( "Emerge in progress for {commit}", commit => $commit ),
+            @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
-            &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
-            App::witchcraft->instance->emit( after_process => ($commit,@DIFFS) );
+            &send_report(
+                __x("<{commit}> Compiled: {diffs}",
+                    commit => $commit,
+                    diffs  => @DIFFS
+                )
+            );
+            App::witchcraft->instance->emit(
+                after_process => ( $commit, @DIFFS ) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
             }
@@ -155,22 +172,22 @@ sub process(@) {
 }
 
 sub list_available {
-    croak
+    croak __
         "list_available is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 
 sub remove_available(@) {
-    croak
+    croak __
         "remove_available is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 
 sub entropy_update {
-    croak
+    croak __
         "entropy_update is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 
 sub entropy_rescue {
-    croak
+    croak __
         "entropy_rescue is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 

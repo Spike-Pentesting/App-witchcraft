@@ -6,7 +6,7 @@ use App::witchcraft::Utils
 use Cwd;
 use Git::Sub;
 use Git::Sub qw(diff stash);
-
+use Locale::TextDomain 'App-Witchcraft';
 
 #  name: last_commit
 #  input: git_path_repository, master
@@ -21,9 +21,10 @@ sub last_commit($$) {
         . $master
         or (
         &error(
-                  'Something is terribly wrong, cannot open '
-                . $git_repository_path . "/"
-                . $master
+            __x('Something is terribly wrong, cannot open {git_repository_path} {master}',
+                git_repository_path => $git_repository_path,
+                master              => $master
+            )
         )
         and exit 1
         );
@@ -32,7 +33,6 @@ sub last_commit($$) {
     close $FH;
     return $FILE[0];
 }
-
 sub register {
     my ( $self, $emitter ) = @_;
     my $cfg = App::witchcraft->instance->Config;
@@ -40,18 +40,19 @@ sub register {
         "index_sync" => sub {
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-            eval {
-                notice(
-                    "Git pull for ["
-                        . App::witchcraft->instance->Config->param(
-                        'GIT_REPOSITORY')
-                        . "] "
-                        . git::pull
-                );
-            };
+            eval { git::pull; };
             if ($@) {
-                send_report( "'Error pulling from remote repository", $@ );
+                send_report( __ "Error pulling from remote repository", $@ );
                 error($@);
+            }
+            else {
+                notice(
+                    __x("Git pull for [{repository}]",
+                        repository =>
+                            App::witchcraft->instance->Config->param(
+                            'GIT_REPOSITORY')
+                    )
+                );
             }
         }
     );
@@ -65,27 +66,41 @@ sub register {
             foreach my $atom (@Atoms) {
                 eval { git::add $atom; };
                 if ($@) {
-                    send_report( "'Error indexing $atom to remote repository",
-                        $@ );
+                    send_report(
+                        __x("Error indexing {atom} to remote repository",
+                            atom => $atom
+                        ),
+                        $@
+                    );
                     error($@);
                 }
                 eval {
-                          git::commit -m => '['
-                        . $atom
-                        . '] automatically added/updated by witchcraft';
+                    git::commit -m => __x(
+                        '[{atom}] automatically added/updated by witchcraft',
+                        atom => $atom
+                    );
                 };
                 if ($@) {
                     send_report(
-                        "'Error committing $atom to remote repository", $@ );
+                        __x("Error committing {atom} to remote repository",
+                            atom => $atom
+                        ),
+                        $@
+                    );
                     error($@);
                 }
                 else {
-                    send_report("Indexing: commit for $atom");
+                    send_report(
+                        __x( "Indexing: commit for {atom}", atom => $atom ) );
                 }
                 eval { git::push; };
                 if ($@) {
-                    send_report( "'Error pushing $atom to remote repository",
-                        $@ );
+                    send_report(
+                        __x("Error pushin {atom} to remote repository",
+                            atom => $atom
+                        ),
+                        $@
+                    );
                     error($@);
                 }
             }
@@ -111,14 +126,23 @@ sub register {
             my @Untracked = git::ls_files '--others', '--exclude-standard';
             push( @Untracked, git::diff_files '--name-only' );
             @Untracked = grep {/\.ebuild$/} @Untracked;
-            info( "Those are the file that would be tested: "
-                    . join( " ", @Untracked ) );
+            info(
+                __x("Those are the file that would be tested: {untracked}",
+                    untracked => @Untracked
+                )
+            );
             clean_logs;    #spring cleaning!
             my $c = 1;
             my @Atoms_Installed;
 
             foreach my $new_pos (@Untracked) {
-                info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
+                info(
+                    __x("[{count}/{total}] Testing {atom}",
+                        count => $c,
+                        total => scalar(@Untracked),
+                        atom  => $new_pos
+                    )
+                );
                 my $atom = $new_pos;
 
                 #$atom = filetoatom($atom);
@@ -128,7 +152,7 @@ sub register {
 
                 if ( $result == 1 ) {
                     push( @Atoms_Installed, $atom );
-                    push( @Installed, $new_pos );
+                    push( @Installed,       $new_pos );
                 }
                 else {
                     push( @Failed, $new_pos );
@@ -137,28 +161,33 @@ sub register {
             if ( $ignore and $ignore == 1 and @Failed > 0 ) {
                 tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
                     or die( error $!);
-                send_report(
-                    "Witchcraft need your attention, i'm asking you few questions"
+                send_report( __
+                        "Witchcraft need your attention, i'm asking you few questions"
                 );
                 foreach my $fail (@Failed) {
                     push( @ignores, $fail )
                         if (
                         dialog_yes_default(
-                            "Add " . $fail . " to the ignore list?"
+                            __x("Add {failed} to the ignore list?",
+                                failed => $fail
+                            )
                         )
                         );
                 }
             }
             if ( @Installed > 0 ) {
-                &info(
-                    "Those files where correctly installed, maybe you wanna check them: "
+                &info( __
+                        "Those files where correctly installed, maybe you wanna check them: "
                 );
                 my $result;
                 notice($_) and $result .= " " . $_
                     for ( uniq(@Atoms_Installed) );
                 send_report(
-                    "These ebuilds where correctly installed: $result");
-                info("Generating the command for maintenance");
+                    __x("These ebuilds where correctly installed: {result}",
+                        result => $result
+                    )
+                );
+                info( __ "Generating the command for maintenance" );
                 notice("git add $result");
                 notice("eix-sync");
                 notice("emerge -av $result");
@@ -167,8 +196,8 @@ sub register {
                 $cb->(@Installed);
             }
             else {
-                info(
-                    "No files where tested because there weren't untracked files or all packages failed to install"
+                info( __
+                        "No files where tested because there weren't untracked files or all packages failed to install"
                 );
             }
             chdir($cwd);
@@ -179,11 +208,16 @@ sub register {
         "align_to" => sub {
             shift;
             my $last_commit = shift // compiled_commit();
-            error 'No compiled commit could be found, you must specify it'
+            error __ 'No compiled commit could be found, you must specify it'
                 and return 1
                 if ( !defined $last_commit );
-            info 'Emerging packages from commit ' . $last_commit;
-            send_report("Align start, building commit from $last_commit");
+            info __x( 'Emerging packages from commit {commit}',
+                commit => $last_commit );
+            send_report(
+                __x("Align start, building commit from {commit}",
+                    commit => $last_commit
+                )
+            );
             my $cfg = App::witchcraft->instance->Config;
             eix_sync;
             $emitter->emit( build_start => $last_commit );
@@ -204,13 +238,13 @@ sub register {
             my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
                 grep { -d $_ } @FILES;
             if ( @EMERGING > 0 ) {
-                notice 'These are the packages that would be processed:';
+                notice __ 'These are the packages that would be processed:';
                 draw_up_line;
                 info "\t* " . $_ for @EMERGING;
                 draw_down_line;
             }
             else {
-                notice "No packages to emerge";
+                notice __ "No packages to emerge";
             }
             $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
                 ".git/refs/heads/master" );
@@ -228,8 +262,8 @@ sub register {
             chdir($dir);
             system(
                 "git ls-files --others --exclude-standard | xargs rm -rfv");
-            &notice(
-                "Launch 'git stash' if you want to rid about all the modifications"
+            &notice( __
+                    "Launch 'git stash' if you want to rid about all the modifications"
             );
             chdir($cwd);
         }
@@ -243,7 +277,8 @@ sub register {
             my $cwd = cwd;
             chdir($dir);
             system("git stash");
-            send_report("error happened stashing $dir") if $? != 0;
+            send_report( __x( "error happened stashing {dir}", dir => $dir ) )
+                if $? != 0;
             chdir($cwd);
         }
     );

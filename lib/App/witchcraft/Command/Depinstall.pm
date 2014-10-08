@@ -5,6 +5,7 @@ use App::witchcraft::Utils qw(calculate_missing info log_command distrocheck
     error notice);
 use warnings;
 use strict;
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -51,22 +52,26 @@ sub run {
     my $self    = shift;
     my $package = shift;
     my $depth   = $self->{depth} // 1;
-    error "You must supply a package" and return 1 if ( !$package );
-    error 'You must run it with root permissions' and return 1 if $> != 0;
-    error "This feature is only available for Sabayon"
+    error __ "You must supply a package" and return 1 if ( !$package );
+    error __ 'You must run it with root permissions' and return 1 if $> != 0;
+    error __ "This feature is only available for Sabayon"
         and return 1
         unless distrocheck("sabayon");
 
-    info 'Installing all dependencies for '
-        . $package
-        . ' with depth '
-        . $depth
-        . ' using equo';
-    info 'Retrieving dependencies';
+    info __x(
+        'Installing all dependencies for {package} with depth {depth} using equo',
+        package => $package,
+        depth   => $depth
+    );
+    info __ 'Retrieving dependencies';
     my @to_install = calculate_missing( $package, $depth );
-    info scalar(@to_install)
-        . " are not present in the systems and needs to be installed ";
-    info "Installing: ";
+    info __nx(
+        "One package isn't present in the system and needs to be installed",
+        "{count} packages aren't present in the system and needs to be installed",
+        scalar(@to_install),
+        count => scalar(@to_install)
+    );
+    info __ "Installing" . " :";
     notice $_. "\t" for @to_install;
     log_command( "sudo equo i -q " . join( " ", @to_install ) );
 }

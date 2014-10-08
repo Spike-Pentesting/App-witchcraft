@@ -5,6 +5,7 @@ use Carp::Always;
 use App::witchcraft::Utils
     qw(error info notice draw_down_line draw_up_line  emerge eix_sync distrocheck);
 use warnings;
+use Locale::TextDomain 'App-Witchcraft';
 use strict;
 
 =encoding utf-8
@@ -51,16 +52,21 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 =cut
 
 sub run {
-    error 'You must run it with root permissions' and return 1 if $> != 0;
-    error "This feature is only available for Sabayon"
+    error __ 'You must run it with root permissions' and return 1 if $> != 0;
+    error __ "This feature is only available for Sabayon"
         and return 1
         unless distrocheck("sabayon");
     my $self     = shift;
     my @EMERGING = @_;
-    info 'Emerging & Pushing ' . scalar(@EMERGING) . ' packages';
+    info __xn(
+        "One package will be built and pushed to the remote repository",
+        'Emerging & Pushing {count} packages',
+        scalar(@EMERGING),
+        count => scalar(@EMERGING)
+    );
     my $cfg = App::witchcraft->instance->Config;
     eix_sync;
-    notice 'Those are the packages that would be processed:';
+    notice __ 'Those are the packages that would be processed' . ":";
     draw_up_line;
     info "\t" . $_ for @EMERGING;
     draw_down_line;

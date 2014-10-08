@@ -8,6 +8,7 @@ use App::witchcraft::Utils qw(stage);
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit push pull);
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -98,15 +99,16 @@ sub run {
     my $self = shift;
     my $Repo = shift
         // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    info 'Euscan of the repository ' . $Repo;
+    info __x( 'Euscan of the repository {repo}', repo => $Repo );
     my $password = password_dialog();
-    info "Retrevieng packages in the repository" if $self->{verbose};
+    info __ "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = uniq(`equo query list available $Repo -q`);
     chomp(@Packages);
     my @Updates;
     my @Added;
     my $c = 1;
-    info "Starting Euscan of " . join( " ", @Packages ) if $self->{verbose};
+    info __x( "Starting Euscan of {packages}", packages => @Packages )
+        if $self->{verbose};
     my $dir
         = $self->{root}
         // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
@@ -130,10 +132,10 @@ sub run {
     }
     if ( $self->{git} and @Added > 0 ) {
         if ( emerge( { '-n' => "" }, @Added ) ) {
-            send_report( "Euscan: These packages where correctly emerged",
+            send_report( __ "Euscan: These packages where correctly emerged",
                 @Added );
         }
-        else { send_report( "Euscan: Error emerging", @Added ) }
+        else { send_report( __ "Euscan: Error emerging", @Added ) }
     }
 }
 
@@ -148,17 +150,17 @@ sub update {
         = $self->{root}
         // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
-    error 'No GIT_REPOSITORY defined, or --root given' and exit 1
+    error __ 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
     my $atom = join( '/', $dir, $Package );
-    info 'repository doesn\'t have that atom (' . $atom . ')'
+    info __x( "repository doesn't have that atom ({atom})", atom => $atom )
         and draw_down_line
         and return ()
         if ( !-d $atom );
     my $pack = shift @{ natural_order(@temp) };
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;    #my ebuild name
     my $updated = join( '/', $atom, $pack . '.ebuild' );
-    info "Searching for $pack";
+    info __x( "Searching for {pack}", pack => $pack );
 
     if ( !-f $updated ) {
         draw_down_line
@@ -167,7 +169,7 @@ sub update {
         bump( $atom, $updated );
     }
     else {
-        info "Update to $Package already exists";
+        info __x( "Update to {package} already exists", package => $Package );
         draw_down_line;
         return () if ( !$self->{force} );
     }
@@ -178,7 +180,7 @@ sub update {
     $Test =~ s/$dir\/?//g;
     if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
-        stage($Package)     if ( $self->{git} );
+        stage($Package) if ( $self->{git} );
     }
     else {
         return ();

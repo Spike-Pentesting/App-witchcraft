@@ -9,7 +9,7 @@ use Term::ReadKey;
 use App::Nopaste 'nopaste';
 use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
-
+use Locale::TextDomain 'App-Witchcraft';
 use LWP::UserAgent;
 use Digest::MD5;
 use IO::Socket::INET;
@@ -101,15 +101,26 @@ sub filetopackage {
 
 sub spurt {
     my ( $content, $path ) = @_;
-    croak qq{Can't open file "$path": $!} unless open my $file, '>', $path;
-    croak qq{Can't write to file "$path": $!}
-        unless defined $file->syswrite($content);
+    croak __x(
+        "Can't open file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless open my $file, '>', $path;
+    croak __x(
+        "Can't write file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless defined $file->syswrite($content);
     return $content;
 }
 
 sub slurp {
     my $path = shift;
-    croak qq{Can't open file "$path": $!} unless open my $file, '<', $path;
+    croak __x(
+        "Can't open file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless open my $file, '<', $path;
     my $content = '';
     while ( $file->sysread( my $buffer, 131072, 0 ) ) { $content .= $buffer }
     return $content;
@@ -117,9 +128,16 @@ sub slurp {
 
 sub append {
     my ( $content, $path ) = @_;
-    croak qq{Can't open file "$path": $!} unless open my $file, '>>', $path;
-    croak qq{Can't write to file "$path": $!}
-        unless defined $file->syswrite($content);
+    croak __x(
+        "Can't open file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless open my $file, '>>', $path;
+    croak __x(
+        "Can't write file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless defined $file->syswrite($content);
     return $content;
 }
 
@@ -130,13 +148,15 @@ sub chwn {
 }
 
 sub conf_update {
-    croak
-        "conf_update is not implemented by App::witchcraft::Utils::Base class";
+    croak __(
+        "conf_update is not implemented by App::witchcraft::Utils::Base class"
+    );
 }
 
 sub distrocheck {
-    croak
-        "distrocheck is not implemented by App::witchcraft::Utils::Base class";
+    croak __(
+        "distrocheck is not implemented by App::witchcraft::Utils::Base class"
+    );
 }
 
 =head1 bump($atom,$newfile)
@@ -155,22 +175,32 @@ after the bump
 sub bump {
     my $atom    = shift;
     my $updated = shift;
-    &notice( 'opening ' . $atom );
-    opendir( DH, $atom ) or ( &error("Cannot open $atom") and return undef );
+    &notice( __x( 'opening {atom}', atom => $atom ) );
+    opendir( DH, $atom )
+        or ( &error( __x( "Cannot open {atom}", atom => $atom ) )
+        and return undef );
     my @files
         = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
         grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
     closedir(DH);
     my $last = shift @files;
-    &error("No ebuild could be found in $atom") and return undef
+    &error( __x( "No ebuild could be found in {atom}", atom => $atom ) )
+        and return undef
         if ( !defined $last );
     my $source = join( '/', $atom, $last );
-    &notice(  'Using =====> '
-            . $last
-            . ' <===== as a skeleton for the new version' );
-    &notice("Copying");
-    &send_report("Automatic bump: $atom -> $updated");
-    &info( "Bumped: " . $updated )
+    &notice(
+        __x('Using =====> {ebuild} <===== as a skeleton for the new version',
+            ebuild => $last
+        )
+    );
+    &notice( __("Copying") );
+    &send_report(
+        __x("Automatic bump: {atom} -> {updated}",
+            atom   => $atom,
+            ebuild => $updated
+        )
+    );
+    &info( __x( "Bumped: {updated} ", updated => $updated ) )
         and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
         and return 1
         if defined $last
@@ -201,11 +231,13 @@ sub natural_order {
 }
 
 sub process(@) {
-    croak "process is not implemented by App::witchcraft::Utils::Base class";
+    croak __(
+        "process is not implemented by App::witchcraft::Utils::Base class");
 }
 
 sub emerge(@) {
-    croak "emerge is not implemented by App::witchcraft::Utils::Base class";
+    croak __(
+        "emerge is not implemented by App::witchcraft::Utils::Base class");
 }
 
 sub find_logs {
@@ -261,9 +293,10 @@ sub previous_commit($$) {
         . $master
         or (
         &error(
-                  'Something is terribly wrong, cannot open '
-                . $git_repository_path . "/"
-                . $master
+            __x("Something is terribly wrong, cannot open {path}/{master}",
+                path   => $git_repository_path,
+                master => $master
+            )
         )
         and exit 1
         );
@@ -280,11 +313,12 @@ sub last_md5() {
         . App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or (
         &send_report(
-            "Can't access to last compiled packages md5",
-            'Can\'t open '
-                . App::witchcraft->instance->Config->param('MD5_PACKAGES')
-                . ' -> '
-                . $!
+            __("Can't access to last compiled packages md5"),
+            __x('Can\'t open {md5} -> {error}',
+                md5 =>
+                    App::witchcraft->instance->Config->param('MD5_PACKAGES'),
+                error => $!
+            )
         )
         and return undef
         );
@@ -303,7 +337,8 @@ sub compiled_commit() {
           "<"
         . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
         . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or ( &notice("Nothing was previously compiled") and return undef );
+        or
+        ( &notice( __("Nothing was previously compiled") ) and return undef );
     my @LAST = <FILE>;
     close FILE;
     chomp(@LAST);
@@ -377,13 +412,16 @@ sub log_command {
     App::witchcraft->instance->emit("before_$command");
     my @LOG = `$command 2>&1`;
     if ( $? == 0 ) {
-        &notice("$command succeded");
+        &notice( __x( "{command} succeded", command => $command ) );
         App::witchcraft->instance->emit("after_$command");
         return 1;
     }
     else {
-        &error("Something went wrong with $command");
-        &send_report( "Phase: $command failed", "$command : ", @LOG );
+        &error(
+            __x( "Something went wrong with {command}", command => $command )
+        );
+        &send_report( __x( "Phase: {command} failed", command => $command ),
+            "$command : ", @LOG );
         return 0;
     }
 }
@@ -393,13 +431,15 @@ sub command {
     &info("Phase: $command");
     App::witchcraft->instance->emit("before_$command");
     if ( system("$command 2>&1") == 0 ) {
-        &notice("$command succeded");
+        &notice( __x( "{command} succeded", command => $command ) );
         App::witchcraft->instance->emit("after_$command");
         return 1;
     }
     else {
-        &error("Something went wrong with $command");
-        &send_report("Phase: $command failed");
+        &error(
+            __x( "Something went wrong with {command}", command => $command )
+        );
+        &send_report( __x( "Phase: {command} failed", command => $command ) );
         return 0;
     }
 }
@@ -489,21 +529,35 @@ sub stage(@) {
 sub daemonize($) {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);
 
-    open( SELFLOCK, "<$0" ) or die("Couldn't open $0: $!\n");
+    open( SELFLOCK, "<$0" )
+        or die(
+        __x( "Couldn't open {file}: {error}", file => $0, error => $! ) );
 
     flock( SELFLOCK, LOCK_EX | LOCK_NB )
-        or die("Aborting: another $ProgramName is already running\n");
+        or die(
+        _x( "Aborting: another {program} is already running",
+            program => $ProgramName )
+            . "\n"
+        );
     open( STDOUT, "|-", "logger -t $ProgramName" )
-        or die("Couldn't open logger output stream: $!\n");
+        or
+        die( __x( "Couldn't open logger output stream: {error}", error => $! )
+            . "\n" );
     open( STDERR, ">&STDOUT" )
-        or die("Couldn't redirect STDERR to STDOUT: $!\n");
+        or
+        die( __x( "Couldn't redirect STDERR to STDOUT: {error}", error => $! )
+            . "\n" );
     $| = 1; # Make output line-buffered so it will be flushed to syslog faster
             # chdir('/')
       #    ; # Avoid the possibility of our working directory resulting in keeping an otherwise unused filesystem in use
     exit if ( fork() );
     exit if ( fork() );
     sleep 1 until getppid() == 1;
-    print "$ProgramName $$ successfully daemonized\n";
+    print __x(
+        "{program} {pid} successfully daemonized",
+        program => $ProgramName,
+        pid     => $$
+    ) . "\n";
 
 }
 
@@ -517,12 +571,13 @@ sub _debug {
 
 sub password_dialog {
     return undef if $> == 0;
-    &info("Password: ");
+    &info( __("Password: ") );
     ReadMode('noecho');    # don't echo
     chomp( my $password = <STDIN> );
     ReadMode(0);           # back to normal
     &notice(
-        "Note: ensure to give the right password, or install tests would fail"
+        __( "Note: ensure to give the right password, or install tests would fail"
+        )
     );
     $password = &password_dialog
         unless (
@@ -581,12 +636,13 @@ sub test_ebuild {
     system( $password. " ebuild $ebuild clean" )
         ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
-        &info('Manifest created successfully');
+        &info( __('Manifest created successfully') );
         &clean_logs;
         &draw_down_line
             and return 1
             if ( defined $manifest and !defined $install );
-        &info("Starting installation");
+        &info(
+            __x( "Starting installation for {ebuild}", ebuild => $ebuild ) );
         $ebuild =~ s/\.ebuild//;
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
@@ -608,13 +664,17 @@ sub test_ebuild {
             )
         {
             App::witchcraft->instance->emit( after_test => ($ebuild) );
-            &info('Installation OK');
+            &info( __x( '[{ebuild}] Installation OK', ebuild => $ebuild ) );
             return 1;
         }
         else {
             &send_report(
-                "Emerge failed for $specific_ebuild",
-                "Emerge failed $specific_ebuild",
+                __x("Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                __x("Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
                 join( " ", &find_logs() )
                 )
                 if App::witchcraft->instance->Config->param(
@@ -622,17 +682,19 @@ sub test_ebuild {
                 and
                 App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
                 == 1;
-            &error("Installation failed") and return 0;
+            &error( __("Installation failed") ) and return 0;
         }
     }
     else {
         &send_report(
-            "Manifest phase failed for $ebuild ... be more carefully next time!"
+            __x("Manifest phase failed for {ebuild} ... be more carefully next time!",
+                ebuild => $ebuild
+            )
             )
             if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
             and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
             == 1;
-        &error("Manifest failed") and return 0;
+        &error( __("Manifest failed") ) and return 0;
     }
 }
 

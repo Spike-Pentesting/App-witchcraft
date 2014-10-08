@@ -12,6 +12,7 @@ use Tie::File;
 use Git::Sub;
 use File::Path qw(remove_tree);
 use App::witchcraft::Command::Clean;
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -116,7 +117,7 @@ sub run {
     my $self    = shift;
     my @REMOTES = shift
         // App::witchcraft->instance->Config->param('REMOTE_OVERLAY');
-    info "Syncing with remote repository and merging into one!";
+    info __ "Syncing with remote repository and merging into one!";
     my $password  = password_dialog();
     my @REFACTORS = $self->{'refactor'}
         // App::witchcraft->instance->Config->param('REFACTOR');
@@ -130,7 +131,7 @@ sub run {
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
-    send_report("Starting to sync: @REMOTES");
+    send_report( __x "Starting to sync: {remotes}", remotes => @REMOTES );
 
     foreach my $RepoUrl (@REMOTES) {
         App::witchcraft::Command::Clean->new
@@ -162,19 +163,23 @@ sub synchronize {
     my $u_t = uc($refactor_target);
     my $m_t = ucfirst($refactor_target);
     my @Installed;
-    info "Refactoring: $refactor" if $self->{verbose};
-    info "Ignores: $flatten"      if $self->{verbose};
+    info __xn( "Refactoring: {refactor}", refactor => $refactor )
+        if $self->{verbose};
+    info __xn( "Ignores: {ignores}", ignores => $flatten )
+        if $self->{verbose};
     sleep 2;
 
     if ( system("git ls-remote $RepoUrl") == 0 ) {
-        info $RepoUrl. ' is a git one!' if $self->{verbose};
+        info __x( '{url} is a git one!', url => $RepoUrl )
+            if $self->{verbose};
         git::clone $RepoUrl, $temp;
     }
     else {
-        info $RepoUrl. ' is a svn one!' if $self->{verbose};
+        info __x( '{url} is a svn one!', url => $RepoUrl )
+            if $self->{verbose};
         system( "svn checkout -q $RepoUrl " . $temp );
     }
-    info "Starting the refactoring/selection process" if $self->{verbose};
+    info __ "Starting the refactoring/selection process" if $self->{verbose};
     finddepth(
         sub {
             my $file      = $File::Find::name;
@@ -183,17 +188,20 @@ sub synchronize {
                 or $file =~ /$refactor/i
                 or ( @ignores > 0 and $file =~ /$flatten/i ) )
             {
-                unlink($file)             if ( -f $file );
-                rmdir($file)              if ( -d $file );
-                error "Removed: " . $file if $self->{verbose};
+                unlink($file) if ( -f $file );
+                rmdir($file)  if ( -d $file );
+                error __x( "Removed: {file}", file => $file )
+                    if $self->{verbose};
                 return;
             }
 
             if ( -f $file
                 and $file_name =~ /\.ebuild$/ )
             {
-                info "[File] analyzing $file " if $self->{verbose};
+                info __x( "[File] analyzing {file} ", file => $file )
+                    if $self->{verbose};
                 my $new_pos = $file;
+
                 # $new_pos =~ s/$l_r/$l_t/gi;
                 # move( $file, $new_pos );
                 # notice "$file moved to $new_pos";
@@ -208,17 +216,27 @@ sub synchronize {
                         );
                     if (/$u_r/) {
                         $_ =~ s/$u_r/$u_t/g;
-                        info "$_ -------------> $new_pos" if $self->{verbose};
-
+                        info __x(
+                            "{file} -------------> {new_pos}",
+                            file   => $_,
+                            rename => $new_pos
+                        ) if $self->{verbose};
                     }
                     elsif (/$l_r/) {
                         $_ =~ s/$l_r/$l_t/g;
-                        info "$_ -------------> $new_pos" if $self->{verbose};
-
+                        info __x(
+                            "{file} -------------> {new_pos}",
+                            file   => $_,
+                            rename => $new_pos
+                        ) if $self->{verbose};
                     }
                     elsif (/$m_r/) {
                         $_ =~ s/$m_r/$m_t/g;
-                        info "$_ -------------> $new_pos" if $self->{verbose};
+                        info __x(
+                            "{file} -------------> {new_pos}",
+                            file   => $_,
+                            rename => $new_pos
+                        ) if $self->{verbose};
                     }
                 }
                 open FILE, ">$new_pos";
@@ -226,7 +244,7 @@ sub synchronize {
                 close FILE;
             }
             elsif ( $self->{verbose} ) {
-                notice "$file ignored";
+                notice __x( "{file} ignored", file => $file );
             }
         },
         $temp
@@ -234,17 +252,17 @@ sub synchronize {
     remove_tree( $temp . '/.svn' );
     remove_tree( $temp . '/.git' );
     return if ( !$self->{update} );
-    info "Copying content to git directory" if $self->{verbose};
+    info __ "Copying content to git directory" if $self->{verbose};
     my $dir
         = $self->{root}
         // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
-    error 'No GIT_REPOSITORY defined, or --root given' and exit 1
+    error __ 'No GIT_REPOSITORY defined, or --root given' and exit 1
         if ( !$dir );
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
         : "rsync --progress --update -avp " . $temp . "/* $dir\/"
     );
-    notice 'Cleaning' . $temp . '*' if $self->{verbose};
+    notice __x('Cleaning {temp} *') if $self->{verbose};
     system( "rm -rfv " . $temp . '*' );
     return if ( !$self->{install} );
     test_untracked(

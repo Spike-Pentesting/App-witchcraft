@@ -5,6 +5,7 @@ use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(stage);
 use warnings;
 use strict;
+use Locale::TextDomain 'App-Witchcraft';
 
 =encoding utf-8
 
@@ -51,9 +52,10 @@ sub run {
     my $add = $self->{'ignore'} ? 1 : 0;
     my $dir
         = shift // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
-    error 'No GIT_REPOSITORY defined, or --root given' and return 1
+    error __ 'No GIT_REPOSITORY defined, or --root given' and return 1
         if ( !$dir );
-    info 'Manifest & Install of the untracked files in ' . $dir;
+    info __x( 'Manifest & Install of the untracked files in {dir}',
+        dir => $dir );
     test_untracked(
         { dir => $dir, ignore => $add, password => +password_dialog() } )
         and return
