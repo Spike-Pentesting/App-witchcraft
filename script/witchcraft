@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 use lib 'lib';
 use utf8;
 use warnings;
@@ -6,8 +6,11 @@ use constant debug => $ENV{DEBUG};
 use App::witchcraft::Command;
 use App::witchcraft::Utils qw(error info);
 use File::Path qw(make_path remove_tree);
-
-#use Carp::Always;
+use Locale::TextDomain 'App-Witchcraft';
+BEGIN {
+    use POSIX;
+    setlocale( LC_MESSAGES, "" );
+}
 
 $| = 1;
 
