@@ -1,6 +1,10 @@
 # NAME
 
-App::witchcraft - Continuous integration tool, repository manager for Gentoo or your Entropy server
+App::witchcraft
+
+# VERSION
+
+version 0.017
 
 # SYNOPSIS
 
@@ -98,6 +102,10 @@ It allows you to merge more overlay into one in a safe way: it tests installatio
 But it's far beyond that, it also checks updates, send reports with pushes (using pushbullet.com), align build machines and much more, checkout the help (`witchcraft help`).
 It's strictly required a configuration file, located in ~/.witchcraft/witchcraft.conf, an example is shipped within the repo, it's so easy to configure and get up and running.
 You can also setup up more configuration files, and specifying them using WITCHCRAFT\_CONFIG env variable.
+
+# NAME
+
+App::witchcraft - Continuous integration tool, repository manager for Gentoo or your Entropy server
 
 # INSTALLATION
 
@@ -310,3 +318,14 @@ it under the same terms as Perl itself.
 
 # SEE ALSO
 [App::witchcraft::Command::Euscan](https://metacpan.org/pod/App::witchcraft::Command::Euscan), [App::witchcraft::Command::Sync](https://metacpan.org/pod/App::witchcraft::Command::Sync)
+
+# AUTHOR
+
+mudler <mudler@dark-lab.net>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by "mudler".
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
