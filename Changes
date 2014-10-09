@@ -1,5 +1,4 @@
 Revision history for App-witchcraft
 
 {{$NEXT}}
-        - minor fixes
-        - fixed Plugin::Qacheck
+        - Added internationalization
