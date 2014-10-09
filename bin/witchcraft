@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# PODNAME: witchcraft
 use lib 'lib';
 use utf8;
 use warnings;

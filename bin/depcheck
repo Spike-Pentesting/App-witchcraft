@@ -1,4 +1,5 @@
 #!/bin/bash
+# PODNAME: depcheck
 #
 # Copyright (c) 2014 Michael Palimaka <kensington@gentoo.org>
 #
