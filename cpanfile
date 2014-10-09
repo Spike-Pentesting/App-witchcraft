@@ -16,18 +16,15 @@ requires 'HTTP::Request::Common';
 requires 'IPC::Run3';
 requires 'Import::Into';
 requires 'LWP::UserAgent';
+requires 'Locale::Messages';
 requires 'Locale::TextDomain';
-requires 'Module::Build';
+requires 'Module::Build', '0.35';
 requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'Term::ReadKey';
 requires 'forks';
 requires 'parent';
 requires 'perl', '5.008_005';
-
-on configure => sub {
-    requires 'Module::Build::Tiny', '0.037';
-};
 
 on test => sub {
     requires 'Test::More';
