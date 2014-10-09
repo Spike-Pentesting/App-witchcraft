@@ -11,7 +11,7 @@ our @EXPORT_OK = (
 );
 use constant DEBUG => $ENV{DEBUG} || 0;
 use IPC::Run3;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 #here functs can be overloaded.
 

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(upgrade);
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Command::Align;
 use App::witchcraft::Command::Sync;
 use App::witchcraft::Command::Upgrade;

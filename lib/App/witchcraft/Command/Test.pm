@@ -5,7 +5,7 @@ use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(stage);
 use warnings;
 use strict;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

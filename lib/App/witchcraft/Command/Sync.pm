@@ -12,7 +12,7 @@ use Tie::File;
 use Git::Sub;
 use File::Path qw(remove_tree);
 use App::witchcraft::Command::Clean;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 
@@ -163,9 +163,9 @@ sub synchronize {
     my $u_t = uc($refactor_target);
     my $m_t = ucfirst($refactor_target);
     my @Installed;
-    info __xn( "Refactoring: {refactor}", refactor => $refactor )
+    info __x( "Refactoring: {refactor}", refactor => $refactor )
         if $self->{verbose};
-    info __xn( "Ignores: {ignores}", ignores => $flatten )
+    info __x( "Ignores: {ignores}", ignores => $flatten )
         if $self->{verbose};
     sleep 2;
 

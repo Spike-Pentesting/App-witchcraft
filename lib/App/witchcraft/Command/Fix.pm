@@ -6,7 +6,7 @@ use warnings;
 use strict;
 use File::Find;
 use Cwd;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

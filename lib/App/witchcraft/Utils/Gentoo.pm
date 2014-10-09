@@ -9,7 +9,7 @@ our @EXPORT_OK = (
     @App::witchcraft::Utils::Base::EXPORT_OK,
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 use Term::ANSIColor;
 use Encode;
 use utf8;

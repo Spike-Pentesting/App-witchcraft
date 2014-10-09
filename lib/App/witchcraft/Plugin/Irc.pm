@@ -1,5 +1,5 @@
 package App::witchcraft::Plugin::Irc;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj -base;
 use IO::Socket::INET;

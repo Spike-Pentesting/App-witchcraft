@@ -4,7 +4,7 @@ use Deeme::Obj -base;
 use App::witchcraft::Utils
     qw(info error send_report uniq atom log_command stripoverlay);
 use Cwd;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 sub register {
     my ( $self, $emitter ) = @_;

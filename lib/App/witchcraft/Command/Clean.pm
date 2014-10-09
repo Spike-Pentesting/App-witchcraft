@@ -4,7 +4,7 @@ use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils qw(clean_untracked clean_stash error info);
 use warnings;
 use strict;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

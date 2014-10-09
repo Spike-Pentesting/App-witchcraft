@@ -8,7 +8,7 @@ use App::witchcraft::Utils qw(stage);
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit push pull);
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

@@ -8,7 +8,7 @@ use warnings;
 use App::witchcraft::Command::Euscan;
 use strict;
 use Cwd;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

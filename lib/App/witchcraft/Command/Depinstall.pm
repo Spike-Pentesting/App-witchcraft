@@ -5,7 +5,7 @@ use App::witchcraft::Utils qw(calculate_missing info log_command distrocheck
     error notice);
 use warnings;
 use strict;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

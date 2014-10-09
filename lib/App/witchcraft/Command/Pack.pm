@@ -5,7 +5,7 @@ use Carp::Always;
 use App::witchcraft::Utils
     qw(error info notice draw_down_line draw_up_line  emerge eix_sync distrocheck);
 use warnings;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 use strict;
 
 =encoding utf-8

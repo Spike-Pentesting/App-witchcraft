@@ -2,15 +2,17 @@
 use lib 'lib';
 use utf8;
 use warnings;
+use strict;
+
+use POSIX qw(setlocale);
+BEGIN {
+        setlocale POSIX::LC_ALL, '';
+}
+use Locale::TextDomain 'App-witchcraft';
 use constant debug => $ENV{DEBUG};
 use App::witchcraft::Command;
 use App::witchcraft::Utils qw(error info);
 use File::Path qw(make_path remove_tree);
-use Locale::TextDomain 'App-Witchcraft';
-BEGIN {
-    use POSIX;
-    setlocale( LC_MESSAGES, "" );
-}
 
 $| = 1;
 

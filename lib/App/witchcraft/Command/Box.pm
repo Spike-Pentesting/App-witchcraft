@@ -2,7 +2,7 @@ package App::witchcraft::Command::Box;
 
 use base qw(App::witchcraft::Command);
 use Carp::Always;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Utils
     qw(error info notice draw_down_line draw_up_line send_report vagrant_box_status vagrant_box_cmd);
 use warnings;

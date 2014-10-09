@@ -6,7 +6,7 @@ use App::witchcraft::Utils
 use Cwd;
 use Git::Sub;
 use Git::Sub qw(diff stash);
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 #  name: last_commit
 #  input: git_path_repository, master

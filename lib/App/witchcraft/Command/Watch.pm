@@ -10,7 +10,7 @@ use File::Find;
 use Regexp::Common qw/URI/;
 use App::witchcraft::Command::Align;
 use Tie::File;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 

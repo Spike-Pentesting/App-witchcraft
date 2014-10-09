@@ -6,7 +6,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common qw(POST);
 use forks;
 use constant DEBUG => $ENV{DEBUG} || 0;
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 
 sub register {
     my ( $self, $emitter ) = @_;

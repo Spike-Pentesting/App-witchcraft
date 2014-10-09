@@ -9,7 +9,7 @@ use Term::ReadKey;
 use App::Nopaste 'nopaste';
 use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
-use Locale::TextDomain 'App-Witchcraft';
+use Locale::TextDomain 'App-witchcraft';
 use LWP::UserAgent;
 use Digest::MD5;
 use IO::Socket::INET;
