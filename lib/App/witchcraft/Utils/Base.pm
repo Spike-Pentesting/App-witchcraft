@@ -197,7 +197,7 @@ sub bump {
     &send_report(
         __x("Automatic bump: {atom} -> {updated}",
             atom   => $atom,
-            ebuild => $updated
+            updated => $updated
         )
     );
     &info( __x( "Bumped: {updated} ", updated => $updated ) )
