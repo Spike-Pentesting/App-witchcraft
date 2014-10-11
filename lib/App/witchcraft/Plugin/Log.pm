@@ -20,7 +20,7 @@ sub register {
                     . "\n\n########################################\n"
                     . $log
                     . "\n\n############END##########\n\n",
-                $dir . "/" . DateTime->now->day . ".txt"
+                $dir . "/" . DateTime->now->day . ".log"
             ) if $dir;
         }
     );
@@ -29,7 +29,7 @@ sub register {
             my ( $witchcraft, $message, $url ) = @_;
             my $dir = $self->prepare_dir;
             append( $url . ": " . $message . "\n",
-                $dir . "/" . DateTime->now->day . ".txt" )
+                $dir . "/" . DateTime->now->day . ".log" )
                 if $dir;
         }
     );
@@ -38,7 +38,7 @@ sub register {
             my ( $witchcraft, $message ) = @_;
             my $dir = $self->prepare_dir;
             append( $message . "\n",
-                $dir . "/" . DateTime->now->day . ".txt" )
+                $dir . "/" . DateTime->now->day . ".log" )
                 if $dir;
         }
     );
