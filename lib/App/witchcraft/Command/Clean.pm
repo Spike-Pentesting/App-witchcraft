@@ -4,6 +4,7 @@ use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils qw(clean_untracked clean_stash error info);
 use warnings;
 use strict;
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 
@@ -52,11 +53,12 @@ sub options {
 sub run {
     my $self = shift;
     my $dir
-        = shift //  App::witchcraft->instance->Config->param('GIT_REPOSITORY');
-    error 'No GIT_REPOSITORY defined, or --root given' and return 1 if(!$dir);
-        info 'Cleaning all the untracked files in '.$dir;
+        = shift // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+    error __ 'No GIT_REPOSITORY defined, or --root given' and return 1
+        if ( !$dir );
+    info __x( 'Cleaning all the untracked files in {dir}', dir => $dir );
     clean_untracked($dir);
-    clean_stash($dir) unless ($self->{no_stash});
+    clean_stash($dir) unless ( $self->{no_stash} );
 }
 
 1;

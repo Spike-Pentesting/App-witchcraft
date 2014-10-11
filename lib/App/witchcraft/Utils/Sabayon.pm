@@ -9,6 +9,9 @@ our @EXPORT_OK = (
     @App::witchcraft::Utils::Base::EXPORT_OK,
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
+use constant DEBUG => $ENV{DEBUG} || 0;
+use IPC::Run3;
+use Locale::TextDomain 'App-witchcraft';
 
 #here functs can be overloaded.
 
@@ -34,10 +37,15 @@ sub conf_update {
     &log_command("echo -5 | equo conf update");
 }
 
+sub distrocheck {
+    return App::witchcraft->instance->Config->param("DISTRO") =~ /sabayon/i
+        ? 1
+        : 0;
+}
+
 sub emerge(@) {
     my $options = shift;
     App::witchcraft->instance->emit( before_emerge => ($options) );
-
     my $emerge_options
         = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
     $emerge_options
@@ -46,93 +54,91 @@ sub emerge(@) {
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
-    my $rs     = 1;
-    my $EDITOR = $ENV{EDITOR};
-    $ENV{EDITOR} = "cat";    #quick hack
-
-    $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    my $rs = 0;
+    local $ENV{EDITOR} = "cat";    #quick hack
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-
     &clean_logs;
     &entropy_update;
 
-#reticulating splines here...
-#  push(@equo_install, &calculate_missing($_,1)) for @CMD;
-# &info(scalar(@equo_install)
-#      . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
-#  my $Installs = join( " ", @equo_install );
-#  &info("Installing: ");
-#  &notice($_) for @equo_install;
-#  system("sudo equo i -q --relaxed $Installs");
+    if (    App::witchcraft->instance->Config->param('EQUO_DEPINSTALL')
+        and App::witchcraft->instance->Config->param('EQUO_DEPINSTALL') == 1 )
+    {
+        #reticulating splines here...
+        push( @equo_install, &calculate_missing( $_, 1 ) ) for @CMD;
+        &info(
+            __xn(
+                "One dependency of the package is not present in the system, installing them with equo",
+                "{count} dependencies of the package are not present in the system, installing them with equo",
+                scalar(@equo_install),
+                count => scalar(@equo_install)
+            )
+        );
+        my $Installs = join( " ", @equo_install );
+        &info( __ "Installing: " );
+        &notice($_) for @equo_install;
+        system("sudo equo i -q --relaxed $Installs");
+    }
 
     &conf_update;    #EXPECT per DISPATCH-CONF
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
-        &info(    "Compressing "
-                . scalar(@DIFFS)
-                . " packages: "
-                . join( " ", @DIFFS ) );
+        &info(
+            __x("Compressing {count} packages: {packages}",
+                count    => scalar(@DIFFS),
+                packages => @DIFFS
+            )
+        );
         &conf_update;
-        ##EXPECT PER EIT ADD
-        my $Expect = Expect->new;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
         #       unshift( @CMD, "add" );
         #     push( @CMD, "--quick" );
         # $Expect->spawn( "eit", "add", "--quick", @CMD )
-        $Expect->spawn( "eit", "commit", "--quick" )
-            or send_report("Eit add gives error! Cannot spawn eit: $!\n");
-        $Expect->expect(
-            undef,
-            [   qr/missing dependencies have been found|nano|\?/i => sub {
-                    my $exp = shift;
-                    $exp->send("\cX");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\r\n");
-                    $exp->send("\r");
-                    $exp->send("\n");
-                    exp_continue;
-                },
-                'eof' => sub {
-                    my $exp = shift;
-                    $exp->soft_close();
-                    }
-            ],
+        #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
+        #   or send_report("Cannot spawn eit: $!\n");
+        sleep 1;
+        &send_report( __("Compressing packages"), @DIFFS );
+
+        my ( $out, $err );
+        run3(
+            [ 'eit', 'commit', '--quick' ],
+            \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
+            \$out, \$err
         );
-        if ( !$Expect->exitstatus() or $Expect->exitstatus() == 0 ) {
+
+        if ( $? == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
             if ( &log_command("eit push --quick") ) {
-                &info("All went smooth, HURRAY!");
+                &info( __("All went smooth, HURRAY!") );
                 &send_report(
-                    "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                    __( "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                    )
                 );
                 App::witchcraft->instance->emit( after_push => (@DIFFS) );
+                $rs = 1;
                 &entropy_rescue;
                 &entropy_update;
             }
-
         }
         else {
-            my @LOGS = &find_logs();
-            &send_report( "Error occured during compression phase",
-                join( " ", @LOGS ) );
-            $rs = 0;
+            &send_report(
+                __( "Error in compression phase, you have to manually solve it"
+                ),
+                $out, $err
+            );
         }
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
-        $rs = 0;
+        &send_report( __x( "Logs for {diffs} ", diffs => @DIFFS ),
+            join( " ", @LOGS ) );
     }
 
     #Maintenance stuff
     &upgrade;
-    $ENV{EDITOR} = $EDITOR;    #quick hack
     return $rs;
 }
 
@@ -140,7 +146,12 @@ sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
     my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( scalar(@Packages) . " dependencies found " );
+    &info(
+        __x("{package}: has {deps} dependencies ",
+            package => $package,
+            deps    => scalar(@Packages)
+        )
+    );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
@@ -171,12 +182,12 @@ sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
     my @DIFFS  = @_;
-    &notice( "Processing " . join( " ", @DIFFS ) );
+    &notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
-    App::witchcraft->instance->emit( before_process => (@CMD) );
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
+    App::witchcraft->instance->emit( before_process => ( $commit, @CMD ) );
     my @ebuilds = &to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
@@ -189,9 +200,16 @@ sub process(@) {
     }
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
-        &send_report( "Emerge in progress for $commit", @DIFFS );
+        &send_report(
+            __x( "Emerge in progress for {commit}", commit => $commit ),
+            @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
-            &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
+            &send_report(
+                __x("<{commit}> Compiled: {diffs}",
+                    commit => $commit,
+                    diffs  => @DIFFS
+                )
+            );
             App::witchcraft->instance->emit( after_process => (@DIFFS) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);

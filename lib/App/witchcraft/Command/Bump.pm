@@ -8,6 +8,7 @@ use warnings;
 use App::witchcraft::Command::Euscan;
 use strict;
 use Cwd;
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 
@@ -75,7 +76,8 @@ sub run {
     my $action = shift;
     my @args   = @_;
 
-    error "At leat one of this action must be specified: @AVAILABLE_CMDS"
+    error __x( "At leat one of this action must be specified: {cmds}",
+        cmds => @AVAILABLE_CMDS )
         and return 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );
@@ -99,8 +101,8 @@ sub scan {
 }
 
 sub full {
-    my $self   = shift;
-    my $Euscan = shift;
+    my $self    = shift;
+    my $Euscan  = shift;
     my $git     = App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     my @EBUILDS = uniq( filetoatom( find_ebuilds($git) ) );
     $self->euscan_packages( $Euscan, @EBUILDS );
@@ -129,7 +131,7 @@ sub euscan_packages {
     }
 
     if ( @Added > 0 ) {
-        info "Those are the packages that passed the tests";
+        info __ "These are the packages that passed the tests";
         notice $_ for @Updates;
     }
 }

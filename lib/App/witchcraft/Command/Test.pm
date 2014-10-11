@@ -2,8 +2,10 @@ package App::witchcraft::Command::Test;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(stage);
 use warnings;
 use strict;
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 
@@ -40,18 +42,32 @@ L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub options {
-    ( "a|add" => "ignore" );
+    (   "a|add"   => "ignore",
+        "s|stage" => "stage"
+    );
 }
 
 sub run {
     my $self = shift;
     my $add = $self->{'ignore'} ? 1 : 0;
-   my $dir
-        = shift //  App::witchcraft->instance->Config->param('GIT_REPOSITORY');
-    error 'No GIT_REPOSITORY defined, or --root given' and return 1 if(!$dir);
-    info 'Manifest & Install of the untracked files in ' . $dir;
-    test_untracked( $dir, $add, password_dialog() );
-    exit;
+    my $dir
+        = shift // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+    error __ 'No GIT_REPOSITORY defined, or --root given' and return 1
+        if ( !$dir );
+    info __x( 'Manifest & Install of the untracked files in {dir}',
+        dir => $dir );
+    test_untracked(
+        { dir => $dir, ignore => $add, password => +password_dialog() } )
+        and return
+        if ( !$self->{stage} );
+    test_untracked(
+        {   dir      => $dir,
+            ignore   => $add,
+            password => +password_dialog(),
+            callback => sub { stage(@_) }
+        }
+    );
+    return;
 }
 
 1;

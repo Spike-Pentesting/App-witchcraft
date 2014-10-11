@@ -6,6 +6,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common qw(POST);
 use forks;
 use constant DEBUG => $ENV{DEBUG} || 0;
+use Locale::TextDomain 'App-witchcraft';
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -55,10 +56,10 @@ sub bullet {
                 $req->authorization_basic($BULL);
                 my $res = $ua->request($req)->as_string;
                 if ( $res =~ /HTTP\/1.1 200 OK/mg ) {
-                    notice("Push sent correctly!") if DEBUG;
+                    notice(__ "Push sent correctly!") if DEBUG;
                 }
                 else {
-                    error("Error sending the push!") if DEBUG;
+                    error(__ "Error sending the push!") if DEBUG;
                 }
             }
         )->detach;

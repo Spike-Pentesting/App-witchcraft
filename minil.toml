@@ -1,4 +1,0 @@
-name = "App-witchcraft"
-badges = ["travis"]
-module_maker="ModuleBuildTiny"
-

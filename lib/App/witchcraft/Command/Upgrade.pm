@@ -5,6 +5,7 @@ use warnings;
 use strict;
 use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(list_available);
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 
@@ -40,14 +41,22 @@ L<App::witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub run {
-    error 'You must run it with root permissions' and return 1 if $> != 0;
+    error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
-    my $Repo = shift // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    info 'Upgrade of the Sabayon repository ' . $Repo;
+    my $Repo = shift
+        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    info __x( 'Upgrade of the repository {repo}', repo => $Repo );
     my $password = password_dialog();
-    info "Retrevieng packages in the repository" if $self->{verbose};
+    info __ "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );
-    return emerge( { '-n' => "" }, @Packages );
+    my $return = emerge(
+        {   +App::witchcraft->instance->Config->param('EMERGE_UPGRADE_OPTS')
+                // '-n' => ""
+        },
+        @Packages
+    );
+    sleep 5;    #assures to propagate the messages
+    return $return ? 0 : 1;
 }
 
 1;

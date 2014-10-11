@@ -1,8 +1,9 @@
 package App::witchcraft::Plugin::Irc;
+use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj -base;
 use IO::Socket::INET;
-use App::witchcraft::Utils qw(info error notice send_report);
+use App::witchcraft::Utils qw(info error notice send_report truncate_words);
 use forks;
 use constant DEBUG => $ENV{DEBUG} || 0;
 
@@ -19,14 +20,22 @@ sub register {
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            $self->irc_msg(
-                "Witchcraft\@$hostname: " . $message . " - " . $url );
+            $emitter->emit( send_irc_message => "Witchcraft\@$hostname: "
+                    . $message . " - "
+                    . $url );
         }
     );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
-            $self->irc_msg( "Witchcraft\@$hostname: " . $message );
+            $emitter->emit(
+                send_irc_message => "Witchcraft\@$hostname: " . $message );
+        }
+    );
+    $emitter->on(
+        "send_irc_message" => sub {
+            my ( $witchcraft, $message ) = @_;
+            $self->irc_msg($_) for truncate_words( $message, 300 );
         }
     );
 
@@ -38,14 +47,16 @@ sub register {
 sub irc_msg {
     my $self    = shift;
     my $message = shift;
-    if ( $self->irc ) {
-        my $socket = $self->irc;
+    notice( __x( "Sending >>{message}<< on IRC ", message => $message ) )
+        if DEBUG;
+    if ( my $socket = $self->irc ) {
         printf $socket "PRIVMSG $_ :$message\r\n"
             for App::witchcraft->instance->Config->param('IRC_CHANNELS');
     }
     else {
         $self->irc_msg_join_part($message);
     }
+    sleep 1;    #assures message is delivered at least.
 }
 
 sub _connect {
@@ -76,7 +87,7 @@ sub _handle {
             local $SIG{USR1}
                 = sub { printf $socket "QUIT\r\n"; threads->exit };
             while ( my $line = <$socket> ) {
-                print $line  if DEBUG;
+                print $line if DEBUG;
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";
                 }
@@ -105,9 +116,9 @@ sub irc_msg_join_part {
         Proto    => "tcp",
         Timeout  => 10
         )
-        or error("Couldn't connect to the irc server")
+        or error( __ "Couldn't connect to the irc server" )
         and return undef;
-    info("Sending notification also on IRC")   if DEBUG;
+    info( __ "Sending notification also on IRC" ) if DEBUG;
     return undef unless $socket;
     $socket->autoflush(1);
     sleep 2;
@@ -122,7 +133,12 @@ sub irc_msg_join_part {
         if ( $line =~ m/^\:(.+?)\s+376/i ) {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
-                info( "Joining $chan on " . $cfg->param('IRC_SERVER') )   if DEBUG;
+                info(
+                    __x("Joining {chan} on {server}",
+                        chan   => $chan,
+                        server => $cfg->param('IRC_SERVER')
+                    )
+                ) if DEBUG;
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
                     for (@MESSAGES);
                 sleep 5;

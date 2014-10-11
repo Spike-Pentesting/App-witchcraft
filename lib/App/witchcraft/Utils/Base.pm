@@ -4,15 +4,13 @@ use strict;
 use base qw(Exporter);
 use Term::ANSIColor;
 use constant debug => $ENV{DEBUG};
-use Git::Sub;
 use Tie::File;
 use Term::ReadKey;
 use App::Nopaste 'nopaste';
 use File::Basename;
 use Fcntl qw(LOCK_EX LOCK_NB);
-
+use Locale::TextDomain 'App-witchcraft';
 use LWP::UserAgent;
-use Expect;
 use Digest::MD5;
 use IO::Socket::INET;
 use utf8;
@@ -40,24 +38,29 @@ our @EXPORT = qw( _debug
     daemonize
     depgraph
     emerge
-    git_index
-    git_sync
     natural_order
     bump
 );
 
 our @EXPORT_OK = (
-    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit compiled_commit
+    qw( conf_update save_compiled_commit process to_ebuild save_compiled_packages find_logs last_md5 compiled_commit
         natural_order
         euscan
+        command
         find_ebuilds
+        index_sync
         vagrant_box_status
         filetoatom
+        distrocheck
+        dialog_yes_default
+        truncate_words
         upgrade
         chwn
         filetopackage
         slurp
         append
+        stripoverlay
+        stage
         spurt
         clean_stash
         vagrant_box_cmd
@@ -98,15 +101,26 @@ sub filetopackage {
 
 sub spurt {
     my ( $content, $path ) = @_;
-    croak qq{Can't open file "$path": $!} unless open my $file, '>', $path;
-    croak qq{Can't write to file "$path": $!}
-        unless defined $file->syswrite($content);
+    croak __x(
+        "Can't open file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless open my $file, '>', $path;
+    croak __x(
+        "Can't write file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless defined $file->syswrite($content);
     return $content;
 }
 
 sub slurp {
     my $path = shift;
-    croak qq{Can't open file "$path": $!} unless open my $file, '<', $path;
+    croak __x(
+        "Can't open file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless open my $file, '<', $path;
     my $content = '';
     while ( $file->sysread( my $buffer, 131072, 0 ) ) { $content .= $buffer }
     return $content;
@@ -114,9 +128,16 @@ sub slurp {
 
 sub append {
     my ( $content, $path ) = @_;
-    croak qq{Can't open file "$path": $!} unless open my $file, '>>', $path;
-    croak qq{Can't write to file "$path": $!}
-        unless defined $file->syswrite($content);
+    croak __x(
+        "Can't open file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless open my $file, '>>', $path;
+    croak __x(
+        "Can't write file '{path}': {error}",
+        path  => $path,
+        error => $!
+    ) unless defined $file->syswrite($content);
     return $content;
 }
 
@@ -127,8 +148,15 @@ sub chwn {
 }
 
 sub conf_update {
-    croak
-        "conf_update is not implemented by App::witchcraftUtils::Base class";
+    croak __(
+        "conf_update is not implemented by App::witchcraft::Utils::Base class"
+    );
+}
+
+sub distrocheck {
+    croak __(
+        "distrocheck is not implemented by App::witchcraft::Utils::Base class"
+    );
 }
 
 =head1 bump($atom,$newfile)
@@ -147,21 +175,32 @@ after the bump
 sub bump {
     my $atom    = shift;
     my $updated = shift;
-    &notice( 'opening ' . $atom );
-    opendir( DH, $atom ) or ( &error("Cannot open $atom") and return undef );
+    &notice( __x( 'opening {atom}', atom => $atom ) );
+    opendir( DH, $atom )
+        or ( &error( __x( "Cannot open {atom}", atom => $atom ) )
+        and return undef );
     my @files
         = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
         grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
     closedir(DH);
     my $last = shift @files;
-    &error("No ebuild could be found in $atom") and return undef
+    &error( __x( "No ebuild could be found in {atom}", atom => $atom ) )
+        and return undef
         if ( !defined $last );
     my $source = join( '/', $atom, $last );
-    &notice(  'Using =====> '
-            . $last
-            . ' <===== as a skeleton for the new version' );
-    &notice("Copying");
-    &info( "Bumped: " . $updated )
+    &notice(
+        __x('Using =====> {ebuild} <===== as a skeleton for the new version',
+            ebuild => $last
+        )
+    );
+    &notice( __("Copying") );
+    &send_report(
+        __x("Automatic bump: {atom} -> {updated}",
+            atom   => $atom,
+            updated => $updated
+        )
+    );
+    &info( __x( "Bumped: {updated} ", updated => $updated ) )
         and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
         and return 1
         if defined $last
@@ -192,11 +231,13 @@ sub natural_order {
 }
 
 sub process(@) {
-    croak "process is not implemented by App::witchcraftUtils::Base class";
+    croak __(
+        "process is not implemented by App::witchcraft::Utils::Base class");
 }
 
 sub emerge(@) {
-    croak "emerge is not implemented by App::witchcraftUtils::Base class";
+    croak __(
+        "emerge is not implemented by App::witchcraft::Utils::Base class");
 }
 
 sub find_logs {
@@ -243,33 +284,6 @@ sub to_ebuild(@) {
     return @TO_EMERGE;
 }
 
-#
-#  name: last_commit
-#  input: git_path_repository, master
-#  output: last_commit
-# Given a path of a git repo and his master file, it returns the last commit id
-
-sub last_commit($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    open my $FH,
-          "<"
-        . $git_repository_path . "/"
-        . $master
-        or (
-        &error(
-                  'Something is terribly wrong, cannot open '
-                . $git_repository_path . "/"
-                . $master
-        )
-        and exit 1
-        );
-    my @FILE = <$FH>;
-    chomp(@FILE);
-    close $FH;
-    return $FILE[0];
-}
-
 sub previous_commit($$) {
     my $git_repository_path = $_[0];
     my $master              = $_[1];
@@ -279,9 +293,10 @@ sub previous_commit($$) {
         . $master
         or (
         &error(
-                  'Something is terribly wrong, cannot open '
-                . $git_repository_path . "/"
-                . $master
+            __x("Something is terribly wrong, cannot open {path}/{master}",
+                path   => $git_repository_path,
+                master => $master
+            )
         )
         and exit 1
         );
@@ -293,15 +308,17 @@ sub previous_commit($$) {
 
 sub last_md5() {
     open my $last,
-        "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES')
+          "<"
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
         or (
         &send_report(
-            "Errore nella lettura dell'ultimo md5 compilato",
-            'Can\'t open '
-                . App::witchcraft->instance->Config->param('MD5_PACKAGES')
-                . ' -> '
-                . $!
+            __("Can't access to last compiled packages md5"),
+            __x('Can\'t open {md5} -> {error}',
+                md5 =>
+                    App::witchcraft->instance->Config->param('MD5_PACKAGES'),
+                error => $!
+            )
         )
         and return undef
         );
@@ -316,8 +333,12 @@ sub last_md5() {
 #  output: last commit
 #
 sub compiled_commit() {
-    open FILE, "<" . App::witchcraft->instance->Config->param('LAST_COMMIT')
-        or ( &notice("Nothing was previously compiled") and return undef );
+    open FILE,
+          "<"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+        or
+        ( &notice( __("Nothing was previously compiled") ) and return undef );
     my @LAST = <FILE>;
     close FILE;
     chomp(@LAST);
@@ -330,40 +351,21 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('LAST_COMMIT');
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
-    open FILE, ">" . App::witchcraft->instance->Config->param('MD5_PACKAGES');
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
-}
-
-#
-#  name: find_diff
-#  input: git_path_repository, master
-#  output: @DIFFS
-# takes as argument the git path repository and the master file
-# generate  diff from the last build and returns the packages to compile
-
-sub find_diff($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    my $commit = &compiled_commit // &previous_commit( $git_repository_path,
-        App::witchcraft->instance->Config->param('GIT_HISTORY_FILE') );
-    my $git_cmd
-        = App::witchcraft->instance->Config->param('GIT_DIFF_COMMAND');
-    $git_cmd =~ s/\[COMMIT\]/$commit/g;
-    my @DIFFS;
-    open CMD, "cd $git_repository_path;$git_cmd | ";  # Parsing the git output
-    while (<CMD>) {
-        my ( $diff, $all ) = split( / /, substr( $_, 1, -3 ) );
-        push( @DIFFS, $1 ) if $diff =~ /(.*)\/Manifest/;
-    }
-    chomp(@DIFFS);
-    return ( &uniq(@DIFFS) );
 }
 
 sub find_ebuilds($) {
@@ -385,6 +387,8 @@ sub depgraph($$) {
         map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
+
+sub truncate_words { shift =~ /(.{1,$_[0]}[\W\D])/gms; }
 
 =head1 log_command($command)
 
@@ -408,13 +412,34 @@ sub log_command {
     App::witchcraft->instance->emit("before_$command");
     my @LOG = `$command 2>&1`;
     if ( $? == 0 ) {
-        &notice("$command succeded");
+        &notice( __x( "{command} succeded", command => $command ) );
         App::witchcraft->instance->emit("after_$command");
         return 1;
     }
     else {
-        &error("Something went wrong with $command");
-        &send_report( "Phase: $command failed", @LOG );
+        &error(
+            __x( "Something went wrong with {command}", command => $command )
+        );
+        &send_report( __x( "Phase: {command} failed", command => $command ),
+            "$command : ", @LOG );
+        return 0;
+    }
+}
+
+sub command {
+    my $command = shift;
+    &info("Phase: $command");
+    App::witchcraft->instance->emit("before_$command");
+    if ( system("$command 2>&1") == 0 ) {
+        &notice( __x( "{command} succeded", command => $command ) );
+        App::witchcraft->instance->emit("after_$command");
+        return 1;
+    }
+    else {
+        &error(
+            __x( "Something went wrong with {command}", command => $command )
+        );
+        &send_report( __x( "Phase: {command} failed", command => $command ) );
         return 0;
     }
 }
@@ -446,7 +471,7 @@ sub send_report {
     return undef
         unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
         or App::witchcraft->instance->Config->param('IRC_CHANNELS') );
-    &info("Sending report status");
+    &notice(">> $message ");
 
     #  &info( 'Sending ' . $message );
     my $hostname = $App::witchcraft::HOSTNAME;
@@ -493,72 +518,52 @@ sub eix_sync {
 
 ######## END
 
-sub git_sync() {
-    chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-    eval {
-        &notice(  "Git pull for ["
-                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
-                . "] "
-                . git::pull );
-    };
-    if ($@) {
-        &error($@);
-    }
+sub index_sync() {
+    App::witchcraft->instance->emit( index_sync => (@_) );
 }
 
-sub git_index(@) {
-    my @Atoms = @_;
-    return ( 1, undef ) if ( @Atoms == 0 );
-    my $cwd    = cwd();
-    my $return = 1;
-    &git_sync;
-    foreach my $atom (@Atoms) {
-        eval { &notice( git::add $atom); };
-        if ($@) {
-            &error($@);
-            $return = 0;
-        }
-        eval {
-            &notice(
-                git::commit -m => 'witchcraft: automatically added/updated '
-                    . $atom );
-        };
-        if ($@) {
-            &error($@);
-            $return = 0;
-        }
-    }
-    eval { &notice(git::push); };
-    if ($@) {
-        &error($@);
-        $return = 0;
-    }
-    chdir($cwd);
-    return ( $return, $@ );
+sub stage(@) {
+    App::witchcraft->instance->emit( stage_changes => (@_) );
 }
 
 sub daemonize($) {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);
 
-    open( SELFLOCK, "<$0" ) or die("Couldn't open $0: $!\n");
+    open( SELFLOCK, "<$0" )
+        or die(
+        __x( "Couldn't open {file}: {error}", file => $0, error => $! ) );
 
     flock( SELFLOCK, LOCK_EX | LOCK_NB )
-        or die("Aborting: another $ProgramName is already running\n");
+        or die(
+        _x( "Aborting: another {program} is already running",
+            program => $ProgramName )
+            . "\n"
+        );
     open( STDOUT, "|-", "logger -t $ProgramName" )
-        or die("Couldn't open logger output stream: $!\n");
+        or
+        die( __x( "Couldn't open logger output stream: {error}", error => $! )
+            . "\n" );
     open( STDERR, ">&STDOUT" )
-        or die("Couldn't redirect STDERR to STDOUT: $!\n");
+        or
+        die( __x( "Couldn't redirect STDERR to STDOUT: {error}", error => $! )
+            . "\n" );
     $| = 1; # Make output line-buffered so it will be flushed to syslog faster
             # chdir('/')
       #    ; # Avoid the possibility of our working directory resulting in keeping an otherwise unused filesystem in use
     exit if ( fork() );
     exit if ( fork() );
     sleep 1 until getppid() == 1;
-    print "$ProgramName $$ successfully daemonized\n";
+    print __x(
+        "{program} {pid} successfully daemonized",
+        program => $ProgramName,
+        pid     => $$
+    ) . "\n";
 
 }
 
 sub atom { s/-[0-9]{1,}.*$//; }
+
+sub stripoverlay { s/\:\:.*//g; }
 
 sub _debug {
     print STDERR @_, "\n" if debug;
@@ -566,12 +571,13 @@ sub _debug {
 
 sub password_dialog {
     return undef if $> == 0;
-    &info("Password: ");
+    &info( __("Password: ") );
     ReadMode('noecho');    # don't echo
     chomp( my $password = <STDIN> );
     ReadMode(0);           # back to normal
     &notice(
-        "Note: ensure to give the right password, or install tests would fail"
+        __( "Note: ensure to give the right password, or install tests would fail"
+        )
     );
     $password = &password_dialog
         unless (
@@ -580,26 +586,11 @@ sub password_dialog {
 }
 
 sub clean_untracked {
-    my $dir = shift;
-    my @Installed;
-    my $cwd = cwd;
-    chdir($dir);
-    system("git ls-files --others --exclude-standard | xargs rm -rfv");
-    &notice(
-        "Launch 'git stash' if you want to rid about all the modifications");
-    chdir($cwd);
-    return $? == 0 ? 1 : 0;
+    App::witchcraft->instance->emit( clean_untracked => (@_) );
 }
 
 sub clean_stash {
-    my $dir = shift;
-    my @Installed;
-    my $cwd = cwd;
-    chdir($dir);
-    system("git stash");
-    &info("$dir stashed") if $? == 0;
-    chdir($cwd);
-    return $? == 0 ? 1 : 0;
+    App::witchcraft->instance->emit( clean_stash => (@_) );
 }
 
 sub uniq {
@@ -645,12 +636,13 @@ sub test_ebuild {
     system( $password. " ebuild $ebuild clean" )
         ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
-        &info('Manifest created successfully');
+        &info( __('Manifest created successfully') );
         &clean_logs;
         &draw_down_line
             and return 1
             if ( defined $manifest and !defined $install );
-        &info("Starting installation");
+        &info(
+            __x( "Starting installation for {ebuild}", ebuild => $ebuild ) );
         $ebuild =~ s/\.ebuild//;
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
@@ -672,104 +664,42 @@ sub test_ebuild {
             )
         {
             App::witchcraft->instance->emit( after_test => ($ebuild) );
-            &info('Installation OK');
+            &info( __x( '[{ebuild}] Installation OK', ebuild => $ebuild ) );
             return 1;
         }
         else {
-            &send_report( "Emerge failed for $specific_ebuild",
-                join( " ", &find_logs() ) )
+            &send_report(
+                __x("Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                __x("Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                join( " ", &find_logs() )
+                )
                 if App::witchcraft->instance->Config->param(
                 "REPORT_TEST_FAILS")
                 and
                 App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
                 == 1;
-            &error("Installation failed") and return 0;
+            &error( __("Installation failed") ) and return 0;
         }
     }
     else {
         &send_report(
-            "Manifest phase failed for $ebuild ... be more carefully next time!"
+            __x("Manifest phase failed for {ebuild} ... be more carefully next time!",
+                ebuild => $ebuild
+            )
             )
             if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
             and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
             == 1;
-        &error("Manifest failed") and return 0;
+        &error( __("Manifest failed") ) and return 0;
     }
 }
 
 sub test_untracked {
-    my $dir      = shift;
-    my $ignore   = shift || 0;
-    my $password = shift || undef;
-    my @Installed;
-    chdir($dir);
-    my @Failed;
-    my @ignores;
-    my @Untracked = git::ls_files '--others', '--exclude-standard';
-    push( @Untracked, git::diff_files '--name-only' );
-    @Untracked = grep {/\.ebuild$/} @Untracked;
-    &info( "Those are the file that would be tested: "
-            . join( " ", @Untracked ) );
-    system("find /var/tmp/portage/ | grep build.log | xargs rm -rfv")
-        ;    #spring cleaning!
-    my $c = 1;
-    my @Atoms_Installed;
-
-    foreach my $new_pos (@Untracked) {
-        &info( "[$c/" . scalar(@Untracked) . "] Testing $new_pos" );
-        my $atom = $new_pos;
-
-        #$atom = filetoatom($atom);
-        $c++;
-        my $result = &test_ebuild( $new_pos, 1, 1, $password );
-        $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
-
-        if ( $result == 1 ) {
-            push( @Atoms_Installed, $atom );
-
-            #  &info( $new_pos . " was correctly installed" );
-            push( @Installed, $new_pos );
-        }
-        else {
-            # &error( $new_pos . " installation failed" );
-            push( @Failed, $new_pos );
-        }
-    }
-    if ( $ignore == 1 and @Failed > 0 ) {
-        tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
-            or die( error $!);
-        &send_report(
-            "Witchcraft need your attention, i'm asking you few questions");
-        foreach my $fail (@Failed) {
-            push( @ignores, $fail )
-                if (
-                &dialog_yes_default(
-                    "Add " . $fail . " to the ignore list?"
-                )
-                );
-        }
-    }
-    if ( @Installed > 0 ) {
-        &info(
-            "Those files where correctly installed, maybe you wanna check them: "
-        );
-        my $result;
-        &notice($_) and $result .= " " . $_ for ( &uniq(@Atoms_Installed) );
-        &send_report("These ebuilds where correctly installed: $result");
-        &info("Generating the command for maintenance");
-        &notice("git add $result");
-        &notice("eix-sync");
-        &notice("emerge -av $result");
-        &notice("eit add $result");
-        &notice("eit push");
-        return @Installed;
-    }
-    else {
-        &info(
-            "No files where tested because there weren't untracked files or all packages failed to install"
-        );
-        return ();
-    }
+    App::witchcraft->instance->emit( untracked_test => (@_) );
 }
 
 #################### vagrant functs

@@ -9,11 +9,18 @@ our @EXPORT_OK = (
     @App::witchcraft::Utils::Base::EXPORT_OK,
     qw(calculate_missing list_available entropy_update entropy_rescue remove_available)
 );
-use Expect;
+use Locale::TextDomain 'App-witchcraft';
 use Term::ANSIColor;
 use Encode;
 use utf8;
 use Carp;
+use IPC::Run3;
+
+sub distrocheck {
+    return App::witchcraft->instance->Config->param("DISTRO") =~ /gentoo/i
+        ? 1
+        : 0;
+}
 
 #here functs can be overloaded.
 sub info {
@@ -29,7 +36,14 @@ sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
     my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info( scalar(@Packages) . " dependencies found " );
+    &info(
+        __xn(
+            "One dependency found",
+            "{count} dependencies found ",
+            scalar(@Packages),
+            count => scalar(@Packages)
+        )
+    );
     my @Installed_Packages = qx/EIX_LIMIT_COMPACT=0 eix -Inc -#/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
@@ -39,18 +53,10 @@ sub calculate_missing($$) {
 }
 
 sub conf_update {
-    my $Expect = Expect->new;
-    $Expect->raw_pty(1);
-    $Expect->spawn("sudo dispatch-conf")
-        or send_report(
-        "error executing equo conf update",
-        "Cannot spawn equo conf update: $!\n"
-        );
-
-    $Expect->send("u\n");
+    my $in        = "u\n";
     my @potential = < /etc/conf.d/..*>;
-    $Expect->send("u\n") for @potential;
-    $Expect->soft_close();
+    $in .= "u\n" for @potential;
+    run3( [ 'sudo', 'dispatch-conf' ], \$in );
 }
 
 =head1 emerge(@Atoms,$commit,$usage)
@@ -82,28 +88,18 @@ sub emerge(@) {
     $ENV{EDITOR} = "cat";    #quick hack
 
     $ENV{EDITOR} = $EDITOR and return 1 if ( @DIFFS == 0 );
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-
     &clean_logs;
-
-#reticulating splines here...
-#  push(@equo_install, &calculate_missing($_,1)) for @CMD;
-# &info(scalar(@equo_install)
-#      . " are not present in the system, are deps of the selected packages and it's better to install them with equo (if they are provided)");
-#  my $Installs = join( " ", @equo_install );
-#  &info("Installing: ");
-#  &notice($_) for @equo_install;
-#  system("sudo equo i -q --relaxed $Installs");
-
     if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
-        &info("All went smooth, HURRAY! packages merged correctly");
-        &send_report( "Packages merged successfully", @DIFFS );
+        &info( __ "All went smooth, HURRAY! packages merged correctly" );
+        &send_report( __("Packages merged successfully"), @DIFFS );
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( "Logs for " . join( " ", @DIFFS ), join( " ", @LOGS ) );
+        &send_report( __x( "Logs for {diffs}", diffs => @DIFFS ),
+            join( " ", @LOGS ) );
         $rs = 0;
     }
 
@@ -135,12 +131,12 @@ sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
     my @DIFFS  = @_;
-    &notice( "Processing " . join( " ", @DIFFS ) );
+    &notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
-    @CMD = map { s/\:\:.*//g; $_ } @CMD;
-    App::witchcraft->instance->emit( before_process => (@CMD) );
+    @CMD = map { &stripoverlay($_); $_ } @CMD;
+    App::witchcraft->instance->emit( before_process => ( $commit, @CMD ) );
     my @ebuilds = &to_ebuild(@CMD);
 
     if ( scalar(@ebuilds) == 0 and $use == 0 ) {
@@ -153,10 +149,18 @@ sub process(@) {
     }
     else {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
-        &send_report( "Emerge in progress for $commit", @DIFFS );
+        &send_report(
+            __x( "Emerge in progress for {commit}", commit => $commit ),
+            @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
-            &send_report( "<$commit> Compiled: " . join( " ", @DIFFS ) );
-            App::witchcraft->instance->emit( after_process => (@DIFFS) );
+            &send_report(
+                __x("<{commit}> Compiled: {diffs}",
+                    commit => $commit,
+                    diffs  => @DIFFS
+                )
+            );
+            App::witchcraft->instance->emit(
+                after_process => ( $commit, @DIFFS ) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
             }
@@ -168,22 +172,22 @@ sub process(@) {
 }
 
 sub list_available {
-    croak
+    croak __
         "list_available is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 
 sub remove_available(@) {
-    croak
+    croak __
         "remove_available is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 
 sub entropy_update {
-    croak
+    croak __
         "entropy_update is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 
 sub entropy_rescue {
-    croak
+    croak __
         "entropy_rescue is not implemented by App::witchcraft::Utils::Gentoo class";
 }
 

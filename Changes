@@ -1,5 +1,4 @@
 Revision history for App-witchcraft
 
 {{$NEXT}}
-        - Added Conflict command
-        - No more automatic upgrade on mantain command
+        - Fixing pot files

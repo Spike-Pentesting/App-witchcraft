@@ -3,12 +3,14 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs find_diff last_md5 last_commit eix_sync entropy_update);
+    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs last_md5 eix_sync entropy_update);
 use warnings;
 use strict;
 use File::Find;
 use Regexp::Common qw/URI/;
+use App::witchcraft::Command::Align;
 use Tie::File;
+use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
 
@@ -64,21 +66,21 @@ sub options {
 
 sub run {
     my $self = shift;
-    error 'You must run it with root permissions' and return 1 if $> != 0;
+    error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $cfg = App::witchcraft->instance->Config;
-    info 'Watching overlay '
-        . $cfg->param('OVERLAY_NAME')
-        . ' every '
-        . $cfg->param('SLEEP_TIME') . ' s';
+    info __x(
+        'Watching overlay {overlay} every {sleep} s',
+        overlay => $cfg->param('OVERLAY_NAME'),
+        sleep   => $cfg->param('SLEEP_TIME')
+    );
     daemonize($0) if $self->{daemon};
-    send_report("I'm up!");
+    send_report( __ "Watching the repo forever" );
     while (1) {
-        info "Checking for updates, and merging up!";
+        info __ "Checking for updates, and merging up!";
         draw_up_line;
         if (eix_sync) {    #Launch layman -S first.
             entropy_update;
-            update( $cfg->param('OVERLAY_PATH'),
-                $cfg->param('GIT_MASTER_FILE') );
+            update();
             manual_update( $cfg->param('OVERLAY_PATH') );
         }
         draw_down_line;
@@ -96,21 +98,33 @@ sub manual_update($) {
     if ( -e $overlay . "/" . $overlay_to_compile_packages ) {
         open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
             or send_report(
-            "Cannot open $overlay/$overlay_to_compile_packages: $!");
+            __x("Cannot open {overlay}/{packages}: {error}",
+                overlay  => $overlay,
+                packages => $overlay_to_compile_packages,
+                error    => $!
+            )
+            );
         binmode($fh);
         my $calculated_md5 = Digest::MD5->new->addfile($fh)
             ->hexdigest
             ;    #Computing the md5 of the file containing the packages
         close $fh;
         my $last_md5 = last_md5();
-        info("Last md5 $last_md5 of $overlay/$overlay_to_compile_packages")
-            if defined $last_md5;
+        info(
+            __x("Last md5 {md5} of {overlay}/{packages}",
+                md5      => $last_md5,
+                overlay  => $overlay,
+                packages => $overlay_to_compile_packages
+            )
+        ) if defined $last_md5;
         if ( !defined $last_md5 or ( $calculated_md5 ne $last_md5 ) )
         {        #If they are different, then proceed the compile them
             open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
                 or (
-                send_report(
-                    "Cannot open $overlay/$overlay_to_compile_packages: $!"
+                __x("Cannot open {overlay}/{packages}: {error}",
+                    overlay  => $overlay,
+                    packages => $overlay_to_compile_packages,
+                    error    => $!
                 )
                 and return
                 );
@@ -119,50 +133,22 @@ sub manual_update($) {
             close $fh;
             chomp(@DIFFS);
             send_report(
-                "Issued a manual packages compile, start compiling process for : "
-                    . join( " ", @DIFFS ) );
+                __x("Issued a manual packages compile, start compiling process for : {packages}",
+                    packages => @DIFFS
+                )
+            );
             process( @DIFFS, $calculated_md5, 1 );
         }
         else {
-            notice(
-                "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
+            notice( __
+                    "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
             );
         }
     }
 }
 
-#
-#  name: update
-#  input: $overlay,$master_file
-#  output: void
-# handles the calls to the functions using git to find diffs
-
-sub update($$) {
-    my $overlay     = shift;
-    my $master_file = shift;
-    my $cfg         = App::witchcraft->instance->Config;
-
-    my $commit = last_commit( $overlay, $master_file );
-    info("Last commit: $commit");
-    my $compiled_commit = compiled_commit();
-    info("Last COMPILED commit: $compiled_commit") if $compiled_commit;
-    if ( defined $compiled_commit and $commit eq $compiled_commit ) {
-        info(
-            "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
-        );
-    }
-    else {
-        notice("Commits seems differents, calculating the differencies.");
-        chdir( $cfg->param('OVERLAY_PATH') );
-        my @DIFFS = find_diff( $overlay, $master_file );
-        info(     "A total of "
-                . scalar(@DIFFS)
-                . " real changes were found, proceeding to compile them." );
-        my $overlay_name = $cfg->param('OVERLAY_NAME');
-        my @EMERGING
-            = map { $_ . "::" . $overlay_name } grep { -d $_ } @DIFFS;
-        process( @EMERGING, $commit, 0 )
-            ;    # 0 to use with git, 1 with manual use
-    }
+sub update() {
+    my $Align = App::witchcraft::Command::Align->new;
+    $Align->run();
 }
 1;
