@@ -13,7 +13,7 @@ BEGIN {
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
     bind_textdomain_filter 'App-witchcraft' => \&Encode::decode_utf8;
 }
-our $VERSION = 0.017;
+our $VERSION = 0.018;
 our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
     ;    #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
