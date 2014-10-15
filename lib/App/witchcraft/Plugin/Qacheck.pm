@@ -1,8 +1,8 @@
 package App::witchcraft::Plugin::Qacheck;
 
 use Deeme::Obj -base;
-use App::witchcraft::Utils
-    qw(info error send_report uniq atom log_command stripoverlay);
+use App::witchcraft::Utils qw(info error send_report uniq log_command);
+use App::witchcraft::Utils::Gentoo qw( atom stripoverlay);
 use Cwd;
 use Locale::TextDomain 'App-witchcraft';
 
@@ -12,8 +12,8 @@ sub register {
         "after_test" => sub {
             my ( $witchcraft, $ebuild ) = @_;
             send_report(
-                __x("Repoman output for {ebuild}",ebuild=>$ebuild),
-                __x("Repoman output for {ebuild}",ebuild=>$ebuild),
+                __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
+                __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
                 $self->repoman($ebuild)
             );
         }
