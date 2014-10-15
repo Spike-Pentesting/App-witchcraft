@@ -24,7 +24,7 @@ sub register {
         }
     );
     $emitter->on(
-        "after_emerge" => sub {
+        "packages.build.after.emerge" => sub {
             my ( $witchcraft, @EBUILDS ) = @_;
             $emitter->emit( after_test => $_ ) for @EBUILDS;
         }
