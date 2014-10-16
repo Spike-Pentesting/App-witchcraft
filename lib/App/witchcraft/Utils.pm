@@ -34,6 +34,7 @@ our @EXPORT_OK = (
     qw(
 
         slurp
+        spurt
         append
 
         uniq
@@ -58,6 +59,13 @@ our @EXPORT_OK = (
         print_list
 
         stage
+        test_untracked
+        clean_stash
+        clean_untracked
+        index_sync
+
+        on
+        emit
 
         upgrade
 
@@ -78,7 +86,31 @@ Common functions used by modules
 =cut
 
 sub stage(@) {
-    App::witchcraft->instance->emit( stage_changes => (@_) );
+    &emit( stage_changes => (@_) );
+}
+
+sub test_untracked(@) {
+    &emit( test_untracked => (@_) );
+}
+
+sub clean_stash {
+    &emit( clean_stash => (@_) );
+}
+
+sub clean_untracked {
+    &emit( clean_untracked => (@_) );
+}
+
+sub index_sync {
+    &emit( index_sync => (@_) );
+}
+
+sub on(@) {
+    App::witchcraft->instance->on(@_);
+}
+
+sub emit(@) {
+    App::witchcraft->instance->emit(@_);
 }
 
 sub spurt {

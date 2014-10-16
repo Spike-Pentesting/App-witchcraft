@@ -1,12 +1,10 @@
 package App::witchcraft::Utils::Gentoo;
 use base qw(Exporter);
-use App::witchcraft::Utils::Base (
-    @App::witchcraft::Utils::Base::EXPORT,
-    @App::witchcraft::Utils::Base::EXPORT_OK
-);
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(euscan atom stripoverlay calculate_missing conf_update distrocheck);
+    = qw(euscan atom stripoverlay calculate_missing conf_update distrocheck depgraph find_logs clean_logs);
+use App::witchcraft::Utils qw(info error send_report uniq log_command);
+
 use Locale::TextDomain 'App-witchcraft';
 use Term::ANSIColor;
 use Encode;
@@ -18,6 +16,31 @@ sub distrocheck {
     return App::witchcraft->instance->Config->param("DISTRO") =~ /gentoo/i
         ? 1
         : 0;
+}
+
+sub clean_logs {
+    system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
+        ;    #spring cleaning!
+}
+
+sub find_logs {
+    my @FINAL;
+    my @LOGS = `find /var/tmp/portage/ | grep build.log`;
+    foreach my $file (@LOGS) {
+        open FILE, "<$file";
+        my @CONTENTS = <FILE>;
+        close FILE;
+        @CONTENTS = map { $_ .= "\n"; } @CONTENTS;
+        unshift( @CONTENTS,
+            "======================= Error log: $file ======================= "
+        );
+        my $C = "@CONTENTS";
+        if ( $C =~ /Error|Failed/i ) {
+            push( @FINAL, @CONTENTS );
+        }
+        unlink($file);
+    }
+    return @FINAL;
 }
 
 sub euscan {
@@ -49,6 +72,14 @@ sub calculate_missing($$) {
     my @to_install = uniq( grep( !defined $packs{$_}, @Packages ) );
     shift @to_install;
     return @to_install;
+}
+
+sub depgraph($$) {
+    my $package = shift;
+    my $depth   = shift;
+    return
+        map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
+        qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
 sub conf_update {
