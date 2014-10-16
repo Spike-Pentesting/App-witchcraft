@@ -90,6 +90,12 @@ sub filetoatom {
     } @_;
 }
 
+sub update_licenses{
+    system('rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"');
+    system("ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept");
+}
+
+
 sub filetopackage {
     return map {
         my @pieces = split( /\//, $_ );
@@ -351,6 +357,15 @@ sub compiled_commit() {
 #  it just saves the last commit on the specified file
 
 sub save_compiled_commit($) {
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    print FILE shift;
+    close FILE;
+}
+
+sub build_compiled($) {
     open FILE,
           ">"
         . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
