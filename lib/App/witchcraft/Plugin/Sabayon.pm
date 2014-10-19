@@ -67,6 +67,7 @@ sub register {
     $emitter->on(
         "packages.build.after.emerge" => sub {
             shift;
+            local $ENV{EDITOR} = "cat";    #quick hack
             my $commit = pop @_;
             my @DIFFS  = @_;
             info(
