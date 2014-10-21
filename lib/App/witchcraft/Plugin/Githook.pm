@@ -1,7 +1,7 @@
 package App::witchcraft::Plugin::Githook;
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append dialog_yes_default send_report spurt chwn index_sync test_ebuild clean_logs uniq);
+    qw(info error notice);
 use Cwd;
 use Git::Sub;
 use Github::Hooks::Receiver::Declare;
