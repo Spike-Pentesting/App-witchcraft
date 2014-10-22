@@ -4,7 +4,8 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(list_available);
+use App::witchcraft::Utils::Sabayon qw(list_available);
+use App::witchcraft::Build;
 use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
@@ -49,14 +50,16 @@ sub run {
     my $password = password_dialog();
     info __ "Retrevieng packages in the repository" if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );
-    my $return = emerge(
-        {   +App::witchcraft->instance->Config->param('EMERGE_UPGRADE_OPTS')
+    App::witchcraft::Build->new(
+        packages => @Packages,
+        args     => {
+            +App::witchcraft->instance->Config->param('EMERGE_UPGRADE_OPTS')
                 // '-n' => ""
-        },
-        @Packages
-    );
+        }
+    )->build;
+
     sleep 5;    #assures to propagate the messages
-    return $return ? 0 : 1;
+    return 1;
 }
 
 1;
