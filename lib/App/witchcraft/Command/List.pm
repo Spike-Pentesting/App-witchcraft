@@ -3,7 +3,8 @@ package App::witchcraft::Command::List;
 use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
-use App::witchcraft::Utils qw(distrocheck error info);
+use App::witchcraft::Utils qw(error info);
+use App::witchcraft::Utils::Sabayon qw(distrocheck);
 use Locale::TextDomain 'App-witchcraft';
 
 =encoding utf-8
