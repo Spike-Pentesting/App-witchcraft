@@ -2,8 +2,9 @@ package App::witchcraft::Command::Conflict;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils
-    qw(send_report list_available error info notice uniq distrocheck log_command);
-
+    qw(send_report error info notice uniq log_command);
+use App::witchcraft::Utils::Sabayon
+    qw(list_available distrocheck);
 use warnings;
 use strict;
 use Locale::TextDomain 'App-witchcraft';
