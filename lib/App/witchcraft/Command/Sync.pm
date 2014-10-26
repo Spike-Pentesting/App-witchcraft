@@ -1,8 +1,7 @@
 package App::witchcraft::Command::Sync;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(send_report stage index_sync);
+use App::witchcraft::Utils qw(info error notice draw_up_line draw_down_line send_report stage index_sync);
 
 use warnings;
 use strict;
