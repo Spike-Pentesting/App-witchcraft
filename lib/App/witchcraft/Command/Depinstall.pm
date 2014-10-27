@@ -1,8 +1,9 @@
 package App::witchcraft::Command::Depinstall;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils qw(calculate_missing info log_command distrocheck
+use App::witchcraft::Utils qw(info log_command
     error notice);
+use App::witchcraft::Utils::Sabayon qw(calculate_missing distrocheck);
 use warnings;
 use strict;
 use Locale::TextDomain 'App-witchcraft';
