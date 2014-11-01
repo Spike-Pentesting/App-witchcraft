@@ -1,8 +1,7 @@
 package App::witchcraft::Command::Test;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(stage);
+use App::witchcraft::Utils qw(stage test_untracked info error);
 use warnings;
 use strict;
 use Locale::TextDomain 'App-witchcraft';
