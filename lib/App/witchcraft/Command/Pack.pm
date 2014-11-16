@@ -3,7 +3,9 @@ package App::witchcraft::Command::Pack;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(error info notice draw_down_line draw_up_line  emerge eix_sync distrocheck);
+    qw(error info notice draw_down_line draw_up_line );
+use App::witchcraft::Build;
+
 use warnings;
 use Locale::TextDomain 'App-witchcraft';
 use strict;
@@ -53,9 +55,6 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 sub run {
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
-    error __ "This feature is only available for Sabayon"
-        and return 1
-        unless distrocheck("sabayon");
     my $self     = shift;
     my @EMERGING = @_;
     info __xn(
@@ -65,12 +64,11 @@ sub run {
         count => scalar(@EMERGING)
     );
     my $cfg = App::witchcraft->instance->Config;
-    eix_sync;
     notice __ 'Those are the packages that would be processed' . ":";
     draw_up_line;
     info "\t" . $_ for @EMERGING;
     draw_down_line;
-    emerge( {}, @EMERGING );
+    App::witchcraft::Build->new( packages => @EMERGING )->build;
 }
 
 1;

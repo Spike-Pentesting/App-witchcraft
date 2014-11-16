@@ -2,9 +2,9 @@ package App::witchcraft::Plugin::Gentoo;
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append spurt chwn log_command send_report upgrade);
+    qw(info error notice append spurt chwn log_command send_report upgrade on emit);
 use App::witchcraft::Utils::Gentoo
-    qw(stripoverlay clean_logs find_logs to_ebuild atom eix_sync);
+    qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update);
 use Cwd;
 #
 #  name: process
@@ -27,10 +27,11 @@ Processes the atoms, can also be given in net-im/something::overlay type
 
 sub register {
     my ( $self, $emitter ) = @_;
+    $emitter->on( "repositories.update" => sub { repo_update(); } );
     $emitter->on(
         "packages.from_diff" => sub {
             my $cfg = App::witchcraft->instance->Config;
-            eix_sync;
+            repo_update;
             my $cwd = cwd;
             chdir( $cfg->param('OVERLAY_PATH') );
             my @FILES = map {
@@ -48,21 +49,23 @@ sub register {
             my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
                 grep { -d $_ } @FILES;
             if ( @EMERGING > 0 ) {
-                notice __ 'These are the packages that would be processed:';
+                notice(
+                    __('These are the packages that would be processed:') );
                 draw_up_line;
                 info "\t* " . $_ for @EMERGING;
                 draw_down_line;
             }
             else {
-                notice __ "No packages to emerge";
+                notice( __("No packages to emerge") );
             }
-            $last_commit = last_commit( $cfg->param('OVERLAY_PATH'),
-                ".git/refs/heads/master" );
 
             #process( @EMERGING, $last_commit, 0 );
             App::witchcraft::Build->new(
-                packages    => @EMERGING,
-                id          => $last_commit,
+                packages => @EMERGING,
+                id       => last_commit(
+                    $cfg->param('OVERLAY_PATH'),
+                    ".git/refs/heads/master"
+                ),
                 track_build => 1
             )->build;
             chdir($cwd);
@@ -176,18 +179,20 @@ sub register {
             my $options    = pop(@Packages);
             my $on_success = pop(@Packages);
 
+            repo_update;
             my @DIFFS = @Packages;
             notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
             my $cfg          = App::witchcraft->instance->Config;
             my $overlay_name = $cfg->param('OVERLAY_NAME');
             my @CMD          = @DIFFS;
             @CMD = map { stripoverlay($_); $_ } @CMD;
-            App::witchcraft->instance->emit(
-                "packages.build.before" => ( $commit, @CMD ) );
+            emit( "packages.build.before" => ( $commit, @CMD ) );
             my @ebuilds = to_ebuild(@CMD);
 
             $on_success->() and return
-                if ( scalar(@ebuilds) == 0 and $use == 0 );
+                if (scalar(@ebuilds) == 0
+                and $use == 0
+                and defined $on_success );
 
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
             send_report(
@@ -200,9 +205,8 @@ sub register {
                         diffs  => @DIFFS
                     )
                 );
-                App::witchcraft->instance->emit(
-                    "packages.build.success" => ( $commit, @DIFFS ) );
-                $on_success->();
+                emit( "packages.build.success" => ( $commit, @DIFFS ) );
+                $on_success->() if defined $on_success;
             }
 
         }

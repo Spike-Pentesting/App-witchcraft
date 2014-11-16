@@ -1,9 +1,10 @@
 package App::witchcraft::Build;
 use Deeme::Obj -base;
 use App::witchcraft::Utils qw(build_processed build_processed_manually emit);
-has [qw(packages id args )];
+has [qw(packages id  )];
 has 'manual'      => 0;
 has 'track_build' => 0;
+has 'args'        => sub { {} };
 
 sub build {
     emit(

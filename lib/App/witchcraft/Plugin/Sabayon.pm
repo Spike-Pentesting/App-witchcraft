@@ -14,6 +14,8 @@ use IPC::Run3;
 sub register {
     my ( $self, $emitter ) = @_;
     $self->SUPER::register;
+    $emitter->on( "repositories.update" => sub { entropy_update(); } );
+
     $emitter->on(
         "packages.build.before.emerge" => sub {
             shift;
