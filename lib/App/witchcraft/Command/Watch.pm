@@ -3,12 +3,13 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(daemonize error draw_up_line draw_down_line info notice send_report conf_update compiled_commit save_compiled_commit process to_ebuild save_compiled_packages find_logs last_md5 eix_sync entropy_update);
+    qw(daemonize error draw_up_line draw_down_line info notice send_report last_md5 repo_update);
 use warnings;
 use strict;
 use File::Find;
 use Regexp::Common qw/URI/;
 use App::witchcraft::Command::Align;
+use App::witchcraft::Build;
 use Tie::File;
 use Locale::TextDomain 'App-witchcraft';
 
@@ -78,11 +79,9 @@ sub run {
     while (1) {
         info __ "Checking for updates, and merging up!";
         draw_up_line;
-        if (eix_sync) {    #Launch layman -S first.
-            entropy_update;
-            update();
-            manual_update( $cfg->param('OVERLAY_PATH') );
-        }
+        repo_update;
+        $self->update;
+        manual_update( $cfg->param('OVERLAY_PATH') );
         draw_down_line;
         sleep $cfg->param('SLEEP_TIME');
     }
@@ -137,7 +136,12 @@ sub manual_update($) {
                     packages => @DIFFS
                 )
             );
-            process( @DIFFS, $calculated_md5, 1 );
+            App::witchcraft::Build->new(
+                manual      => 1,
+                track_build => 1,
+                id          => $calculated_md5,
+                packages    => @DIFFS
+            )->build;
         }
         else {
             notice( __

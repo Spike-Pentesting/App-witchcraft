@@ -28,6 +28,8 @@ our @EXPORT = qw(
     draw_up_line
     draw_down_line
     send_report
+    on
+    emit
 );
 
 our @EXPORT_OK = (
@@ -63,6 +65,11 @@ our @EXPORT_OK = (
         clean_stash
         clean_untracked
         index_sync
+        find_ext
+        repo_update
+        filetoatom
+
+        last_md5
 
         on
         emit
@@ -128,6 +135,31 @@ sub spurt {
     return $content;
 }
 
+sub repo_update{
+    &emit("repositories.update");
+}
+
+sub last_md5() {
+    open my $last,
+          "<"
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+        or (
+        &send_report(
+            __("Can't access to last compiled packages md5"),
+            __x('Can\'t open {md5} -> {error}',
+                md5 =>
+                    App::witchcraft->instance->Config->param('MD5_PACKAGES'),
+                error => $!
+            )
+        )
+        and return undef
+        );
+    my $last_md5 = <$last>;
+    close $last;
+    return $last_md5;
+}
+
 sub slurp {
     my $path = shift;
     croak __x(
@@ -138,6 +170,26 @@ sub slurp {
     my $content = '';
     while ( $file->sysread( my $buffer, 131072, 0 ) ) { $content .= $buffer }
     return $content;
+}
+
+sub find_ext($$) {
+    my $dir = shift;
+    my $ext=shift;
+    my @EBUILDS;
+    find(
+        {   wanted => sub { push @EBUILDS, $_ if $_ =~ /\.$ext$/ },
+            no_chdir => 1
+        },
+        $dir
+    );
+    return @EBUILDS;
+}
+
+sub filetoatom {
+    return map {
+        my @pieces = split( /\//, $_ );
+        $pieces[-3] . '/' . $pieces[-2];
+    } @_;
 }
 
 sub append {
@@ -272,11 +324,11 @@ Emitted after the execution of the given $command
 sub log_command {
     my $command = shift;
     &info("Phase: $command");
-    App::witchcraft->instance->emit("before_$command");
+    &emit("before_$command");
     my @LOG = `$command 2>&1`;
     if ( $? == 0 ) {
         &notice( __x( "{command} succeded", command => $command ) );
-        App::witchcraft->instance->emit("after_$command");
+        &emit("after_$command");
         return 1;
     }
     else {
@@ -292,10 +344,10 @@ sub log_command {
 sub command {
     my $command = shift;
     &info("Phase: $command");
-    App::witchcraft->instance->emit("before_$command");
+    &emit("before_$command");
     if ( system("$command 2>&1") == 0 ) {
         &notice( __x( "{command} succeded", command => $command ) );
-        App::witchcraft->instance->emit("after_$command");
+        &emit("after_$command");
         return 1;
     }
     else {
@@ -361,16 +413,16 @@ sub send_report {
             1;
         };
         if ($@) {
-            App::witchcraft->instance->emit(
+            &emit(
                 send_report_body => ( $message, $log ) );
         }
         else {
-            App::witchcraft->instance->emit(
+            &emit(
                 send_report_link => ( $message, $url ) );
         }
     }
     else {
-        App::witchcraft->instance->emit( send_report_message => ($message) );
+        &emit( send_report_message => ($message) );
     }
     return $success;
 }

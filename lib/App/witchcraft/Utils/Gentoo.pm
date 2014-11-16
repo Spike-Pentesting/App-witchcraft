@@ -2,7 +2,7 @@ package App::witchcraft::Utils::Gentoo;
 use base qw(Exporter);
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(euscan atom stripoverlay calculate_missing conf_update distrocheck depgraph find_logs clean_logs);
+    = qw(atom stripoverlay calculate_missing conf_update distrocheck depgraph find_logs clean_logs repo_update to_ebuild euscan);
 use App::witchcraft::Utils qw(info error send_report uniq log_command);
 
 use Locale::TextDomain 'App-witchcraft';
@@ -16,6 +16,29 @@ sub distrocheck {
     return App::witchcraft->instance->Config->param("DISTRO") =~ /gentoo/i
         ? 1
         : 0;
+}
+
+#
+#  name: to_ebuild
+#  input:@DIFFS
+#  output:@TO_EMERGE
+# given an array contening atoms, finds the ebuilds in the overlay and generate an array
+
+sub to_ebuild(@) {
+    my @DIFFS = @_;
+    my @TO_EMERGE;
+    my $overlay = App::witchcraft->instance->Config->param('OVERLAY_PATH');
+    foreach my $file (@DIFFS) {
+        my @ebuild = <$overlay/$file/*>;
+        foreach my $e (@ebuild) {
+            push( @TO_EMERGE, $e ) if ( $e =~ /Manifest/i );
+        }
+    }
+    return @TO_EMERGE;
+}
+
+sub repo_update {
+    &log_command("eix-sync");
 }
 
 sub clean_logs {
