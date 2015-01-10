@@ -62,6 +62,7 @@ our @EXPORT_OK = (
 
         stage
         test_untracked
+        test_ebuild
         clean_stash
         clean_untracked
         index_sync
@@ -338,6 +339,85 @@ sub log_command {
         &send_report( __x( "Phase: {command} failed", command => $command ),
             "$command : ", @LOG );
         return 0;
+    }
+}
+
+
+sub test_ebuild {
+
+    #XXX: to add repoman scan here
+    my $ebuild   = shift;
+    my $manifest = shift || undef;
+    my $install  = shift || undef;
+    my $password = shift || undef;
+    if ( $> != 0 ) {
+        $password = $password ? "echo $password | sudo -S " : "sudo";
+    }
+    else {
+        $password = "";
+    }
+    system( $password. " ebuild $ebuild clean" )
+        ;    #Cleaning before! at least it fails :P
+    if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
+        &info( __('Manifest created successfully') );
+        &clean_logs;
+        &draw_down_line
+            and return 1
+            if ( defined $manifest and !defined $install );
+        &info(
+            __x( "Starting installation for {ebuild}", ebuild => $ebuild ) );
+        $ebuild =~ s/\.ebuild//;
+        my @package = split( /\//, $ebuild );
+        $ebuild = $package[0] . "/" . $package[2];
+        my $specific_ebuild = "=" . $ebuild;
+        system(   $password
+                . " PORTDIR_OVERLAY='"
+                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
+                . "' emerge --onlydeps $specific_ebuild" )
+            if ( defined $install );
+        App::witchcraft->instance->emit( before_test => ($ebuild) );
+
+        if (defined $install
+            and system( $password
+                    . " PORTDIR_OVERLAY='"
+                    . App::witchcraft->instance->Config->param(
+                    'GIT_REPOSITORY')
+                    . "' emerge -B  --nodeps $specific_ebuild"
+            ) == 0
+            )
+        {
+            App::witchcraft->instance->emit( after_test => ($ebuild) );
+            &info( __x( '[{ebuild}] Installation OK', ebuild => $ebuild ) );
+            return 1;
+        }
+        else {
+            &send_report(
+                __x("Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                __x("Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                join( " ", &find_logs() )
+                )
+                if App::witchcraft->instance->Config->param(
+                "REPORT_TEST_FAILS")
+                and
+                App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+                == 1;
+            &error( __("Installation failed") ) and return 0;
+        }
+    }
+    else {
+        &send_report(
+            __x("Manifest phase failed for {ebuild} ... be more carefully next time!",
+                ebuild => $ebuild
+            )
+            )
+            if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+            and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+            == 1;
+        &error( __("Manifest failed") ) and return 0;
     }
 }
 

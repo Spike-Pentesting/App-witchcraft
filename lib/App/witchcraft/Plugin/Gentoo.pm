@@ -1,8 +1,9 @@
 package App::witchcraft::Plugin::Gentoo;
+use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line);
+    qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line test_ebuild);
 use App::witchcraft::Utils::Gentoo
     qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update);
 use Cwd;
@@ -26,7 +27,7 @@ Processes the atoms, can also be given in net-im/something::overlay type
 =cut
 
 sub register {
-    my ( $self, $emitter ) = @_;
+    my ($self,$emitter ) = @_;
     $emitter->on( "repositories.update" => sub { repo_update(); } );
     $emitter->on(
         "packages.from_diff" => sub {
@@ -74,6 +75,7 @@ sub register {
 
     $emitter->on(
         "packages.test" => sub {
+            my $self=shift;
             my $opts     = shift;
             my $c        = 1;
             my $cb       = $opts->{cb} || sub { 1; };
@@ -166,7 +168,7 @@ sub register {
             my @Untracked = grep {/\.ebuild$/} @_;
             info(
                 __x("Those are the file that would be tested: {untracked}",
-                    untracked => @Untracked
+                    untracked => "@Untracked"
                 )
             );
             clean_logs;    #spring cleaning!
