@@ -2,7 +2,7 @@ package App::witchcraft::Plugin::Gentoo;
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append spurt chwn log_command send_report upgrade on emit);
+    qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line);
 use App::witchcraft::Utils::Gentoo
     qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update);
 use Cwd;
@@ -74,15 +74,14 @@ sub register {
 
     $emitter->on(
         "packages.test" => sub {
-            my $c        = 1;
             my $opts     = shift;
-            my $cb       = $opts->{cb};
+            my $c        = 1;
+            my $cb       = $opts->{cb} || sub { 1; };
             my $cwd      = $opts->{dir};
             my $ignore   = $opts->{ignore} || 0;
             my $password = $opts->{password} || undef;
             my @ignores;
 
-            my $cb = $opts->{callback} || sub { 1; };
             my @Untracked = @_;
             my @Atoms_Installed;
             my @Installed;
@@ -113,8 +112,9 @@ sub register {
             if ( $ignore and $ignore == 1 and @Failed > 0 ) {
                 tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
                     or die( error $!);
-                send_report( __
-                        "Witchcraft need your attention, i'm asking you few questions"
+                send_report(
+                    __( "Witchcraft need your attention, i'm asking you few questions"
+                    )
                 );
                 foreach my $fail (@Failed) {
                     push( @ignores, $fail )
@@ -128,8 +128,9 @@ sub register {
                 }
             }
             if ( @Installed > 0 ) {
-                &info( __
-                        "Those files where correctly installed, maybe you wanna check them: "
+                &info(
+                    __( "Those files where correctly installed, maybe you wanna check them: "
+                    )
                 );
                 my $result;
                 notice($_) and $result .= " " . $_
@@ -139,7 +140,7 @@ sub register {
                         result => $result
                     )
                 );
-                info( __ "Generating the command for maintenance" );
+                info( __("Generating the command for maintenance") );
                 notice("git add $result");
                 notice("eix-sync");
                 notice("emerge -av $result");
@@ -148,8 +149,9 @@ sub register {
                 $cb->(@Installed);
             }
             else {
-                info( __
-                        "No files where tested because there weren't untracked files or all packages failed to install"
+                info(
+                    __( "No files where tested because there weren't untracked files or all packages failed to install"
+                    )
                 );
             }
             chdir($cwd);
@@ -189,11 +191,6 @@ sub register {
             emit( "packages.build.before" => ( $commit, @CMD ) );
             my @ebuilds = to_ebuild(@CMD);
 
-            $on_success->() and return
-                if (scalar(@ebuilds) == 0
-                and $use == 0
-                and defined $on_success );
-
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
             send_report(
                 __x( "Emerge in progress for {commit}", commit => $commit ),
@@ -206,7 +203,7 @@ sub register {
                     )
                 );
                 emit( "packages.build.success" => ( $commit, @DIFFS ) );
-                $on_success->() if defined $on_success;
+                $on_success->(@DIFFS) if defined $on_success;
             }
 
         }
@@ -248,7 +245,7 @@ sub _emerge(@) {
         "packages.build.before.emerge" => ( @CMD, $commit ) );
 
     if ( log_command("nice -20 emerge --color n -v $args  2>&1") ) {
-        info( __ "All went smooth, HURRAY! packages merged correctly" );
+        info( __("All went smooth, HURRAY! packages merged correctly") );
         send_report( __("Packages merged successfully"), @DIFFS );
         App::witchcraft->instance->emit(
             "packages.build.after.emerge" => ( @DIFFS, $commit ) );

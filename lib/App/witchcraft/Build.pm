@@ -26,6 +26,7 @@ sub build {
 sub test {
     emit(
         "packages.test" => (
+            {},
             ( ref $_[0]->packages )
             ? @{ $_[0]->packages }
             : $_[0]->packages

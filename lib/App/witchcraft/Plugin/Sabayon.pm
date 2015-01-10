@@ -5,7 +5,7 @@ use App::witchcraft;
 use App::witchcraft::Utils
     qw(info error notice append spurt chwn log_command);
 use App::witchcraft::Utils::Gentoo
-    qw(stripoverlay clean_logs find_logs upgrade to_ebuild);
+    qw(stripoverlay clean_logs find_logs to_ebuild);
 
 use App::witchcraft::Utils::Sabayon
     qw(entropy_update conf_update entropy_rescue);
@@ -20,6 +20,7 @@ sub register {
         "packages.build.before.emerge" => sub {
             shift;
             my $commit = pop @_;
+            my @equo_install;
             entropy_update;
             return
                 if !App::witchcraft->instance->Config->param(
@@ -38,7 +39,7 @@ sub register {
                 )
             );
             my $Installs = join( " ", @equo_install );
-            info( __ "Installing: " );
+            info( __("Installing: "));
             notice($_) for @equo_install;
             system("sudo equo i -q --relaxed $Installs");
 
