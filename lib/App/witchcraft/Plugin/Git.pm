@@ -121,6 +121,7 @@ sub register {
             $opts->{dir} = $cwd;
             my @Untracked = git::ls_files '--others', '--exclude-standard';
             push( @Untracked, git::diff_files '--name-only' );
+            info __x('No untracked file found') and return if @Untracked==0;
             emit( "packages.untracked" => $opts, @Untracked );
         }
     );

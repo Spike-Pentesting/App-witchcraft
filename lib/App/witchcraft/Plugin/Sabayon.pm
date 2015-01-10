@@ -1,4 +1,5 @@
 package App::witchcraft::Plugin::Sabayon;
+use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj "App::witchcraft::Plugin::Gentoo";
 use App::witchcraft;
@@ -13,7 +14,7 @@ use IPC::Run3;
 
 sub register {
     my ( $self, $emitter ) = @_;
-    $self->SUPER::register;
+    $self->SUPER::register(@_);
     $emitter->on( "repositories.update" => sub { entropy_update(); } );
 
     $emitter->on(

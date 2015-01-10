@@ -3,7 +3,7 @@ package App::witchcraft::Command::Depinstall;
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils qw(info log_command
     error notice);
-use App::witchcraft::Utils::Sabayon qw(calculate_missing distrocheck);
+use App::witchcraft::Utils::Sabayon qw(calculate_missing);
 use warnings;
 use strict;
 use Locale::TextDomain 'App-witchcraft';
@@ -55,10 +55,6 @@ sub run {
     my $depth   = $self->{depth} // 1;
     error __ "You must supply a package" and return 1 if ( !$package );
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
-    error __ "This feature is only available for Sabayon"
-        and return 1
-        unless distrocheck("sabayon");
-
     info __x(
         'Installing all dependencies for {package} with depth {depth} using equo',
         package => $package,

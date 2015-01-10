@@ -4,7 +4,7 @@ use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils
     qw(send_report error info notice uniq log_command);
 use App::witchcraft::Utils::Sabayon
-    qw(list_available distrocheck);
+    qw(list_available);
 use warnings;
 use strict;
 use Locale::TextDomain 'App-witchcraft';
@@ -51,12 +51,9 @@ sub run {
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $overlay = shift
         // App::witchcraft->instance->Config->param('OVERLAY_NAME');
-    error __ 'No OVERLAY_NAME defined' and return 1 if ( !$overlay );
-    error __ "This feature is only available for Sabayon"
-        and return 1
-        unless distrocheck("sabayon");
-    info __
-        'Calculating packages that are already in other sabayon repositories ';
+    error __('No OVERLAY_NAME defined') and return 1 if ( !$overlay );
+    info __(
+        'Calculating packages that are already in other sabayon repositories ');
     my @repos = qx|equo repo list -q|;
     chomp(@repos);
     @repos = grep { !/$overlay/ } @repos;

@@ -4,7 +4,7 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(stage);
+use App::witchcraft::Utils qw(stage password_dialog uniq);
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit push pull);

@@ -2,12 +2,11 @@ package App::witchcraft::Utils::Sabayon;
 use base qw(Exporter);
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(calculate_missing conf_update distrocheck list_available remove_available entropy_rescue entropy_update);
+    = qw(calculate_missing conf_update  list_available remove_available entropy_rescue entropy_update);
 use Locale::TextDomain 'App-witchcraft';
 use constant DEBUG => $ENV{DEBUG} || 0;
 use IPC::Run3;
-use Locale::TextDomain 'App-witchcraft';
-
+use App::witchcraft::Utils  qw(uniq);
 #here functs can be overloaded.
 
 =head1 emerge(@Atoms,$commit,$usage)
@@ -30,12 +29,6 @@ emerges the given atoms
 
 sub conf_update {
     &log_command("echo -5 | equo conf update");
-}
-
-sub distrocheck {
-    return App::witchcraft->instance->Config->param("DISTRO") =~ /sabayon/i
-        ? 1
-        : 0;
 }
 
 sub emerge(@) {
