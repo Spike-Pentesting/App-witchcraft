@@ -2,7 +2,7 @@ package App::witchcraft::Utils::Gentoo;
 use base qw(Exporter);
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(atom stripoverlay calculate_missing conf_update distrocheck depgraph find_logs clean_logs repo_update to_ebuild euscan);
+    = qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan);
 use App::witchcraft::Utils qw(info error send_report uniq log_command);
 
 use Locale::TextDomain 'App-witchcraft';
@@ -11,12 +11,6 @@ use Encode;
 use utf8;
 use Carp;
 use IPC::Run3;
-
-sub distrocheck {
-    return App::witchcraft->instance->Config->param("DISTRO") =~ /gentoo/i
-        ? 1
-        : 0;
-}
 
 #
 #  name: to_ebuild

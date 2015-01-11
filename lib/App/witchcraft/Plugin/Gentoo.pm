@@ -185,7 +185,7 @@ sub register {
 
             repo_update;
             my @DIFFS = @Packages;
-            notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
+            notice( __x( "Processing {diffs}", diffs => "@DIFFS" ) );
             my $cfg          = App::witchcraft->instance->Config;
             my $overlay_name = $cfg->param('OVERLAY_NAME');
             my @CMD          = @DIFFS;
@@ -195,13 +195,13 @@ sub register {
 
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
             send_report(
-                __x( "Emerge in progress for {commit}", commit => $commit ),
+                __x( "Emerge in progress for commit {commit}", commit => $commit ),
                 @DIFFS );
             if ( _emerge( $options, @DIFFS, $commit ) ) {
                 send_report(
                     __x("<{commit}> Compiled: {diffs}",
                         commit => $commit,
-                        diffs  => @DIFFS
+                        diffs  => "@DIFFS"
                     )
                 );
                 emit( "packages.build.success" => ( $commit, @DIFFS ) );
@@ -254,7 +254,7 @@ sub _emerge(@) {
     }
     else {
         my @LOGS = find_logs();
-        send_report( __x( "Logs for {diffs}", diffs => @DIFFS ),
+        send_report( __x( "Logs for: {diffs}", diffs => "@DIFFS" ),
             join( " ", @LOGS ) );
         $rs = 0;
     }
