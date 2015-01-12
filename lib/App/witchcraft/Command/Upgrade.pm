@@ -4,6 +4,7 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
+use App::witchcraft::Utils qw(password_dialog uniq);
 use App::witchcraft::Utils::Sabayon qw(list_available);
 use App::witchcraft::Build;
 use Locale::TextDomain 'App-witchcraft';
@@ -42,13 +43,13 @@ L<App::witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub run {
-    error __ 'You must run it with root permissions' and return 1 if $> != 0;
+    error __('You must run it with root permissions') and return 1 if $> != 0;
     my $self = shift;
     my $Repo = shift
         // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info __x( 'Upgrade of the repository {repo}', repo => $Repo );
     my $password = password_dialog();
-    info __ "Retrevieng packages in the repository" if $self->{verbose};
+    info __("Retrevieng packages in the repository") if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );
     App::witchcraft::Build->new(
         packages => @Packages,

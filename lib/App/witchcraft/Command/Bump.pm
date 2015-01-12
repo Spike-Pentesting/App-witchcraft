@@ -78,7 +78,7 @@ sub run {
     my @args   = @_;
 
     error __x( "At leat one of this action must be specified: {cmds}",
-        cmds => @AVAILABLE_CMDS )
+        cmds => "@AVAILABLE_CMDS" )
         and return 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );
@@ -132,7 +132,7 @@ sub euscan_packages {
     }
 
     if ( @Added > 0 ) {
-        info __ "These are the packages that passed the tests";
+        info __("These are the packages that passed the tests");
         notice $_ for @Updates;
     }
 }

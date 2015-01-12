@@ -6,8 +6,7 @@ our @EXPORT_OK
 use Locale::TextDomain 'App-witchcraft';
 use constant DEBUG => $ENV{DEBUG} || 0;
 use IPC::Run3;
-use Locale::TextDomain 'App-witchcraft';
-
+use App::witchcraft::Utils  qw(uniq);
 #here functs can be overloaded.
 
 =head1 emerge(@Atoms,$commit,$usage)
