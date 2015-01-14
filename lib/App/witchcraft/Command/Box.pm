@@ -81,7 +81,7 @@ sub run {
     my $self   = shift;
     my $action = shift;
     my @args   = @_;
-    error __x("At least one of this action must be specified: {cmds}", cmds=>@AVAILABLE_CMDS)
+    error __x("At least one of this action must be specified: {cmds}", cmds=>"@AVAILABLE_CMDS")
         and return 1
         if !defined $action
         or !( grep { $_ eq $action } @AVAILABLE_CMDS );

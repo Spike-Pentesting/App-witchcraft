@@ -190,12 +190,6 @@ Every customization and configuration must be explicitally set on your config fi
 
 =head2 Basic options
 
-=head3 DISTRO
-
-Tell to witchcraft what is your distribution that you intend to mantain
-
-    DISTRO: sabayon #or gentoo
-
 =head3 EQUO_DEPINSTALL (sabayon)
 
 If enabled, before emerging packages, try to determine if its dependencies are already on entropy servers instead re-emerging them.
@@ -305,6 +299,10 @@ will load:
 
 =over
 
+=item Gentoo plugin, enable handling ebuilds for building packages
+
+=item Sabayon plugin, enable handling entropy server for releasing packages
+
 =item depcheck plugin for RDEPEND checks
 
 =item irc for irc notifications
@@ -324,6 +322,14 @@ will load:
 =head3 Plugin configuration
 
 Plugins can require more specific fine grained options, the sample configuration file provided, it's configured for a full usage, feel free to cut up the pieces that you don't need.
+
+=head4 Gentoo
+
+enable hooks specific to Gentoo distribution
+
+=head4 Sabayon
+
+enable hooks specific to Sabayon distribution (you should load the Gentoo plugin too)
 
 =head4 IRC
 
