@@ -107,7 +107,7 @@ sub run {
     my @Updates;
     my @Added;
     my $c = 1;
-    info __x( "Starting Euscan of {packages}", packages => @Packages )
+    info __x( "Starting Euscan of {packages}", packages => "@Packages" )
         if $self->{verbose};
     my $dir
         = $self->{root}
@@ -135,7 +135,7 @@ sub run {
             send_report( __ "Euscan: These packages where correctly emerged",
                 @Added );
         }
-        else { send_report( __ "Euscan: Error emerging", @Added ) }
+        else { send_report( __("Euscan: Error emerging"), @Added ) }
     }
 }
 

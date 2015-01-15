@@ -74,7 +74,7 @@ sub emerge(@) {
         &info(
             __x("Compressing {count} packages: {packages}",
                 count    => scalar(@DIFFS),
-                packages => @DIFFS
+                packages => "@DIFFS"
             )
         );
         &conf_update;
@@ -121,7 +121,7 @@ sub emerge(@) {
     }
     else {
         my @LOGS = &find_logs();
-        &send_report( __x( "Logs for {diffs} ", diffs => @DIFFS ),
+        &send_report( __x( "Logs for {diffs} ", diffs => "@DIFFS" ),
             join( " ", @LOGS ) );
     }
 
@@ -170,7 +170,7 @@ sub process(@) {
     my $use    = pop(@_);
     my $commit = pop(@_);
     my @DIFFS  = @_;
-    &notice( __x( "Processing {diffs}", diffs => @DIFFS ) );
+    &notice( __x( "Processing {diffs}", diffs => "@DIFFS" ) );
     my $cfg          = App::witchcraft->instance->Config;
     my $overlay_name = $cfg->param('OVERLAY_NAME');
     my @CMD          = @DIFFS;
@@ -195,7 +195,7 @@ sub process(@) {
             &send_report(
                 __x("<{commit}> Compiled: {diffs}",
                     commit => $commit,
-                    diffs  => @DIFFS
+                    diffs  => "@DIFFS"
                 )
             );
             App::witchcraft->instance->emit( after_process => (@DIFFS) );

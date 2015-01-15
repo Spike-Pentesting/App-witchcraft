@@ -77,7 +77,7 @@ sub register {
             info(
                 __x("Compressing {count} packages: {packages}",
                     count    => scalar(@DIFFS),
-                    packages => @DIFFS
+                    packages => "@DIFFS"
                 )
             );
 

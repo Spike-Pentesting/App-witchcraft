@@ -58,7 +58,7 @@ sub run {
     chomp(@repos);
     @repos = grep { !/$overlay/ } @repos;
     info __x( "Searching packages in the following repositories: {repos}",
-        repos => @repos );
+        repos => "@repos" );
     my @other_repos_packages
         = list_available( { "-q" => "", "-v" => "" }, @repos );
     info __x( "retrieving packages in the {overlay} repository",

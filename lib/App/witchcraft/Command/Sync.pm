@@ -130,7 +130,7 @@ sub run {
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
-    send_report( __x "Starting to sync: {remotes}", remotes => @REMOTES );
+    send_report( __x("Starting to sync: {remotes}", remotes => "@REMOTES") );
 
     foreach my $RepoUrl (@REMOTES) {
         App::witchcraft::Command::Clean->new
