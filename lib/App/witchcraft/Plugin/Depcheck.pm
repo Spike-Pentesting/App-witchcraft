@@ -14,7 +14,7 @@ sub register {
                 error __x(
                     "{ebuild} seems missing that RDPENDs: {RDEPEND}",
                     ebuild  => $ebuild,
-                    RDEPEND => @RDEPEND
+                    RDEPEND => "@RDEPEND"
                 );
                 send_report(
                     __x( "RDEPEND missing for {ebuild}", ebuild => $ebuild ),

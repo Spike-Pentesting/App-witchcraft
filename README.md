@@ -131,12 +131,6 @@ Every customization and configuration must be explicitally set on your config fi
 
 ## Basic options
 
-### DISTRO
-
-Tell to witchcraft what is your distribution that you intend to mantain
-
-    DISTRO: sabayon #or gentoo
-
 ### EQUO\_DEPINSTALL (sabayon)
 
 If enabled, before emerging packages, try to determine if its dependencies are already on entropy servers instead re-emerging them.
@@ -243,6 +237,8 @@ e.g.
 
 will load:
 
+- Gentoo plugin, enable handling ebuilds for building packages
+- Sabayon plugin, enable handling entropy server for releasing packages
 - depcheck plugin for RDEPEND checks
 - irc for irc notifications
 - pushbullet uses pushbullet.com api to deliver pushes notifications
@@ -254,6 +250,14 @@ will load:
 ### Plugin configuration
 
 Plugins can require more specific fine grained options, the sample configuration file provided, it's configured for a full usage, feel free to cut up the pieces that you don't need.
+
+#### Gentoo
+
+enable hooks specific to Gentoo distribution
+
+#### Sabayon
+
+enable hooks specific to Sabayon distribution (you should load the Gentoo plugin too)
 
 #### IRC
 
@@ -325,7 +329,7 @@ mudler <mudler@dark-lab.net>
 
 # COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by "mudler".
+This software is copyright (c) 2015 by "mudler".
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
