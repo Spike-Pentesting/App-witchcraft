@@ -136,7 +136,7 @@ sub spurt {
     return $content;
 }
 
-sub repo_update{
+sub repo_update {
     &emit("repositories.update");
 }
 
@@ -175,7 +175,7 @@ sub slurp {
 
 sub find_ext($$) {
     my $dir = shift;
-    my $ext=shift;
+    my $ext = shift;
     my @EBUILDS;
     find(
         {   wanted => sub { push @EBUILDS, $_ if $_ =~ /\.$ext$/ },
@@ -342,7 +342,6 @@ sub log_command {
     }
 }
 
-
 sub test_ebuild {
 
     #XXX: to add repoman scan here
@@ -493,12 +492,10 @@ sub send_report {
             1;
         };
         if ($@) {
-            &emit(
-                send_report_body => ( $message, $log ) );
+            &emit( send_report_body => ( $message, $log ) );
         }
         else {
-            &emit(
-                send_report_link => ( $message, $url ) );
+            &emit( send_report_link => ( $message, $url ) );
         }
     }
     else {

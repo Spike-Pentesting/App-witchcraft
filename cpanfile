@@ -14,7 +14,6 @@ requires 'Git::Sub';
 requires 'Github::Hooks::Receiver::Declare';
 requires 'HTTP::Request::Common';
 requires 'IPC::Run3';
-requires 'Import::Into';
 requires 'LWP::UserAgent';
 requires 'Locale::Messages';
 requires 'Locale::TextDomain';
@@ -23,8 +22,11 @@ requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'Term::ReadKey';
 requires 'forks';
-requires 'parent';
 requires 'perl', '5.008_005';
+
+on configure => sub {
+    requires 'Module::Build', '0.3601';
+};
 
 on test => sub {
     requires 'Test::More';
