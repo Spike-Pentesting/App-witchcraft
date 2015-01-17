@@ -68,7 +68,7 @@ sub run {
     draw_up_line;
     info "\t" . $_ for @EMERGING;
     draw_down_line;
-    App::witchcraft::Build->new( packages => @EMERGING )->build;
+    App::witchcraft::Build->new( packages => [@EMERGING] )->build;
 }
 
 1;

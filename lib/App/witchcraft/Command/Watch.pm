@@ -133,14 +133,14 @@ sub manual_update($) {
             chomp(@DIFFS);
             send_report(
                 __x("Issued a manual packages compile, start compiling process for : {packages}",
-                    packages => @DIFFS
+                    packages => "@DIFFS"
                 )
             );
             App::witchcraft::Build->new(
                 manual      => 1,
                 track_build => 1,
                 id          => $calculated_md5,
-                packages    => @DIFFS
+                packages    => [@DIFFS]
             )->build;
         }
         else {

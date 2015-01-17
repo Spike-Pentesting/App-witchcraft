@@ -74,6 +74,10 @@ our @EXPORT_OK = (
         on
         emit
 
+        compiled_commit
+        save_compiled_packages
+        save_compiled_commit
+
         upgrade
 
         ), @EXPORT
@@ -261,6 +265,20 @@ sub last_manual_build() {
 #  input: none
 #  output: last commit
 #
+
+sub compiled_commit() {
+    open FILE,
+          "<"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+        or
+        ( &notice( __("Nothing was previously compiled") ) and return undef );
+    my @LAST = <FILE>;
+    close FILE;
+    chomp(@LAST);
+    return $LAST[0];
+}
+
 sub last_build() {
     open FILE,
           "<"
@@ -278,6 +296,23 @@ sub last_build() {
 #  input: $commit
 #  output: void
 #  it just saves the last commit on the specified file
+sub save_compiled_commit($) {
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    print FILE shift;
+    close FILE;
+}
+
+sub save_compiled_packages($) {
+    open FILE,
+          ">"
+        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
+    print FILE shift;
+    close FILE;
+}
 
 sub build_processed($) {
     open my $fh,

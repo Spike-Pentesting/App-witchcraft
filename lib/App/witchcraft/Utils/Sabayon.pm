@@ -6,7 +6,9 @@ our @EXPORT_OK
 use Locale::TextDomain 'App-witchcraft';
 use constant DEBUG => $ENV{DEBUG} || 0;
 use IPC::Run3;
-use App::witchcraft::Utils  qw(uniq);
+use App::witchcraft::Utils  qw(info error notice uniq send_report save_compiled_packages save_compiled_commit log_command upgrade);
+use App::witchcraft::Utils::Gentoo  qw(clean_logs find_logs depgraph);
+
 #here functs can be overloaded.
 
 =head1 emerge(@Atoms,$commit,$usage)
@@ -28,7 +30,7 @@ emerges the given atoms
 =cut
 
 sub conf_update {
-    &log_command("echo -5 | equo conf update");
+    log_command("echo -5 | equo conf update");
 }
 
 sub emerge(@) {
@@ -46,15 +48,15 @@ sub emerge(@) {
     local $ENV{EDITOR} = "cat";    #quick hack
     @CMD = map { &stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
-    &clean_logs;
-    &entropy_update;
+    clean_logs;
+    entropy_update;
 
     if (    App::witchcraft->instance->Config->param('EQUO_DEPINSTALL')
         and App::witchcraft->instance->Config->param('EQUO_DEPINSTALL') == 1 )
     {
         #reticulating splines here...
-        push( @equo_install, &calculate_missing( $_, 1 ) ) for @CMD;
-        &info(
+        push( @equo_install, calculate_missing( $_, 1 ) ) for @CMD;
+        info(
             __xn(
                 "One dependency of the package is not present in the system, installing them with equo",
                 "{count} dependencies of the package are not present in the system, installing them with equo",
@@ -63,21 +65,21 @@ sub emerge(@) {
             )
         );
         my $Installs = join( " ", @equo_install );
-        &info( __ "Installing: " );
-        &notice($_) for @equo_install;
+        info( __ "Installing: " );
+        notice($_) for @equo_install;
         system("sudo equo i -q --relaxed $Installs");
     }
 
-    &conf_update;    #EXPECT per DISPATCH-CONF
-    if ( &log_command("nice -20 emerge --color n -v $args  2>&1") ) {
+    conf_update;    #EXPECT per DISPATCH-CONF
+    if ( log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
-        &info(
+        info(
             __x("Compressing {count} packages: {packages}",
                 count    => scalar(@DIFFS),
                 packages => "@DIFFS"
             )
         );
-        &conf_update;
+        conf_update;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
         #       unshift( @CMD, "add" );
@@ -86,7 +88,7 @@ sub emerge(@) {
         #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
         #   or send_report("Cannot spawn eit: $!\n");
         sleep 1;
-        &send_report( __("Compressing packages"), @DIFFS );
+        send_report( __("Compressing packages"), @DIFFS );
 
         my ( $out, $err );
         run3(
@@ -96,23 +98,23 @@ sub emerge(@) {
         );
 
         if ( $? == 0 ) {
-            &conf_update;    #EXPECT per DISPATCH-CONF
+            conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
-            if ( &log_command("eit push --quick") ) {
-                &info( __("All went smooth, HURRAY!") );
-                &send_report(
+            if ( log_command("eit push --quick") ) {
+                info( __("All went smooth, HURRAY!") );
+                send_report(
                     __( "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
                     )
                 );
                 App::witchcraft->instance->emit( after_push => (@DIFFS) );
                 $rs = 1;
-                &entropy_rescue;
-                &entropy_update;
+                entropy_rescue;
+                entropy_update;
             }
         }
         else {
-            &send_report(
+            send_report(
                 __( "Error in compression phase, you have to manually solve it"
                 ),
                 $out, $err
@@ -120,21 +122,21 @@ sub emerge(@) {
         }
     }
     else {
-        my @LOGS = &find_logs();
-        &send_report( __x( "Logs for {diffs} ", diffs => "@DIFFS" ),
+        my @LOGS = find_logs();
+        send_report( __x( "Logs for {diffs} ", diffs => "@DIFFS" ),
             join( " ", @LOGS ) );
     }
 
     #Maintenance stuff
-    &upgrade;
+    upgrade;
     return $rs;
 }
 
 sub calculate_missing($$) {
     my $package  = shift;
     my $depth    = shift;
-    my @Packages = &depgraph( $package, $depth );    #depth=0 it's all
-    &info(
+    my @Packages = depgraph( $package, $depth );    #depth=0 it's all
+    info(
         __x("{package}: has {deps} dependencies ",
             package => $package,
             deps    => scalar(@Packages)
@@ -228,11 +230,11 @@ sub remove_available(@) {
 }
 
 sub entropy_update {
-    &log_command("equo up && equo u");
+    log_command("equo up && equo u");
 }
 
 sub entropy_rescue {
-    &log_command("equo rescue spmsync");
+    log_command("equo rescue spmsync");
 }
 
 1;

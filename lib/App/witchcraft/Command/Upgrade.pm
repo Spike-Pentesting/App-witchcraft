@@ -52,7 +52,7 @@ sub run {
     info __("Retrevieng packages in the repository") if $self->{verbose};
     my @Packages = list_available( { '-q' => "" }, $Repo );
     App::witchcraft::Build->new(
-        packages => @Packages,
+        packages => [@Packages],
         args     => {
             +App::witchcraft->instance->Config->param('EMERGE_UPGRADE_OPTS')
                 // '-n' => ""

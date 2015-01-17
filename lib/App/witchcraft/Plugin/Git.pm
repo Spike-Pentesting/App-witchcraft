@@ -2,38 +2,14 @@ package App::witchcraft::Plugin::Git;
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append dialog_yes_default send_report spurt chwn uniq draw_up_line draw_down_line on emit);
+    qw(info error notice append dialog_yes_default send_report spurt chwn uniq draw_up_line draw_down_line on emit compiled_commit);
 use Cwd;
 use Git::Sub;
 use Git::Sub qw(diff stash);
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Build;
 
-#  name: last_commit
-#  input: git_path_repository, master
-#  output: last_commit
-# Given a path of a git repo and his master file, it returns the last commit id
-sub last_commit($$) {
-    my $git_repository_path = $_[0];
-    my $master              = $_[1];
-    open my $FH,
-          "<"
-        . $git_repository_path . "/"
-        . $master
-        or (
-        error(
-            __x('Something is terribly wrong, cannot open {git_repository_path} {master}',
-                git_repository_path => $git_repository_path,
-                master              => $master
-            )
-        )
-        and exit 1
-        );
-    my @FILE = <$FH>;
-    chomp(@FILE);
-    close $FH;
-    return $FILE[0];
-}
+
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -121,7 +97,7 @@ sub register {
             $opts->{dir} = $cwd;
             my @Untracked = git::ls_files '--others', '--exclude-standard';
             push( @Untracked, git::diff_files '--name-only' );
-            info __x('No untracked file found') and return if @Untracked==0;
+            info __x('No untracked file found') and return if @Untracked == 0;
             emit( "packages.untracked" => $opts, @Untracked );
         }
     );
@@ -130,7 +106,8 @@ sub register {
         "align_to" => sub {
             shift;
             my $last_commit = shift // compiled_commit();
-            error __ 'No compiled commit could be found, you must specify it'
+            error(
+                __('No compiled commit could be found, you must specify it') )
                 and return 1
                 if ( !defined $last_commit );
             info __x( 'Emerging packages from commit {commit}',
@@ -154,7 +131,7 @@ sub register {
             chdir($dir);
             system(
                 "git ls-files --others --exclude-standard | xargs rm -rfv");
-            &notice( __
+            notice( __
                     "Launch 'git stash' if you want to rid about all the modifications"
             );
             chdir($cwd);

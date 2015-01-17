@@ -1,7 +1,7 @@
 package App::witchcraft::Command::Sync;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils qw(info error notice draw_up_line draw_down_line send_report stage index_sync password_dialog);
+use App::witchcraft::Utils qw(info error notice draw_up_line draw_down_line send_report stage index_sync password_dialog test_untracked);
 
 use warnings;
 use strict;
@@ -178,7 +178,7 @@ sub synchronize {
             if $self->{verbose};
         system( "svn checkout -q $RepoUrl " . $temp );
     }
-    info __ "Starting the refactoring/selection process" if $self->{verbose};
+    info(__("Starting the refactoring/selection process")) if $self->{verbose};
     finddepth(
         sub {
             my $file      = $File::Find::name;
