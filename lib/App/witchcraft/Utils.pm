@@ -425,7 +425,7 @@ sub command {
     &info("Phase: $command");
     &emit("before_$command");
     if ( system("$command 2>&1") == 0 ) {
-        &notice( __x( "{command} succeded", command => $command ) );
+        &notice( __x( "{command} succeeded", command => $command ) );
         &emit("after_$command");
         return 1;
     }
