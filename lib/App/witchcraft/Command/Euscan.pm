@@ -5,6 +5,8 @@ use warnings;
 use strict;
 use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(stage password_dialog uniq);
+use App::witchcraft::Utils::Gentoo qw(test_ebuild);
+
 use File::stat;
 use File::Copy;
 use Git::Sub qw(add commit push pull);
