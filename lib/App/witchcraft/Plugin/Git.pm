@@ -112,7 +112,7 @@ sub register {
     );
 
     $emitter->on(
-        "untracked_test" => sub {
+        "test_untracked" => sub {
             shift;
             my $opts = shift;
             my $cwd  = cwd();

@@ -137,6 +137,7 @@ App::witchcraft - Continuous integration tool, repository manager for Gentoo or 
     --> Manifest & install untracked files, giving a report of what packages succedeed
     *    t|test [repository dir]
                                  "-a|--add" => It asks to add the failed installed packages to ignore list
+                                 "-s|--stage" => add to the git index automatically
 
     --> Clean all untracked files from the given repository
     *    c|clean [repository dir]

@@ -22,6 +22,16 @@ App::witchcraft::Command::Test - Test untracked files
 
 Takes all the untracked ebuilds and manifest & install them, with the --add flag you will be prompted for failed tests to be added in the ignore list
 
+=head1 OPTIONS
+
+=head2 --stage, -s
+
+Add to the git index automatically
+
+=head2 --add, -a
+
+Asks the to add the failed in the ignore file
+
 =head1 AUTHOR
 
 mudler E<lt>mudler@dark-lab.netE<gt>
@@ -63,7 +73,7 @@ sub run {
         {   dir      => $dir,
             ignore   => $add,
             password => +password_dialog(),
-            callback => sub { stage(@_) }
+            cb => sub { stage(@_) }
         }
     );
     return;

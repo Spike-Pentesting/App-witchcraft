@@ -40,7 +40,7 @@ sub register {
                 )
             );
             my $Installs = join( " ", @equo_install );
-            info( __("Installing: "));
+            info( __("Installing: ") );
             notice($_) for @equo_install;
             system("sudo equo i -q --relaxed $Installs");
 

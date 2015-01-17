@@ -3,9 +3,9 @@ use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-    qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line test_ebuild);
+    qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line uniq);
 use App::witchcraft::Utils::Gentoo
-    qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update);
+    qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild);
 use Cwd;
 #
 #  name: process
@@ -33,7 +33,7 @@ sub register {
         "packages.from_diff" => sub {
             my $cfg = App::witchcraft->instance->Config;
             repo_update;
-            my $cwd = cwd;
+            my $cwd = cwd();
             chdir( $cfg->param('OVERLAY_PATH') );
             my @FILES = map {
                 $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
@@ -163,6 +163,7 @@ sub register {
 
     $emitter->on(
         "packages.untracked" => sub {
+            my $self=shift;
             my $opts = shift;
 
             my @Untracked = grep {/\.ebuild$/} @_;

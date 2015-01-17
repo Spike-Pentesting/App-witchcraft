@@ -268,14 +268,14 @@ sub synchronize {
         {   dir      => $dir,
             ignore   => $add,
             password => $password,
-            callback => sub { stage(@_) }
+            cb => sub { stage(@_) }
         }
     ) if ( $self->{git} and !$self->{eit} );
     test_untracked(
         {   dir      => $dir,
             ignore   => $add,
             password => $password,
-            callback => sub {
+            cb => sub {
                 stage(@_);
                 emerge(
                     { '-n' => '' },
