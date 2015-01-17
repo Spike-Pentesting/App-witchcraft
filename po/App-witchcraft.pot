@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: App-witchcraft 0.018\n"
 "Report-Msgid-Bugs-To: mudler@dark-lab.net\n"
-"POT-Creation-Date: 2015-01-16 19:22+0100\n"
+"POT-Creation-Date: 2015-01-17 21:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,261 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:59
-#: lib/App/witchcraft/Plugin/Sabayon.pm:36
-#, perl-brace-format
-msgid ""
-"One dependency of the package is not present in the system, installing them "
-"with equo"
-msgid_plural ""
-"{count} dependencies of the package are not present in the system, "
-"installing them with equo"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:66
-#: lib/App/witchcraft/Plugin/Sabayon.pm:43
-msgid "Installing: "
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:75
-#: lib/App/witchcraft/Plugin/Sabayon.pm:78
-#, perl-brace-format
-msgid "Compressing {count} packages: {packages}"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:89
-#: lib/App/witchcraft/Plugin/Sabayon.pm:93
-msgid "Compressing packages"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:103
-msgid "All went smooth, HURRAY!"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:105
-msgid "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:116
-#: lib/App/witchcraft/Plugin/Sabayon.pm:111
-msgid "Error in compression phase, you have to manually solve it"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:124
-#, perl-brace-format
-msgid "Logs for {diffs} "
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:138
-#, perl-brace-format
-msgid "{package}: has {deps} dependencies "
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:173
-#: lib/App/witchcraft/Plugin/Gentoo.pm:188
-#, perl-brace-format
-msgid "Processing {diffs}"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:192
-#, perl-brace-format
-msgid "Emerge in progress for {commit}"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Sabayon.pm:196
-#: lib/App/witchcraft/Plugin/Gentoo.pm:202
-#, perl-brace-format
-msgid "<{commit}> Compiled: {diffs}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Qacheck.pm:15
-#: lib/App/witchcraft/Plugin/Qacheck.pm:16
-#, perl-brace-format
-msgid "Repoman output for {ebuild}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Upgrade.pm:46
-#: lib/App/witchcraft/Command/Pack.pm:57
-#: lib/App/witchcraft/Command/Depinstall.pm:57
-#: lib/App/witchcraft/Command/Conflict.pm:51
-#: lib/App/witchcraft/Command/Mantain.pm:100
-#: lib/App/witchcraft/Command/Align.pm:56
-#: lib/App/witchcraft/Command/Watch.pm:70
-msgid "You must run it with root permissions"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Upgrade.pm:50
-#, perl-brace-format
-msgid "Upgrade of the repository {repo}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Upgrade.pm:52
-#: lib/App/witchcraft/Command/Euscan.pm:104
-msgid "Retrevieng packages in the repository"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:54
-msgid "These are the packages that would be processed:"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:60
-msgid "No packages to emerge"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:93
-#, perl-brace-format
-msgid "[{count}/{total}] Testing {atom}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:118
-msgid "Witchcraft need your attention, i'm asking you few questions"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:125
-#, perl-brace-format
-msgid "Add {failed} to the ignore list?"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:134
-msgid "Those files where correctly installed, maybe you wanna check them: "
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:141
-#, perl-brace-format
-msgid "These ebuilds where correctly installed: {result}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:145
-msgid "Generating the command for maintenance"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:155
-msgid ""
-"No files where tested because there weren't untracked files or all packages "
-"failed to install"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:170
-#, perl-brace-format
-msgid "Those are the file that would be tested: {untracked}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:198
-#, perl-brace-format
-msgid "Emerge in progress for commit {commit}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:250
-msgid "All went smooth, HURRAY! packages merged correctly"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:251
-msgid "Packages merged successfully"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Gentoo.pm:257
-#, perl-brace-format
-msgid "Logs for: {diffs}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Pack.pm:61
-#, perl-brace-format
-msgid "One package will be built and pushed to the remote repository"
-msgid_plural "Emerging & Pushing {count} packages"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/App/witchcraft/Command/Pack.pm:67
-msgid "Those are the packages that would be processed:"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Clean.pm:57
-#: lib/App/witchcraft/Command/Sync.pm:258
-#: lib/App/witchcraft/Command/Test.pm:54
-#: lib/App/witchcraft/Command/Euscan.pm:153
-msgid "No GIT_REPOSITORY defined, or --root given"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Clean.pm:59
-#, perl-brace-format
-msgid "Cleaning all the untracked files in {dir}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Depinstall.pm:56
-msgid "You must supply a package"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Depinstall.pm:59
-#, perl-brace-format
-msgid "Installing all dependencies for {package} with depth {depth} using equo"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Depinstall.pm:63
-msgid "Retrieving dependencies"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Depinstall.pm:66
-#, perl-brace-format
-msgid "One package isn't present in the system and needs to be installed"
-msgid_plural ""
-"{count} packages aren't present in the system and needs to be installed"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/App/witchcraft/Command/Depinstall.pm:71
-msgid "Installing :"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Conflict.pm:54
-msgid "No OVERLAY_NAME defined"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Conflict.pm:56
-msgid "Calculating packages that are already in other sabayon repositories "
-msgstr ""
-
-#: lib/App/witchcraft/Command/Conflict.pm:60
-#, perl-brace-format
-msgid "Searching packages in the following repositories: {repos}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Conflict.pm:64
-#, perl-brace-format
-msgid "retrieving packages in the {overlay} repository"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Conflict.pm:70
-msgid "Those are the packages that are already in other repository: "
-msgstr ""
-
-#: lib/App/witchcraft/Command/Conflict.pm:73
-msgid "[Conflict] Removing those packages "
-msgstr ""
-
-#: lib/App/witchcraft/Command/Fix.pm:69 lib/App/witchcraft/Command/Bump.pm:80
-#, perl-brace-format
-msgid "At leat one of this action must be specified: {cmds}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Sabayon.pm:53
-#, perl-brace-format
-msgid "<{commit}> All went smooth, HURRAY!"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Sabayon.pm:58
-#, perl-brace-format
-msgid ""
-"<{commit}> All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Gentoo.pm:80
-#, perl-brace-format
-msgid "One dependency found"
-msgid_plural "{count} dependencies found "
-msgstr[0] ""
-msgstr[1] ""
 
 #: lib/App/witchcraft/Command/Box.pm:84
 #, perl-brace-format
@@ -315,139 +60,123 @@ msgstr ""
 msgid "stopping monitoring for {box}, {pid} process"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Bump.pm:135
-msgid "These are the packages that passed the tests"
+#: lib/App/witchcraft/Command/Watch.pm:70
+#: lib/App/witchcraft/Command/Pack.pm:57
+#: lib/App/witchcraft/Command/Depinstall.pm:57
+#: lib/App/witchcraft/Command/Upgrade.pm:46
+#: lib/App/witchcraft/Command/Conflict.pm:51
+#: lib/App/witchcraft/Command/Mantain.pm:100
+#: lib/App/witchcraft/Command/Align.pm:56
+msgid "You must run it with root permissions"
 msgstr ""
 
-#: lib/App/witchcraft/Plugin/Depcheck.pm:15
+#: lib/App/witchcraft/Command/Watch.pm:73
 #, perl-brace-format
-msgid "{ebuild} seems missing that RDPENDs: {RDEPEND}"
+msgid "Watching overlay {overlay} every {sleep} s"
 msgstr ""
 
-#: lib/App/witchcraft/Plugin/Depcheck.pm:20
+#: lib/App/witchcraft/Command/Watch.pm:78
+msgid "Watching the repo forever"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Watch.pm:80
+msgid "Checking for updates, and merging up!"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Watch.pm:100
+#: lib/App/witchcraft/Command/Watch.pm:123
 #, perl-brace-format
-msgid "RDEPEND missing for {ebuild}"
+msgid "Cannot open {overlay}/{packages}: {error}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Sync.pm:119
-msgid "Syncing with remote repository and merging into one!"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:133
+#: lib/App/witchcraft/Command/Watch.pm:113
 #, perl-brace-format
-msgid "Starting to sync: {remotes}"
+msgid "Last md5 {md5} of {overlay}/{packages}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Sync.pm:165
+#: lib/App/witchcraft/Command/Watch.pm:135
 #, perl-brace-format
-msgid "Refactoring: {refactor}"
+msgid ""
+"Issued a manual packages compile, start compiling process for : {packages}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Sync.pm:167
+#: lib/App/witchcraft/Command/Watch.pm:148
+msgid ""
+"Are you looking at me? i have NOTHING better to do than sleeping... can you "
+"say the same?"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Pack.pm:61
 #, perl-brace-format
-msgid "Ignores: {ignores}"
+msgid "One package will be built and pushed to the remote repository"
+msgid_plural "Emerging & Pushing {count} packages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/App/witchcraft/Command/Pack.pm:67
+msgid "Those are the packages that would be processed:"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Sync.pm:172
+#: lib/App/witchcraft/Command/Depinstall.pm:56
+msgid "You must supply a package"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Depinstall.pm:59
 #, perl-brace-format
-msgid "{url} is a git one!"
+msgid "Installing all dependencies for {package} with depth {depth} using equo"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Sync.pm:177
+#: lib/App/witchcraft/Command/Depinstall.pm:63
+msgid "Retrieving dependencies"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Depinstall.pm:66
 #, perl-brace-format
-msgid "{url} is a svn one!"
-msgstr ""
+msgid "One package isn't present in the system and needs to be installed"
+msgid_plural ""
+"{count} packages aren't present in the system and needs to be installed"
+msgstr[0] ""
+msgstr[1] ""
 
-#: lib/App/witchcraft/Command/Sync.pm:181
-msgid "Starting the refactoring/selection process"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:192
-#, perl-brace-format
-msgid "Removed: {file}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:200
-#, perl-brace-format
-msgid "[File] analyzing {file} "
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:219
-#: lib/App/witchcraft/Command/Sync.pm:227
-#: lib/App/witchcraft/Command/Sync.pm:235
-#, perl-brace-format
-msgid "{file} -------------> {new_pos}"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:246
-#, perl-brace-format
-msgid "{file} ignored"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:254
-msgid "Copying content to git directory"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Sync.pm:264
-#, perl-brace-format
-msgid "Cleaning {temp} *"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Test.pm:56
-#, perl-brace-format
-msgid "Manifest & Install of the untracked files in {dir}"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Pushbullet.pm:59
-msgid "Push sent correctly!"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Pushbullet.pm:62
-msgid "Error sending the push!"
+#: lib/App/witchcraft/Command/Depinstall.pm:71
+msgid "Installing :"
 msgstr ""
 
 #: lib/App/witchcraft/Utils.pm:127 lib/App/witchcraft/Utils.pm:167
-#: lib/App/witchcraft/Utils.pm:199 lib/App/witchcraft/Utils/Base.pm:111
-#: lib/App/witchcraft/Utils/Base.pm:126 lib/App/witchcraft/Utils/Base.pm:138
+#: lib/App/witchcraft/Utils.pm:199
 #, perl-brace-format
 msgid "Can't open file '{path}': {error}"
 msgstr ""
 
 #: lib/App/witchcraft/Utils.pm:132 lib/App/witchcraft/Utils.pm:204
-#: lib/App/witchcraft/Utils/Base.pm:116 lib/App/witchcraft/Utils/Base.pm:143
 #, perl-brace-format
 msgid "Can't write file '{path}': {error}"
 msgstr ""
 
 #: lib/App/witchcraft/Utils.pm:150 lib/App/witchcraft/Utils.pm:246
-#: lib/App/witchcraft/Utils/Base.pm:322
 msgid "Can't access to last compiled packages md5"
 msgstr ""
 
 #: lib/App/witchcraft/Utils.pm:151 lib/App/witchcraft/Utils.pm:247
-#: lib/App/witchcraft/Utils/Base.pm:323
 #, perl-brace-format
 msgid "Can't open {md5} -> {error}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:271 lib/App/witchcraft/Utils/Base.pm:347
+#: lib/App/witchcraft/Utils.pm:271
 msgid "Nothing was previously compiled"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:331 lib/App/witchcraft/Utils.pm:428
-#: lib/App/witchcraft/Utils/Base.pm:430 lib/App/witchcraft/Utils/Base.pm:449
+#: lib/App/witchcraft/Utils.pm:331
 #, perl-brace-format
 msgid "{command} succeded"
 msgstr ""
 
 #: lib/App/witchcraft/Utils.pm:337 lib/App/witchcraft/Utils.pm:434
-#: lib/App/witchcraft/Utils/Base.pm:436 lib/App/witchcraft/Utils/Base.pm:455
 #, perl-brace-format
 msgid "Something went wrong with {command}"
 msgstr ""
 
 #: lib/App/witchcraft/Utils.pm:339 lib/App/witchcraft/Utils.pm:436
-#: lib/App/witchcraft/Utils/Base.pm:438 lib/App/witchcraft/Utils/Base.pm:457
 #, perl-brace-format
 msgid "Phase: {command} failed"
 msgstr ""
@@ -484,65 +213,188 @@ msgstr ""
 msgid "Manifest failed"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:512 lib/App/witchcraft/Utils/Base.pm:549
+#: lib/App/witchcraft/Utils.pm:428
+#, perl-brace-format
+msgid "{command} succeeded"
+msgstr ""
+
+#: lib/App/witchcraft/Utils.pm:512
 #, perl-brace-format
 msgid "Couldn't open {file}: {error}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:522 lib/App/witchcraft/Utils/Base.pm:559
+#: lib/App/witchcraft/Utils.pm:522
 #, perl-brace-format
 msgid "Couldn't open logger output stream: {error}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:526 lib/App/witchcraft/Utils/Base.pm:563
+#: lib/App/witchcraft/Utils.pm:526
 #, perl-brace-format
 msgid "Couldn't redirect STDERR to STDOUT: {error}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:535 lib/App/witchcraft/Utils/Base.pm:572
+#: lib/App/witchcraft/Utils.pm:535
 #, perl-brace-format
 msgid "{program} {pid} successfully daemonized"
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:548 lib/App/witchcraft/Utils/Base.pm:589
+#: lib/App/witchcraft/Utils.pm:548
 msgid "Password: "
 msgstr ""
 
-#: lib/App/witchcraft/Utils.pm:553 lib/App/witchcraft/Utils/Base.pm:594
+#: lib/App/witchcraft/Utils.pm:553
 msgid "Note: ensure to give the right password, or install tests would fail"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:102
+#: lib/App/witchcraft/Plugin/Qacheck.pm:15
+#: lib/App/witchcraft/Plugin/Qacheck.pm:16
 #, perl-brace-format
-msgid "Euscan of the repository {repo}"
+msgid "Repoman output for {ebuild}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:110
+#: lib/App/witchcraft/Command/Test.pm:54
+#: lib/App/witchcraft/Command/Clean.pm:57
+#: lib/App/witchcraft/Command/Sync.pm:258
+#: lib/App/witchcraft/Command/Euscan.pm:153
+msgid "No GIT_REPOSITORY defined, or --root given"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Test.pm:56
 #, perl-brace-format
-msgid "Starting Euscan of {packages}"
+msgid "Manifest & Install of the untracked files in {dir}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:135
-msgid "Euscan: These packages where correctly emerged"
+#: lib/App/witchcraft/Plugin/Pushbullet.pm:59
+msgid "Push sent correctly!"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:138
-msgid "Euscan: Error emerging"
+#: lib/App/witchcraft/Plugin/Pushbullet.pm:62
+msgid "Error sending the push!"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:156
+#: lib/App/witchcraft/Command/Upgrade.pm:50
 #, perl-brace-format
-msgid "repository doesn't have that atom ({atom})"
+msgid "Upgrade of the repository {repo}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:163
-#, perl-brace-format
-msgid "Searching for {pack}"
+#: lib/App/witchcraft/Command/Upgrade.pm:52
+#: lib/App/witchcraft/Command/Euscan.pm:104
+msgid "Retrevieng packages in the repository"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Euscan.pm:172
+#: lib/App/witchcraft/Command/Clean.pm:59
 #, perl-brace-format
-msgid "Update to {package} already exists"
+msgid "Cleaning all the untracked files in {dir}"
+msgstr ""
+
+#: lib/App/witchcraft/Utils/Gentoo.pm:80
+#, perl-brace-format
+msgid "One dependency found"
+msgid_plural "{count} dependencies found "
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/App/witchcraft/Command/Conflict.pm:54
+msgid "No OVERLAY_NAME defined"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Conflict.pm:56
+msgid "Calculating packages that are already in other sabayon repositories "
+msgstr ""
+
+#: lib/App/witchcraft/Command/Conflict.pm:60
+#, perl-brace-format
+msgid "Searching packages in the following repositories: {repos}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Conflict.pm:64
+#, perl-brace-format
+msgid "retrieving packages in the {overlay} repository"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Conflict.pm:70
+msgid "Those are the packages that are already in other repository: "
+msgstr ""
+
+#: lib/App/witchcraft/Command/Conflict.pm:73
+msgid "[Conflict] Removing those packages "
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Irc.pm:50
+#, perl-brace-format
+msgid "Sending >>{message}<< on IRC "
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Irc.pm:119
+msgid "Couldn't connect to the irc server"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Irc.pm:121
+msgid "Sending notification also on IRC"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Irc.pm:137
+#, perl-brace-format
+msgid "Joining {chan} on {server}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Fix.pm:69 lib/App/witchcraft/Command/Bump.pm:80
+#, perl-brace-format
+msgid "At leat one of this action must be specified: {cmds}"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Depcheck.pm:15
+#, perl-brace-format
+msgid "{ebuild} seems missing that RDPENDs: {RDEPEND}"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Depcheck.pm:20
+#, perl-brace-format
+msgid "RDEPEND missing for {ebuild}"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:36
+#: lib/App/witchcraft/Utils/Sabayon.pm:59
+#, perl-brace-format
+msgid ""
+"One dependency of the package is not present in the system, installing them "
+"with equo"
+msgid_plural ""
+"{count} dependencies of the package are not present in the system, "
+"installing them with equo"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:43
+#: lib/App/witchcraft/Utils/Sabayon.pm:66
+msgid "Installing: "
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:53
+#, perl-brace-format
+msgid "<{commit}> All went smooth, HURRAY!"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:58
+#, perl-brace-format
+msgid ""
+"<{commit}> All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:78
+#: lib/App/witchcraft/Utils/Sabayon.pm:75
+#, perl-brace-format
+msgid "Compressing {count} packages: {packages}"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:93
+#: lib/App/witchcraft/Utils/Sabayon.pm:89
+msgid "Compressing packages"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Sabayon.pm:111
+#: lib/App/witchcraft/Utils/Sabayon.pm:116
+msgid "Error in compression phase, you have to manually solve it"
 msgstr ""
 
 #: lib/App/witchcraft/Plugin/Git.pm:25
@@ -611,111 +463,202 @@ msgstr ""
 msgid "error happened stashing {dir}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Watch.pm:73
+#: lib/App/witchcraft/Plugin/Gentoo.pm:54
+msgid "These are the packages that would be processed:"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Gentoo.pm:60
+msgid "No packages to emerge"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Gentoo.pm:93
 #, perl-brace-format
-msgid "Watching overlay {overlay} every {sleep} s"
+msgid "[{count}/{total}] Testing {atom}"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Watch.pm:78
-msgid "Watching the repo forever"
+#: lib/App/witchcraft/Plugin/Gentoo.pm:118
+msgid "Witchcraft need your attention, i'm asking you few questions"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Watch.pm:80
-msgid "Checking for updates, and merging up!"
-msgstr ""
-
-#: lib/App/witchcraft/Command/Watch.pm:100
-#: lib/App/witchcraft/Command/Watch.pm:123
+#: lib/App/witchcraft/Plugin/Gentoo.pm:125
 #, perl-brace-format
-msgid "Cannot open {overlay}/{packages}: {error}"
+msgid "Add {failed} to the ignore list?"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Watch.pm:113
-#, perl-brace-format
-msgid "Last md5 {md5} of {overlay}/{packages}"
+#: lib/App/witchcraft/Plugin/Gentoo.pm:134
+msgid "Those files where correctly installed, maybe you wanna check them: "
 msgstr ""
 
-#: lib/App/witchcraft/Command/Watch.pm:135
+#: lib/App/witchcraft/Plugin/Gentoo.pm:141
 #, perl-brace-format
+msgid "These ebuilds where correctly installed: {result}"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Gentoo.pm:145
+msgid "Generating the command for maintenance"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Gentoo.pm:155
 msgid ""
-"Issued a manual packages compile, start compiling process for : {packages}"
+"No files where tested because there weren't untracked files or all packages "
+"failed to install"
 msgstr ""
 
-#: lib/App/witchcraft/Command/Watch.pm:148
-msgid ""
-"Are you looking at me? i have NOTHING better to do than sleeping... can you "
-"say the same?"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Irc.pm:50
+#: lib/App/witchcraft/Plugin/Gentoo.pm:170
 #, perl-brace-format
-msgid "Sending >>{message}<< on IRC "
+msgid "Those are the file that would be tested: {untracked}"
 msgstr ""
 
-#: lib/App/witchcraft/Plugin/Irc.pm:119
-msgid "Couldn't connect to the irc server"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Irc.pm:121
-msgid "Sending notification also on IRC"
-msgstr ""
-
-#: lib/App/witchcraft/Plugin/Irc.pm:137
+#: lib/App/witchcraft/Plugin/Gentoo.pm:188
+#: lib/App/witchcraft/Utils/Sabayon.pm:173
 #, perl-brace-format
-msgid "Joining {chan} on {server}"
+msgid "Processing {diffs}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:158
-msgid "conf_update is not implemented by App::witchcraft::Utils::Base class"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Base.pm:164
-msgid "distrocheck is not implemented by App::witchcraft::Utils::Base class"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Base.pm:184
+#: lib/App/witchcraft/Plugin/Gentoo.pm:198
 #, perl-brace-format
-msgid "opening {atom}"
+msgid "Emerge in progress for commit {commit}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:186
+#: lib/App/witchcraft/Plugin/Gentoo.pm:202
+#: lib/App/witchcraft/Utils/Sabayon.pm:196
 #, perl-brace-format
-msgid "Cannot open {atom}"
+msgid "<{commit}> Compiled: {diffs}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:193
+#: lib/App/witchcraft/Plugin/Gentoo.pm:250
+msgid "All went smooth, HURRAY! packages merged correctly"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Gentoo.pm:251
+msgid "Packages merged successfully"
+msgstr ""
+
+#: lib/App/witchcraft/Plugin/Gentoo.pm:257
 #, perl-brace-format
-msgid "No ebuild could be found in {atom}"
+msgid "Logs for: {diffs}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:198
+#: lib/App/witchcraft/Utils/Sabayon.pm:103
+msgid "All went smooth, HURRAY!"
+msgstr ""
+
+#: lib/App/witchcraft/Utils/Sabayon.pm:105
+msgid "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+msgstr ""
+
+#: lib/App/witchcraft/Utils/Sabayon.pm:124
 #, perl-brace-format
-msgid "Using =====> {ebuild} <===== as a skeleton for the new version"
+msgid "Logs for {diffs} "
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:202
-msgid "Copying"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Base.pm:204
+#: lib/App/witchcraft/Utils/Sabayon.pm:138
 #, perl-brace-format
-msgid "Automatic bump: {atom} -> {updated}"
+msgid "{package}: has {deps} dependencies "
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:209
+#: lib/App/witchcraft/Utils/Sabayon.pm:192
 #, perl-brace-format
-msgid "Bumped: {updated} "
+msgid "Emerge in progress for {commit}"
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:241
-msgid "process is not implemented by App::witchcraft::Utils::Base class"
+#: lib/App/witchcraft/Command/Sync.pm:119
+msgid "Syncing with remote repository and merging into one!"
 msgstr ""
 
-#: lib/App/witchcraft/Utils/Base.pm:246
-msgid "emerge is not implemented by App::witchcraft::Utils::Base class"
-msgstr ""
-
-#: lib/App/witchcraft/Utils/Base.pm:302
+#: lib/App/witchcraft/Command/Sync.pm:133
 #, perl-brace-format
-msgid "Something is terribly wrong, cannot open {path}/{master}"
+msgid "Starting to sync: {remotes}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:165
+#, perl-brace-format
+msgid "Refactoring: {refactor}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:167
+#, perl-brace-format
+msgid "Ignores: {ignores}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:172
+#, perl-brace-format
+msgid "{url} is a git one!"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:177
+#, perl-brace-format
+msgid "{url} is a svn one!"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:181
+msgid "Starting the refactoring/selection process"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:192
+#, perl-brace-format
+msgid "Removed: {file}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:200
+#, perl-brace-format
+msgid "[File] analyzing {file} "
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:219
+#: lib/App/witchcraft/Command/Sync.pm:227
+#: lib/App/witchcraft/Command/Sync.pm:235
+#, perl-brace-format
+msgid "{file} -------------> {new_pos}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:246
+#, perl-brace-format
+msgid "{file} ignored"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:254
+msgid "Copying content to git directory"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Sync.pm:264
+#, perl-brace-format
+msgid "Cleaning {temp} *"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:102
+#, perl-brace-format
+msgid "Euscan of the repository {repo}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:110
+#, perl-brace-format
+msgid "Starting Euscan of {packages}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:135
+msgid "Euscan: These packages where correctly emerged"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:138
+msgid "Euscan: Error emerging"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:156
+#, perl-brace-format
+msgid "repository doesn't have that atom ({atom})"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:163
+#, perl-brace-format
+msgid "Searching for {pack}"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Euscan.pm:172
+#, perl-brace-format
+msgid "Update to {package} already exists"
+msgstr ""
+
+#: lib/App/witchcraft/Command/Bump.pm:135
+msgid "These are the packages that passed the tests"
 msgstr ""
