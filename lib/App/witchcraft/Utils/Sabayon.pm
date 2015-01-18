@@ -55,7 +55,7 @@ sub emerge(@) {
         and App::witchcraft->instance->Config->param('EQUO_DEPINSTALL') == 1 )
     {
         #reticulating splines here...
-        push( @equo_install, calculate_missing( $_, 1 ) ) for @CMD;
+        push( @equo_install, &calculate_missing( $_, 1 ) ) for @CMD;
         info(
             __xn(
                 "One dependency of the package is not present in the system, installing them with equo",
@@ -70,7 +70,7 @@ sub emerge(@) {
         system("sudo equo i -q --relaxed $Installs");
     }
 
-    conf_update;    #EXPECT per DISPATCH-CONF
+    &conf_update;    #EXPECT per DISPATCH-CONF
     if ( log_command("nice -20 emerge --color n -v $args  2>&1") ) {
         App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
         info(
@@ -79,7 +79,7 @@ sub emerge(@) {
                 packages => "@DIFFS"
             )
         );
-        conf_update;
+        &conf_update;
         App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
         #       unshift( @CMD, "add" );
@@ -98,7 +98,7 @@ sub emerge(@) {
         );
 
         if ( $? == 0 ) {
-            conf_update;    #EXPECT per DISPATCH-CONF
+            &conf_update;    #EXPECT per DISPATCH-CONF
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
             if ( log_command("eit push --quick") ) {
@@ -109,8 +109,8 @@ sub emerge(@) {
                 );
                 App::witchcraft->instance->emit( after_push => (@DIFFS) );
                 $rs = 1;
-                entropy_rescue;
-                entropy_update;
+                &entropy_rescue;
+                &entropy_update;
             }
         }
         else {

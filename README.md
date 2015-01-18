@@ -4,7 +4,7 @@ App::witchcraft
 
 # VERSION
 
-version 0.018
+version 0.02
 
 # SYNOPSIS
 

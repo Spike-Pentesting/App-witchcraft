@@ -18,7 +18,7 @@ my %module_build_args = (
     "mudler <mudler\@dark-lab.net>"
   ],
   "dist_name" => "App-witchcraft",
-  "dist_version" => "0.018",
+  "dist_version" => "0.02",
   "license" => "perl",
   "module_name" => "App::witchcraft",
   "recommends" => {},

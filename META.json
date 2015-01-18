@@ -58,7 +58,6 @@
             "Github::Hooks::Receiver::Declare" : "0",
             "HTTP::Request::Common" : "0",
             "IPC::Run3" : "0",
-            "Import::Into" : "0",
             "LWP::UserAgent" : "0",
             "Locale::Messages" : "0",
             "Locale::TextDomain" : "0",
@@ -67,7 +66,6 @@
             "Term::ANSIColor" : "0",
             "Term::ReadKey" : "0",
             "forks" : "0",
-            "parent" : "0",
             "perl" : "5.008005"
          }
       },
@@ -84,7 +82,7 @@
          "url" : "git://dev.dark-lab.net/2222/spike/app-witchcraft.git"
       }
    },
-   "version" : "0.018",
+   "version" : "0.02",
    "x_contributors" : [
       "skullbocks <dgikille@gmail.com>"
    ]

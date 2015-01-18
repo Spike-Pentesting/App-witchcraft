@@ -4,12 +4,12 @@ use Locale::TextDomain 'App-witchcraft';
 use Deeme::Obj "App::witchcraft::Plugin::Gentoo";
 use App::witchcraft;
 use App::witchcraft::Utils
-    qw(info error notice append spurt chwn log_command);
+    qw(info error notice append spurt chwn log_command send_report);
 use App::witchcraft::Utils::Gentoo
     qw(stripoverlay clean_logs find_logs to_ebuild);
 
 use App::witchcraft::Utils::Sabayon
-    qw(entropy_update conf_update entropy_rescue);
+    qw(entropy_update conf_update entropy_rescue calculate_missing);
 use IPC::Run3;
 
 sub register {
@@ -30,7 +30,7 @@ sub register {
                 != 1;
 
             #reticulating splines here...
-            push( @equo_install, calculate_missing( $_, 1 ) ) for @_;
+            push( @equo_install, &calculate_missing( $_, 1 ) ) for @_;
             info(
                 __xn(
                     "One dependency of the package is not present in the system, installing them with equo",
@@ -107,7 +107,7 @@ sub register {
                     if ( log_command("eit push --quick") );
             }
             else {
-                &send_report(
+                send_report(
                     __( "Error in compression phase, you have to manually solve it"
                     ),
                     $out, $err
