@@ -209,8 +209,8 @@ sub register {
                         diffs  => "@DIFFS"
                     )
                 );
-                emit( "packages.build.success" => ( $commit, @DIFFS ) );
                 $on_success->(@DIFFS) if defined $on_success;
+                emit( "packages.build.success" => ( $commit, @DIFFS ) );
             }
 
         }

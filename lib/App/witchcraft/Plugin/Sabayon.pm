@@ -18,6 +18,32 @@ sub register {
     $emitter->on( "repositories.update" => sub { entropy_update(); } );
 
     $emitter->on(
+        "packages.build.success" => sub {
+            if (defined App::witchcraft->instance->Config->param(
+                    'KERNEL_UPGRADE')
+                and App::witchcraft->instance->Config->param('KERNEL_UPGRADE')
+                == 1 )
+            {
+
+                my ($kernel)
+                    = `equo match -q --installed virtual/linux-binary`;
+                chomp($kernel);
+                my ($current_kernel)
+                    = `equo match --installed "$kernel" -q --showslot`;
+                chomp($current_kernel);
+
+                my ($available_kernel) = `equo match "$kernel" -q --showslot`;
+                chomp($available_kernel);
+                if ( $current_kernel != $available_kernel ) {
+                    system("kernel-switcher switch $available_kernel");
+                }
+
+            }
+
+        }
+    );
+
+    $emitter->on(
         "packages.build.before.emerge" => sub {
             shift;
             my $commit = pop @_;

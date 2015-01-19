@@ -13,7 +13,7 @@ BEGIN {
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
     bind_textdomain_filter 'App-witchcraft' => \&Encode::decode_utf8;
 }
-our $VERSION = 0.020;
+our $VERSION = 0.022;
 our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
     ;    #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
@@ -294,7 +294,7 @@ You can enable/disable feature, specifying what you need on the config file:
 
 e.g.
 
-    PLUGINS: depcheck, irc, pushbullet, log, git, qacheck
+    PLUGINS: depcheck, irc, pushbullet, log, git, qacheck, Gentoo, Sabayon
 
 will load:
 
@@ -331,6 +331,10 @@ enable hooks specific to Gentoo distribution
 =head4 Sabayon
 
 enable hooks specific to Sabayon distribution (you should load the Gentoo plugin too)
+
+    KERNEL_UPDATE: 1
+
+if set to 1, it performs automatic kernel upgrades using equo
 
 =head4 IRC
 

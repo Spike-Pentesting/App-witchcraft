@@ -4,7 +4,7 @@ App::witchcraft
 
 # VERSION
 
-version 0.02
+version 0.021
 
 # SYNOPSIS
 
@@ -234,7 +234,7 @@ You can enable/disable feature, specifying what you need on the config file:
 
 e.g.
 
-    PLUGINS: depcheck, irc, pushbullet, log, git, qacheck
+    PLUGINS: depcheck, irc, pushbullet, log, git, qacheck, Gentoo, Sabayon
 
 will load:
 
@@ -259,6 +259,10 @@ enable hooks specific to Gentoo distribution
 #### Sabayon
 
 enable hooks specific to Sabayon distribution (you should load the Gentoo plugin too)
+
+    KERNEL_UPDATE: 1
+
+if set to 1, it performs automatic kernel upgrades using equo
 
 #### IRC
 
