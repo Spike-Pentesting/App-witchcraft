@@ -9,8 +9,6 @@ use Git::Sub qw(diff stash);
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Build;
 
-
-
 sub register {
     my ( $self, $emitter ) = @_;
     my $cfg = App::witchcraft->instance->Config;
@@ -105,6 +103,7 @@ sub register {
     $emitter->on(
         "align_to" => sub {
             shift;
+            emit "index_sync";
             my $last_commit = shift // compiled_commit();
             error(
                 __('No compiled commit could be found, you must specify it') )
