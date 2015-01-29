@@ -164,7 +164,11 @@ You can also setup up more configuration files, and specifying them using WITCHC
 
 =head1 INSTALLATION
 
-Just run ./Build and ./Build install
+    curl -L https://cpanmin.us | perl - --sudo App::cpanminus
+    cpanm --installdeps .
+    perl Build.PL
+    ./Build
+    ./Build install
 
 =head1 STRUCTURE
 

@@ -4,7 +4,7 @@ App::witchcraft
 
 # VERSION
 
-version 0.021
+version 0.023
 
 # SYNOPSIS
 
@@ -110,7 +110,11 @@ App::witchcraft - Continuous integration tool, repository manager for Gentoo or 
 
 # INSTALLATION
 
-Just run ./Build and ./Build install
+    curl -L https://cpanmin.us | perl - --sudo App::cpanminus
+    cpanm --installdeps .
+    perl Build.PL
+    ./Build
+    ./Build install
 
 # STRUCTURE
 
