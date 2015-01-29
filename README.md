@@ -110,6 +110,8 @@ App::witchcraft - Continuous integration tool, repository manager for Gentoo or 
 
 # INSTALLATION
 
+    git clone https://github.com/Spike-Pentesting/App-witchcraft.git
+    cd App-witchcraft
     curl -L https://cpanmin.us | perl - --sudo App::cpanminus
     cpanm --installdeps .
     perl Build.PL

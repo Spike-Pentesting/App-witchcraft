@@ -33,9 +33,7 @@ sub register {
     $emitter->on(
         "packages.from_diff" => sub {
             my $cfg = App::witchcraft->instance->Config;
-            repo_update;
-            my $cwd = cwd();
-            chdir( $cfg->param('OVERLAY_PATH') );
+            my $cwd   = cwd();
             my @FILES = map {
                 $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
                 atom($_);                      #converting to atom

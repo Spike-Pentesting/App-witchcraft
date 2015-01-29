@@ -164,6 +164,8 @@ You can also setup up more configuration files, and specifying them using WITCHC
 
 =head1 INSTALLATION
 
+    git clone https://github.com/Spike-Pentesting/App-witchcraft.git
+    cd App-witchcraft
     curl -L https://cpanmin.us | perl - --sudo App::cpanminus
     cpanm --installdeps .
     perl Build.PL

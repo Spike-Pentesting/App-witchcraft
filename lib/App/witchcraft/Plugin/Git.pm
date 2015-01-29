@@ -116,6 +116,9 @@ sub register {
                     commit => $last_commit
                 )
             );
+            chdir(
+                App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
+
             emit( "packages.from_diff" =>
                     git::diff( $last_commit, '--name-only' ) );
         }
