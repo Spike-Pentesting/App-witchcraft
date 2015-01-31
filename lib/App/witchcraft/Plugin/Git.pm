@@ -5,6 +5,7 @@ use App::witchcraft::Utils
     qw(info error notice append dialog_yes_default send_report spurt chwn uniq draw_up_line draw_down_line on emit compiled_commit);
 use Cwd;
 use Git::Sub;
+use App::witchcraft::Utils::Git qw(last_commit);
 use Git::Sub qw(diff stash);
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Build;
@@ -118,9 +119,18 @@ sub register {
             );
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-
-            emit( "packages.from_diff" =>
-                    git::diff( $last_commit, '--name-only' ) );
+            if (last_commit(
+                    App::witchcraft->instance->Config->param('GIT_REPOSITORY'),
+                    ".git/refs/heads/master"
+                ) ne $last_commit
+                )
+            {
+                emit( "packages.from_diff" =>
+                        git::diff( $last_commit, '--name-only' ) );
+            }
+            else {
+                info( __("Nothing to do") );
+            }
         }
     );
 

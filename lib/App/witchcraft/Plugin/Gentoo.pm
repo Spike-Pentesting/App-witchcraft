@@ -32,7 +32,7 @@ sub register {
     $emitter->on( "repositories.update" => sub { repo_update(); } );
     $emitter->on(
         "packages.from_diff" => sub {
-            my $cfg = App::witchcraft->instance->Config;
+            my $cfg   = App::witchcraft->instance->Config;
             my $cwd   = cwd();
             my @FILES = map {
                 $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
@@ -46,8 +46,8 @@ sub register {
             #  system("git stash");
             #my $Clean = App::witchcraft::Command::Clean->new;
             #$Clean->run;
-            my @EMERGING = grep { /\S/ }  map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
-                grep { -d $_ } @FILES;
+            my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
+                grep { -d $_ and $_ =~ /\S/ } @FILES;
             if ( @EMERGING > 0 ) {
                 notice(
                     __('These are the packages that would be processed:') );

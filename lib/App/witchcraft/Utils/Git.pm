@@ -9,9 +9,9 @@ use Locale::TextDomain 'App-witchcraft';
 #  input: git_path_repository, master
 #  output: last_commit
 # Given a path of a git repo and his master file, it returns the last commit id
-sub last_commit($$) {
+sub last_commit {
     my $git_repository_path = $_[0];
-    my $master              = $_[1];
+    my $master = $_[1] // ".git/refs/heads/master";
     open my $FH,
           "<"
         . $git_repository_path . "/"
