@@ -5,6 +5,7 @@ use Cwd;
 use Git::Sub;
 use Github::Hooks::Receiver;
 use App::witchcraft;
+use Locale::TextDomain 'App-witchcraft';
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -12,11 +13,12 @@ sub register {
     $emitter->on(
         "git_push" => sub {
             shift;
-            my $event = shift;
-            warn $event->event;
+            my $event   = shift;
             my $payload = $event->payload;
-            info $payload;
-            notice $event->event;
+            info( __x( "Payload: {payload}", payload => $payload ) )
+                if $payload;
+            info( __x( "Event: {event}", event => $event->event ) )
+                if $event->event;
             emit("align_to");
         }
     );
@@ -25,7 +27,9 @@ sub register {
             my $receiver = Github::Hooks::Receiver->new(
                 secret => $cfg->param("GITHOOK_SECRET") );
             $receiver->on(
-                push => sub {
+
+                #listening on events it's supported for github "push" =>
+                sub {
                     $emitter->emit( "git_push" => @_ );
                 }
             );
