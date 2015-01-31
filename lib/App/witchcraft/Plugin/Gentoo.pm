@@ -46,7 +46,7 @@ sub register {
             #  system("git stash");
             #my $Clean = App::witchcraft::Command::Clean->new;
             #$Clean->run;
-            my @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
+            my @EMERGING = grep { /\S/ }  map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
                 grep { -d $_ } @FILES;
             if ( @EMERGING > 0 ) {
                 notice(
