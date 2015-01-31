@@ -55,7 +55,7 @@
             "Encode" : "0",
             "File::Path" : "0",
             "Git::Sub" : "0",
-            "Github::Hooks::Receiver::Declare" : "0",
+            "Github::Hooks::Receiver" : "0",
             "HTTP::Request::Common" : "0",
             "IPC::Run3" : "0",
             "LWP::UserAgent" : "0",
