@@ -11,7 +11,7 @@ requires 'Digest::MD5';
 requires 'Encode';
 requires 'File::Path';
 requires 'Git::Sub';
-requires 'Github::Hooks::Receiver::Declare';
+requires 'Github::Hooks::Receiver';
 requires 'HTTP::Request::Common';
 requires 'IPC::Run3';
 requires 'LWP::UserAgent';

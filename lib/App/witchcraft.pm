@@ -102,6 +102,9 @@ App::witchcraft - Continuous integration tool, repository manager for Gentoo or 
                                 digest  => digest each ebuild found
                                 metagen => metagen -vm each atom that doesn't have it
 
+    --> Starts a Githook server to align the machine when receive a push event from github/gitlab..
+    * g|githook
+
     --> Install dependencies of a packages (if available) using equo
     *   d|depinstall   [package]
                                  "-d|--depth=i" => define the deepness of the depdence tree, 0 to take all dependencies
