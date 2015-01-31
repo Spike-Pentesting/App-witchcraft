@@ -8,6 +8,7 @@ use App::witchcraft;
 
 sub register {
     my ( $self, $emitter ) = @_;
+    my $cfg = App::witchcraft->instance->Config;
     $emitter->on(
         "git_push" => sub {
             shift;
@@ -22,15 +23,14 @@ sub register {
     $emitter->on(
         "githook.server.start" => sub {
             my $receiver = Github::Hooks::Receiver->new(
-                secret => App::witchcraft->Config->param("GITHOOK_SECRET") );
+                secret => $cfg->param("GITHOOK_SECRET") );
             $receiver->on(
                 push => sub {
-                    App::witchcraft->instance->emit( "git_push" => @_ );
+                    $emitter->emit( "git_push" => @_ );
                 }
             );
-            $receiver->parse_options(
-                App::witchcraft->Config->param("GITHOOK_PLACK_OPTIONS") );
-            $receiver->to_app->run();
+            my $psgi = $receiver->to_app;
+            $receiver->run( $cfg->param("GITHOOK_PLACK_OPTIONS") );
         }
     );
 }

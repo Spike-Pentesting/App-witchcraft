@@ -8,6 +8,15 @@ use File::Find;
 use Cwd;
 use Locale::TextDomain 'App-witchcraft';
 
+
+sub run {
+    notice(__("Starting githook server"));
+    emit("githook.server.start");
+}
+
+1;
+
+__END__
 =encoding utf-8
 
 =head1 NAME
@@ -43,9 +52,3 @@ it under the same terms as Perl itself.
 L<App::Witchcraft>, L<App::witchcraft::Command::Sync>, L<App::witchcraft::Command::Align>
 
 =cut
-
-sub run {
-    emit("githook.server.start");
-}
-
-1;
