@@ -98,6 +98,7 @@ sub register {
         "packages.build.after.emerge" => sub {
             shift;
             local $ENV{EDITOR} = "cat";    #quick hack
+            local $ENV{ETP_NONINTERACTIVE} = "1";    #quick hack
             my $commit = pop @_;
             my @DIFFS  = @_;
             info(

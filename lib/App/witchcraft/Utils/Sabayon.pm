@@ -89,7 +89,7 @@ sub emerge(@) {
         #   or send_report("Cannot spawn eit: $!\n");
         sleep 1;
         send_report( __("Compressing packages"), @DIFFS );
-
+        $ENV{ETP_NONINTERACTIVE} =1 ;
         my ( $out, $err );
         run3(
             [ 'eit', 'commit', '--quick' ],
