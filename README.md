@@ -4,7 +4,7 @@ App::witchcraft
 
 # VERSION
 
-version 0.023
+version 0.031
 
 # SYNOPSIS
 
@@ -44,6 +44,9 @@ version 0.023
                                   ebuild_missing => remove atoms that doesn't contain ebuilds at all
                                   digest  => digest each ebuild found
                                   metagen => metagen -vm each atom that doesn't have it
+
+      --> Starts a Githook server to align the machine when receive a push event from github/gitlab..
+      * g|githook
 
       --> Install dependencies of a packages (if available) using equo
       *   d|depinstall   [package]

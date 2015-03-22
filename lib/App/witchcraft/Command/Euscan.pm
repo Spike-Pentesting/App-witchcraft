@@ -5,7 +5,7 @@ use warnings;
 use strict;
 use App::witchcraft::Utils;
 use App::witchcraft::Utils qw(stage password_dialog uniq natural_order);
-use App::witchcraft::Utils::Gentoo qw(test_ebuild);
+use App::witchcraft::Utils::Gentoo qw(test_ebuild bump);
 
 use File::stat;
 use File::Copy;

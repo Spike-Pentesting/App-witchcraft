@@ -1,6 +1,6 @@
 package App::witchcraft::Utils::Gentoo;
 use base qw(Exporter);
-use App::witchcraft::Utils qw(info error send_report uniq log_command draw_down_line);
+use App::witchcraft::Utils qw(info error notice send_report uniq log_command draw_down_line);
 
 use Locale::TextDomain 'App-witchcraft';
 use Term::ANSIColor;
@@ -8,9 +8,63 @@ use Encode;
 use utf8;
 use Carp;
 use IPC::Run3;
+use File::Copy;
+
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan test_ebuild);
+    = qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan test_ebuild bump);
+
+
+=head1 bump($atom,$newfile)
+
+Bumps the $atom (cat/atom) to the $newfile (absolute path with PV included)
+
+=head2 EMITS
+
+=head3 bump => $atom,$updated
+
+after the bump
+
+=cut
+
+#usage bump($atom,$PV)
+
+sub bump {
+    my $atom    = shift;
+    my $updated = shift;
+    notice( __x( 'opening {atom}', atom => $atom ) );
+    opendir( DH, $atom )
+        or ( error( __x( "Cannot open {atom}", atom => $atom ) )
+        and return undef );
+    my @files
+        = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
+        grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
+    closedir(DH);
+    my $last = shift @files;
+    error( __x( "No ebuild could be found in {atom}", atom => $atom ) )
+        and return undef
+        if ( !defined $last );
+    my $source = join( '/', $atom, $last );
+    notice(
+        __x('Using =====> {ebuild} <===== as a skeleton for the new version',
+            ebuild => $last
+        )
+    );
+    notice( __("Copying") );
+    send_report(
+        __x("Automatic bump: {atom} -> {updated}",
+            atom   => $atom,
+            updated => $updated
+        )
+    );
+    info( __x( "Bumped: {updated} ", updated => $updated ) )
+        and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
+        and return 1
+        if defined $last
+        and copy( $source, $updated );
+    return undef;
+}
+
 #
 #  name: to_ebuild
 #  input:@DIFFS
