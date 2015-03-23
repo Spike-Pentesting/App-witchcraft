@@ -12,8 +12,12 @@ use File::Copy;
 
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan test_ebuild bump);
+    = qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan test_ebuild bump remove_emerge_packages);
 
+
+sub remove_emerge_packages{
+        system("rm -rf /usr/portage/packages/*");
+}
 
 =head1 bump($atom,$newfile)
 

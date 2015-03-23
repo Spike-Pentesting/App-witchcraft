@@ -5,9 +5,12 @@ our @EXPORT_OK
     = qw(calculate_missing conf_update  list_available remove_available entropy_rescue entropy_update);
 use Locale::TextDomain 'App-witchcraft';
 use constant DEBUG => $ENV{DEBUG} || 0;
-use IPC::Run3;
-use App::witchcraft::Utils  qw(info error notice uniq send_report save_compiled_packages save_compiled_commit log_command upgrade);
-use App::witchcraft::Utils::Gentoo  qw(clean_logs find_logs depgraph);
+
+#use IPC::Run3;
+use App::witchcraft::Utils
+    qw(info error notice uniq send_report save_compiled_packages save_compiled_commit log_command upgrade);
+use App::witchcraft::Utils::Gentoo
+    qw(clean_logs find_logs depgraph remove_emerge_packages);
 
 #here functs can be overloaded.
 
@@ -68,15 +71,16 @@ sub emerge(@) {
         info( __ "Installing: " );
         notice($_) for @equo_install;
         system("sudo equo i -q --relaxed $Installs");
-    }
+    }@DIFFS
 
     &conf_update;    #EXPECT per DISPATCH-CONF
-    if ( log_command("nice -20 emerge --color n -v $args  2>&1") ) {
-        App::witchcraft->instance->emit( after_emerge => (@DIFFS) );
+#XXX: emerge 1 a 1
+foreach my $package(@DIFFS ){
+        if ( log_command("nice -20 emerge --color n -v -B $emerge_options $package  2>&1") ) {
+        App::witchcraft->instance->emit( after_emerge => ($package) );
         info(
-            __x("Compressing {count} packages: {packages}",
-                count    => scalar(@DIFFS),
-                packages => "@DIFFS"
+            __x("Compressing package: {package}",
+                package => $package
             )
         );
         &conf_update;
@@ -89,13 +93,19 @@ sub emerge(@) {
         #   or send_report("Cannot spawn eit: $!\n");
         sleep 1;
         send_report( __("Compressing packages"), @DIFFS );
-        $ENV{ETP_NONINTERACTIVE} =1 ;
+        $ENV{ETP_NONINTERACTIVE} = 1;
         my ( $out, $err );
-        run3(
-            [ 'eit', 'commit', '--quick' ],
-            \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
-            \$out, \$err
+
+        # run3(
+        #     [ 'eit', 'commit', '--quick' ],
+        #     \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
+        #     \$out, \$err
+        # );
+        system(
+            'eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
         );
+
+
 
         if ( $? == 0 ) {
             &conf_update;    #EXPECT per DISPATCH-CONF
@@ -120,6 +130,13 @@ sub emerge(@) {
                 $out, $err
             );
         }
+        remove_emerge_packages;
+}
+}
+
+
+    if ( log_command("nice -20 emerge --color n -v -B $args  2>&1") ) {
+
     }
     else {
         my @LOGS = find_logs();
@@ -129,6 +146,8 @@ sub emerge(@) {
 
     #Maintenance stuff
     upgrade;
+    remove_emerge_packages
+        ; # packages emerged before must be included, this is in the case you installed something else that you forgot to add, in the worst scenario you just have to call conflict
     return $rs;
 }
 

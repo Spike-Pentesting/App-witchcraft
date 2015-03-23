@@ -5,9 +5,11 @@ use Deeme::Obj -base;
 use App::witchcraft::Utils
     qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line uniq);
 use App::witchcraft::Utils::Gentoo
-    qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild);
+    qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild remove_emerge_packages);
 use App::witchcraft::Utils::Git qw(last_commit);
 use Cwd;
+use App::witchcraft::Constants
+    qw(BUILD_SUCCESSFULL BUILD_FAILED BUILD_UNKNOWN);
 #
 #  name: process
 #  input: @DIFFS
@@ -182,6 +184,7 @@ sub register {
             my $commit     = pop(@Packages);
             my $options    = pop(@Packages);
             my $on_success = pop(@Packages);
+            my $on_failed  = pop(@Packages);
 
             repo_update;
             my @DIFFS = @Packages;
@@ -200,7 +203,12 @@ sub register {
                 ),
                 @DIFFS
             );
-            if ( _emerge( $options, @DIFFS, $commit ) ) {
+            my $build_status = _emerge( $options, @DIFFS, $commit );
+
+            if ( $build_status == BUILD_SUCCESSFULL
+                or
+                ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
+            {
                 send_report(
                     __x("<{commit}> Compiled: {diffs}",
                         commit => $commit,
@@ -211,6 +219,16 @@ sub register {
                 emit( "packages.build.success" => ( $commit, @DIFFS ) );
             }
 
+            if ( $build_status == BUILD_FAILED ) {
+                send_report(
+                    __x("<{commit}> Failed: {diffs}",
+                        commit => $commit,
+                        diffs  => "@DIFFS"
+                    )
+                );
+                $on_failed->(@DIFFS) if defined $on_failed;
+                emit( "packages.build.failed" => ( $commit, @DIFFS ) );
+            }
         }
     );
 }
@@ -241,7 +259,7 @@ sub _emerge(@) {
     my $commit = pop(@DIFFS);
     my @CMD    = @DIFFS;
     my @equo_install;
-    my $rs = 1;
+    my $rs = BUILD_SUCCESSFULL;
 
     @CMD = map { stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
@@ -249,17 +267,23 @@ sub _emerge(@) {
     App::witchcraft->instance->emit(
         "packages.build.before.emerge" => ( @CMD, $commit ) );
 
-    if ( log_command("nice -20 emerge --color n -v $args  2>&1") ) {
-        info( __("All went smooth, HURRAY! packages merged correctly") );
-        send_report( __("Packages merged successfully"), @DIFFS );
-        App::witchcraft->instance->emit(
-            "packages.build.after.emerge" => ( @DIFFS, $commit ) );
-    }
-    else {
-        my @LOGS = find_logs();
-        send_report( __x( "Logs for: {diffs}", diffs => "@DIFFS" ),
-            join( " ", @LOGS ) );
-        $rs = 0;
+    foreach my $package (@DIFFS) {
+
+        if (log_command(
+                "nice -20 emerge --color n -v $emerge_options $package  2>&1")
+            )
+        {
+            info( __("All went smooth, HURRAY! packages merged correctly") );
+            send_report( __("Package merged successfully"), $package );
+            App::witchcraft->instance->emit(
+                "packages.build.after.emerge" => ( $package, $commit ) );
+        }
+        else {
+            send_report( __x( "Logs for: {diffs}", diffs => $package ),
+                join( " ", find_logs() ) );
+            $rs = BUILD_FAILED;
+        }
+
     }
 
     #Maintenance stuff

@@ -6,7 +6,7 @@ use App::witchcraft;
 use App::witchcraft::Utils
     qw(info error notice append spurt chwn log_command send_report);
 use App::witchcraft::Utils::Gentoo
-    qw(stripoverlay clean_logs find_logs to_ebuild);
+    qw(stripoverlay clean_logs find_logs to_ebuild remove_emerge_packages);
 
 use App::witchcraft::Utils::Sabayon
     qw(entropy_update conf_update entropy_rescue calculate_missing);
@@ -40,6 +40,18 @@ sub register {
 
             }
 
+        }
+
+    );
+
+    $emitter->on(
+        "packages.build.success" => sub {
+            my ( $commit, @PACKAGES ) = @_;
+            App::witchcraft->instance->emit(
+                "packages.build.after.compression" => (@DIFFS) );
+            App::witchcraft->instance->emit(
+                "packages.build.after.push" => ( @DIFFS, $commit ) )
+                if ( log_command("eit push --quick") );
         }
     );
 
@@ -91,14 +103,14 @@ sub register {
     );
     $emitter->on( "packages.build.before.compression" => sub { conf_update; }
     );
-    $emitter->on( "packages.build.after.compression" =>
-            sub { $emitter->emit("packages.build.before.compression"); } );
+    $emitter->on( "packages.build.after.compression" => sub { conf_update; }
+    );
 
     $emitter->on(
         "packages.build.after.emerge" => sub {
             shift;
-            local $ENV{EDITOR} = "cat";    #quick hack
-            local $ENV{ETP_NONINTERACTIVE} = "1";    #quick hack
+            local $ENV{EDITOR}             = "cat";    #quick hack
+            local $ENV{ETP_NONINTERACTIVE} = "1";      #quick hack
             my $commit = pop @_;
             my @DIFFS  = @_;
             info(
@@ -119,27 +131,17 @@ sub register {
             sleep 1;
             send_report( __("Compressing packages"), @DIFFS );
 
-            my ( $out, $err );
-            run3(
-                [ 'eit', 'commit', '--quick' ],
-                \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
-                \$out, \$err
+            #  my ( $out, $err );
+            #  run3(
+            #    [ 'eit', 'commit', '--quick' ],
+            #   \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
+            #  \$out, \$err
+            #);
+            system(
+                'eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
             );
 
-            if ( $? == 0 ) {
-                App::witchcraft->instance->emit(
-                    "packages.build.after.compression" => (@DIFFS) );
-                App::witchcraft->instance->emit(
-                    "packages.build.after.push" => ( @DIFFS, $commit ) )
-                    if ( log_command("eit push --quick") );
-            }
-            else {
-                send_report(
-                    __( "Error in compression phase, you have to manually solve it"
-                    ),
-                    $out, $err
-                );
-            }
+            remove_emerge_packages;
         }
     );
 
