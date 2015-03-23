@@ -6,7 +6,7 @@ use App::witchcraft::Utils
 use Cwd;
 use Git::Sub;
 use App::witchcraft::Utils::Git qw(last_commit);
-use Git::Sub qw(diff stash);
+use Git::Sub qw(diff stash fetch reset);
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Build;
 
@@ -17,7 +17,12 @@ sub register {
         "index_sync" => sub {
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-            eval { git::pull; };
+            eval {
+                git::fetch qw(--all);
+                git::reset qw(--hard origin/master);
+            };
+
+            #eval { git::pull; };
             if ($@) {
                 send_report( __ "Error pulling from remote repository", $@ );
                 error($@);
@@ -120,7 +125,8 @@ sub register {
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
             if (last_commit(
-                    App::witchcraft->instance->Config->param('GIT_REPOSITORY'),
+                    App::witchcraft->instance->Config->param(
+                        'GIT_REPOSITORY'),
                     ".git/refs/heads/master"
                 ) ne $last_commit
                 )
