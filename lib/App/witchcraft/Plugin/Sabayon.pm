@@ -48,9 +48,9 @@ sub register {
         "packages.build.success" => sub {
             my ( $commit, @PACKAGES ) = @_;
             App::witchcraft->instance->emit(
-                "packages.build.after.compression" => (@DIFFS) );
+                "packages.build.after.compression" => (@PACKAGES) );
             App::witchcraft->instance->emit(
-                "packages.build.after.push" => ( @DIFFS, $commit ) )
+                "packages.build.after.push" => ( @PACKAGES, $commit ) )
                 if ( log_command("eit push --quick") );
         }
     );

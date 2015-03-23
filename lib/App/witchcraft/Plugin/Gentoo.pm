@@ -9,7 +9,7 @@ use App::witchcraft::Utils::Gentoo
 use App::witchcraft::Utils::Git qw(last_commit);
 use Cwd;
 use App::witchcraft::Constants
-    qw(BUILD_SUCCESSFULL BUILD_FAILED BUILD_UNKNOWN);
+    qw(BUILD_SUCCESS BUILD_FAILED BUILD_UNKNOWN);
 #
 #  name: process
 #  input: @DIFFS
@@ -205,7 +205,7 @@ sub register {
             );
             my $build_status = _emerge( $options, @DIFFS, $commit );
 
-            if ( $build_status == BUILD_SUCCESSFULL
+            if ( $build_status == BUILD_SUCCESS
                 or
                 ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
@@ -259,7 +259,7 @@ sub _emerge(@) {
     my $commit = pop(@DIFFS);
     my @CMD    = @DIFFS;
     my @equo_install;
-    my $rs = BUILD_SUCCESSFULL;
+    my $rs = BUILD_SUCCESS;
 
     @CMD = map { stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );

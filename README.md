@@ -4,7 +4,7 @@ App::witchcraft
 
 # VERSION
 
-version 0.031
+version 0.04
 
 # SYNOPSIS
 
