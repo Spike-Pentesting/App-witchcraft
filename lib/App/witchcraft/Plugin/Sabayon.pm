@@ -138,7 +138,7 @@ sub register {
             #  \$out, \$err
             #);
             system(
-                'eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
+                'echo | eit inject $(find /usr/portage/packages -name "*.tbz2" | xargs echo)'
             );
 
             remove_emerge_packages;
