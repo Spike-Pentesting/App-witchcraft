@@ -8,8 +8,7 @@ use App::witchcraft::Utils::Gentoo
     qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild remove_emerge_packages);
 use App::witchcraft::Utils::Git qw(last_commit);
 use Cwd;
-use App::witchcraft::Constants
-    qw(BUILD_SUCCESS BUILD_FAILED BUILD_UNKNOWN);
+use App::witchcraft::Constants qw(BUILD_SUCCESS BUILD_FAILED BUILD_UNKNOWN);
 #
 #  name: process
 #  input: @DIFFS
@@ -181,10 +180,11 @@ sub register {
     $emitter->on(
         "packages.build" => sub {
             my ( undef, @Packages ) = @_;
-            my $commit     = pop(@Packages);
-            my $options    = pop(@Packages);
-            my $on_success = pop(@Packages);
-            my $on_failed  = pop(@Packages);
+            my $commit         = pop(@Packages);
+            my $options        = pop(@Packages);
+            my $emerge_options = pop(@Packages);
+            my $on_success     = pop(@Packages);
+            my $on_failed      = pop(@Packages);
 
             repo_update;
             my @DIFFS = @Packages;
@@ -203,7 +203,10 @@ sub register {
                 ),
                 @DIFFS
             );
-            my $build_status = _emerge( $options, @DIFFS, $commit );
+            my $rs           = _emerge( $emerge_options, @DIFFS, $commit );
+            my $build_status = $rs->[0];
+            my @merged       = @{ $rs->[1] };
+            my @unmerged     = @{ $rs->[2] };
 
             if ( $build_status == BUILD_SUCCESS
                 or
@@ -217,6 +220,17 @@ sub register {
                 );
                 $on_success->(@DIFFS) if defined $on_success;
                 emit( "packages.build.success" => ( $commit, @DIFFS ) );
+            }
+
+            if ( ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
+            {
+                send_report(
+                    __x("<{commit}> Merged: {merged} | Unmerged: {unmerged}",
+                        commit   => $commit,
+                        merged   => "@merged",
+                        unmerged => "@unmerged"
+                    )
+                );
             }
 
             if ( $build_status == BUILD_FAILED ) {
@@ -246,12 +260,12 @@ emerges the given atoms
 =cut
 
 sub _emerge(@) {
-    my $options = shift;
+    my $emerge_options = shift;
 
 # App::witchcraft->instance->emit( "packages.build.before.emerge" => ($options) );
 
-    my $emerge_options
-        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    $emerge_options
+        = join( " ", map { "$_ " . $emerge_options->{$_} } keys %{$emerge_options} );
     $emerge_options
         .= " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
         if App::witchcraft->instance->Config->param('EMERGE_OPTS');
@@ -266,19 +280,22 @@ sub _emerge(@) {
     clean_logs;
     App::witchcraft->instance->emit(
         "packages.build.before.emerge" => ( @CMD, $commit ) );
-
+    my @merged;
+    my @unmerged;
     foreach my $package (@DIFFS) {
 
         if (log_command(
                 "nice -20 emerge --color n -v $emerge_options $package  2>&1")
             )
         {
+            push( @merged, $package );
             info( __("All went smooth, HURRAY! packages merged correctly") );
             send_report( __("Package merged successfully"), $package );
             App::witchcraft->instance->emit(
                 "packages.build.after.emerge" => ( $package, $commit ) );
         }
         else {
+            push( @unmerged, $package );
             send_report( __x( "Logs for: {diffs}", diffs => $package ),
                 join( " ", find_logs() ) );
             $rs = BUILD_FAILED;
@@ -288,7 +305,7 @@ sub _emerge(@) {
 
     #Maintenance stuff
     upgrade;
-    return $rs;
+    return [ $rs, \@merged, \@unmerged ];
 }
 
 1;
