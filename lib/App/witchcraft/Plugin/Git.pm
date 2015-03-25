@@ -115,13 +115,6 @@ sub register {
                 __('No compiled commit could be found, you must specify it') )
                 and return 1
                 if ( !defined $last_commit );
-            info __x( 'Emerging packages from commit {commit}',
-                commit => $last_commit );
-            send_report(
-                __x("Align start, building commit from {commit}",
-                    commit => $last_commit
-                )
-            );
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
             if (last_commit(
@@ -131,6 +124,13 @@ sub register {
                 ) ne $last_commit
                 )
             {
+                info __x( 'Emerging packages from commit {commit}',
+                    commit => $last_commit );
+                send_report(
+                    __x("Align start, building commit from {commit}",
+                        commit => $last_commit
+                    )
+                );
                 emit( "packages.from_diff" =>
                         git::diff( $last_commit, '--name-only' ) );
             }
