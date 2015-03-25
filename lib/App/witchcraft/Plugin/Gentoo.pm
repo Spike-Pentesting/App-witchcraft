@@ -285,7 +285,7 @@ sub _emerge(@) {
     foreach my $package (@DIFFS) {
 
         if (log_command(
-                "nice -20 emerge --color n -v $emerge_options $package  2>&1")
+                "nice -20 emerge -v --buildpkg $emerge_options $package  2>&1")
             )
         {
             push( @merged, $package );
