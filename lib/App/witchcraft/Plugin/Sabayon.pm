@@ -46,6 +46,7 @@ sub register {
 
     $emitter->on(
         "packages.build.success" => sub {
+            shift;
             my ( $commit, @PACKAGES ) = @_;
             App::witchcraft->instance->emit(
                 "packages.build.after.compression" => (@PACKAGES) );
@@ -114,7 +115,7 @@ sub register {
             my $commit = pop @_;
             my @DIFFS  = @_;
             info(
-                __x("Compressing {count} packages: {packages}",
+                __x("Compressing {count} package(s): {packages}",
                     count    => scalar(@DIFFS),
                     packages => "@DIFFS"
                 )
@@ -138,7 +139,7 @@ sub register {
             #  \$out, \$err
             #);
             system(
-                'echo | eit inject $(find /usr/portage/packages -name "*.tbz2" | xargs echo)'
+                'echo | eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
             );
 
             remove_emerge_packages;
