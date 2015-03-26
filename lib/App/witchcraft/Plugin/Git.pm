@@ -17,13 +17,10 @@ sub register {
         "index_sync" => sub {
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-            eval {
-                git::fetch qw(--all);
-                git::reset qw(--hard origin/master);
-            };
 
-            #eval { git::pull; };
-            if ($@) {
+            if (   system("git fetch --all") != 0
+                or system("git reset --hard origin/master") != 0 )
+            {
                 send_report( __ "Error pulling from remote repository", $@ );
                 error($@);
             }
