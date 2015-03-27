@@ -4,7 +4,7 @@ use base qw(App::witchcraft::Command);
 use warnings;
 use strict;
 use App::witchcraft::Utils;
-use App::witchcraft::Utils qw(stage password_dialog uniq natural_order);
+use App::witchcraft::Utils qw(stage password_dialog uniq natural_order emit);
 use App::witchcraft::Utils::Gentoo qw(test_ebuild bump);
 
 use File::stat;
@@ -133,11 +133,7 @@ sub run {
         print $_ . "\n" for @Updates;
     }
     if ( $self->{git} and @Added > 0 ) {
-        if ( emerge( { '-n' => "" }, @Added ) ) {
-            send_report( __ "Euscan: These packages where correctly emerged",
-                @Added );
-        }
-        else { send_report( __("Euscan: Error emerging"), @Added ) }
+        emit("align_to");
     }
 }
 
