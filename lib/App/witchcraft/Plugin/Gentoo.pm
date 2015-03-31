@@ -264,8 +264,8 @@ sub _emerge(@) {
 
 # App::witchcraft->instance->emit( "packages.build.before.emerge" => ($options) );
 
-    $emerge_options
-        = join( " ", map { "$_ " . $emerge_options->{$_} } keys %{$emerge_options} );
+    $emerge_options = join( " ",
+        map { "$_ " . $emerge_options->{$_} } keys %{$emerge_options} );
     $emerge_options
         .= " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
         if App::witchcraft->instance->Config->param('EMERGE_OPTS');
@@ -283,9 +283,9 @@ sub _emerge(@) {
     my @merged;
     my @unmerged;
     foreach my $package (@DIFFS) {
-
+        send_report( __("Emerging $package") );
         if (log_command(
-                "nice -20 emerge -v --buildpkg $emerge_options $package  2>&1")
+                "nice -20 emerge --color n -v $emerge_options $package  2>&1")
             )
         {
             push( @merged, $package );
