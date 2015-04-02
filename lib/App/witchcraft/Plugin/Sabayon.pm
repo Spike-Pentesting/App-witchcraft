@@ -132,15 +132,15 @@ sub register {
             sleep 1;
             send_report( __("Compressing packages"), @DIFFS );
 
-            #  my ( $out, $err );
-            #  run3(
-            #    [ 'eit', 'commit', '--quick' ],
-            #   \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
-            #  \$out, \$err
-            #);
-            system(
-                'echo | eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
+             my ( $out, $err );
+             run3(
+               [ 'eit', 'commit', '--quick' ],
+              \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
+             \$out, \$err
             );
+            # system(
+            #     'echo | eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
+            # );
 
             remove_emerge_packages;
         }
