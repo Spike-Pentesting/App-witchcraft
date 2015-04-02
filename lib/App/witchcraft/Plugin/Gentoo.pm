@@ -102,6 +102,7 @@ sub register {
                 $c++;
                 my $result = test_ebuild( $new_pos, 1, 1, $password );
                 $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
+                emit("packages.after.test" => ($atom));
 
                 if ( $result == 1 ) {
                     push( @Atoms_Installed, $atom );

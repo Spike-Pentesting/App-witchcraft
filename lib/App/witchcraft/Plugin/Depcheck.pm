@@ -7,28 +7,31 @@ use Locale::TextDomain 'App-witchcraft';
 sub register {
     my ( $self, $emitter ) = @_;
     $emitter->on(
-        "after_test" => sub {
-            my ( $witchcraft, $ebuild ) = @_;
-            my @RDEPEND = uniq( $self->depcheck($ebuild) );
-            if ( @RDEPEND > 0 ) {
-                error __x(
-                    "{ebuild} seems missing that RDPENDs: {RDEPEND}",
-                    ebuild  => $ebuild,
-                    RDEPEND => "@RDEPEND"
-                );
-                send_report(
-                    __x( "RDEPEND missing for {ebuild}", ebuild => $ebuild ),
-                    @RDEPEND
-                );
-            }
+        "packages.test.after" => sub {
+            my ( $witchcraft, $ebuild, undef ) = @_;
+            $self->test($ebuild);
         }
     );
     $emitter->on(
         "packages.build.after.emerge" => sub {
-            my ( $witchcraft, @EBUILDS ) = @_;
-            $emitter->emit( after_test => $_ ) for @EBUILDS;
+            my ( $witchcraft, $ebuild, undef ) = @_;
+            $self->test($ebuild);
         }
     );
+}
+
+sub test {
+    my ( $self, $ebuild ) = @_;
+    my @RDEPEND = uniq( $self->depcheck($ebuild) );
+    if ( @RDEPEND > 0 ) {
+        error __x(
+            "{ebuild} seems missing that RDPENDs: {RDEPEND}",
+            ebuild  => $ebuild,
+            RDEPEND => "@RDEPEND"
+        );
+        send_report( __x( "RDEPEND missing for {ebuild}", ebuild => $ebuild ),
+            @RDEPEND );
+    }
 }
 
 sub depcheck {

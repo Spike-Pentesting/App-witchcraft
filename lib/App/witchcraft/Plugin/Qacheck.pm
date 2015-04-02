@@ -9,8 +9,8 @@ use Locale::TextDomain 'App-witchcraft';
 sub register {
     my ( $self, $emitter ) = @_;
     $emitter->on(
-        "after_test" => sub {
-            my ( $witchcraft, $ebuild ) = @_;
+        "packages.test.after" => sub {
+            my ( $witchcraft, $ebuild, undef ) = @_;
             send_report(
                 __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
                 __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
@@ -19,9 +19,23 @@ sub register {
         }
     );
     $emitter->on(
-        "after_emerge" => sub {
-            my ( $witchcraft, @EBUILDS ) = @_;
-            $emitter->emit( after_test => $_ ) for @EBUILDS;
+        "packages.build.after.emerge" => sub {
+            my ( $witchcraft, $ebuild, undef ) = @_;
+            send_report(
+                __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
+                __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
+                $self->repoman($ebuild)
+            );
+        }
+    );
+    $emitter->on(
+        "packages.build.success" => sub {
+            my ( $witchcraft, $ebuild, undef ) = @_;
+            send_report(
+                __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
+                __x( "Repoman output for {ebuild}", ebuild => $ebuild ),
+                $self->repoman($ebuild)
+            );
         }
     );
 }
