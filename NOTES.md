@@ -8,3 +8,6 @@
  find ./ -type d | perl -e 'use File::Path qw(make_path remove_tree);while(<>){chomp;next if (split(/\//,$_))==2 or $_=~/files/; @a=grep {/ebuild/} <$_/*>; print "$_ no ebuild file! probably moved away\n" if @a==0;}'
 
 find ./ -type d | perl -e 'use File::Path qw(make_path remove_tree);while(<>){chomp;next if (split(/\//,$_))==2 or $_=~/files|^\.\/\./ or $_ eq "./"; @a=grep {/ebuild/} <$_/*>; print "$_\n" if @a==0;}'
+
+
+grep -r "dev-lang/perl" -l | perl -e 'while(<>){ s/.*\K\/(.*?)\.ebuild//g; print $_;}' | uniq | xargs echo # prints atoms that depends on perl in your overlay
