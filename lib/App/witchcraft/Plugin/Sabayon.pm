@@ -53,6 +53,7 @@ sub register {
             App::witchcraft->instance->emit(
                 "packages.build.after.push" => ( @PACKAGES, $commit ) )
                 if ( log_command("eit push --quick") );
+            log_command("equo rescue spmsync");
         }
     );
 
@@ -132,15 +133,16 @@ sub register {
             sleep 1;
             send_report( __("Compressing packages"), @DIFFS );
 
-             my ( $out, $err );
-             run3(
-               [ 'eit', 'commit', '--quick' ],
-              \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
-             \$out, \$err
+            my ( $out, $err );
+            run3(
+                [ 'eit', 'commit', '--quick' ],
+                \"Si\n\nYes\n\nSi\n\nYes\n\nSi\r\nYes\r\nSi\r\nYes\r\n",
+                \$out, \$err
             );
-            # system(
-            #     'echo | eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
-            # );
+
+# system(
+#     'echo | eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
+# );
 
             remove_emerge_packages;
         }
