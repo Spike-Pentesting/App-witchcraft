@@ -4,7 +4,7 @@ use App::witchcraft::Utils qw(build_processed build_processed_manually emit);
 has [qw(packages id  )];
 has 'manual'      => 0;
 has 'track_build' => 0;
-has 'args'        => sub { {} };
+has 'args'        => sub { {"--buildpkg" => '' } };
 has 'options' => sub { { relaxed => 1 } }; #XXX: must be empty, just for debug
 
 sub build {
