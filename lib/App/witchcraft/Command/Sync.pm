@@ -277,14 +277,7 @@ sub synchronize {
             password => $password,
             cb => sub {
                 stage(@_);
-                emerge(
-                    { '-n' => '' },
-                    map {
-                        $_ . "::"
-                            . App::witchcraft->instance->Config->param(
-                            'OVERLAY_NAME')
-                    } @_
-                );
+                emit("align_to");
                 }
         }
     ) if ( $self->{eit} );
