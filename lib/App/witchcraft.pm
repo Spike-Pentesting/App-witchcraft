@@ -8,6 +8,7 @@ use App::witchcraft::Loader;
 use Locale::TextDomain 'App-witchcraft';
 use utf8;
 use Locale::Messages qw(bind_textdomain_filter);
+
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
@@ -37,6 +38,14 @@ my $singleton;
 
 sub new { $singleton ||= shift->SUPER::new(@_); }
 
+sub emit {
+    my $self = shift;
+
+    $self->emit( "emit", @_ )
+        if $_[0] ne "emit";    #this allows plugin to listen what happens
+     $self->SUPER::emit(@_);
+
+}
 
 sub load_plugins {
     my $self   = shift;

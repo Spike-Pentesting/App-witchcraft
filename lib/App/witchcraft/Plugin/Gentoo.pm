@@ -36,8 +36,11 @@ sub register {
             my $cfg   = App::witchcraft->instance->Config;
             my $cwd   = cwd();
             my @FILES = map {
-                $_ =~ s/.*\K\/.*?$//g;         #Removing the last part
-                atom($_);                      #converting to atom
+                $_ =~ s/.*\K\/.*?$//g;    #Removing the last part
+                atom($_)
+                    if !$cfg->param('FOLLOW_VERSIONING')
+                    or $cfg->param('FOLLOW_VERSIONING')
+                    != 1;                 #converting to atom
                 $_ =~ s/.*\K\/Manifest$//g;    #removing manifest
                 $_
                 } grep {
@@ -102,7 +105,7 @@ sub register {
                 $c++;
                 my $result = test_ebuild( $new_pos, 1, 1, $password );
                 $new_pos =~ s/(.*\/[\w-]*)\/.*/$1/;
-                emit("packages.after.test" => ($atom));
+                emit( "packages.after.test" => ($atom) );
 
                 if ( $result == 1 ) {
                     push( @Atoms_Installed, $atom );
