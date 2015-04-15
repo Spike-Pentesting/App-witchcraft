@@ -1,6 +1,5 @@
 package App::witchcraft;
 use strict;
-use 5.008_005;
 use Deeme::Obj 'Deeme';
 use App::CLI;
 use Config::Simple;
@@ -14,7 +13,7 @@ BEGIN {
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
     bind_textdomain_filter 'App-witchcraft' => \&Encode::decode_utf8;
 }
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
     ;    #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
@@ -334,6 +333,8 @@ will load:
 
 =item Qacheck calls repoman on each passed ebuild
 
+=item Scripting allows you to execute external programs on events
+
 =item ...
 
 =back
@@ -385,6 +386,18 @@ The log plugin, enables logging:
     LOGS_USER: root
 
 Those configuration options are explicitally needed, but you can leave as default if you don't know what are you doing.
+
+=head1 SCRIPTING
+
+The scripting plugin allows you to define a directory where pick up external scripts that will be called when events occours:
+
+    SCRIPTING_DIR:/root/scripts/
+
+e.g. if we want to execute a script everytime we load witchcraft create a file:
+
+    /root/scripts/on_load
+
+Make sure to be executable
 
 =head1 NOTES
 For sabayon vm:

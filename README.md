@@ -1,10 +1,10 @@
 # NAME
 
-App::witchcraft
+App::witchcraft - Continuous integration tool, repository manager for Gentoo or your Entropy server
 
 # VERSION
 
-version 0.05
+version 0.06
 
 # SYNOPSIS
 
@@ -106,10 +106,6 @@ It allows you to merge more overlay into one in a safe way: it tests installatio
 But it's far beyond that, it also checks updates, send reports with pushes (using pushbullet.com), align build machines and much more, checkout the help (`witchcraft help`).
 It's strictly required a configuration file, located in ~/.witchcraft/witchcraft.conf, an example is shipped within the repo, it's so easy to configure and get up and running.
 You can also setup up more configuration files, and specifying them using WITCHCRAFT\_CONFIG env variable.
-
-# NAME
-
-App::witchcraft - Continuous integration tool, repository manager for Gentoo or your Entropy server
 
 # INSTALLATION
 
@@ -255,6 +251,7 @@ will load:
 - log enable logging on /var/log/witchcraft
 - git tells to witchcraft that the repo to handle it's a git one
 - Qacheck calls repoman on each passed ebuild
+- Scripting allows you to execute external programs on events
 - ...
 
 ### Plugin configuration
@@ -305,6 +302,18 @@ The log plugin, enables logging:
 
 Those configuration options are explicitally needed, but you can leave as default if you don't know what are you doing.
 
+# SCRIPTING
+
+The scripting plugin allows you to define a directory where pick up external scripts that will be called when events occours:
+
+    SCRIPTING_DIR:/root/scripts/
+
+e.g. if we want to execute a script everytime we load witchcraft create a file:
+
+    /root/scripts/on_load
+
+Make sure to be executable
+
 # NOTES
 For sabayon vm:
 ensure to have all licenses accepted into your machine adding inside make.conf
@@ -317,29 +326,12 @@ and then run this:
 
 to have all licenses accepted in entropy
 
-# AUTHOR
-
-mudler <mudler@dark-lab.net>, skullbocks <skullbocks@dark-lab.net>
-
 # IRC
 
 chat.freenode.net - #spike-pentesting-dev
 
-# COPYRIGHT
-
-Copyright 2014- mudler, skullbocks
-
-# LICENSE
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
 # SEE ALSO
 [App::witchcraft::Command::Euscan](https://metacpan.org/pod/App::witchcraft::Command::Euscan), [App::witchcraft::Command::Sync](https://metacpan.org/pod/App::witchcraft::Command::Sync)
-
-# AUTHOR
-
-mudler <mudler@dark-lab.net>
 
 # COPYRIGHT AND LICENSE
 
