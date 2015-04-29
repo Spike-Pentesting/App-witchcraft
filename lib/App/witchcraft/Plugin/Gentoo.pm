@@ -15,8 +15,10 @@ sub register {
     $emitter->on( "repositories.update" => sub { repo_update(); } );
     $emitter->on(
         "packages.from_diff" => sub {
+            my $self=shift;
             my $cfg   = App::witchcraft->instance->Config;
             my $cwd   = cwd();
+            my $id=shift @_;
             my @FILES = map {
                 $_ =~ s/.*\K\/.*?$//g;    #Removing the last part
                 atom($_)
@@ -45,13 +47,9 @@ sub register {
                 notice( __("No packages to emerge") );
             }
 
-            #process( @EMERGING, $last_commit, 0 );
             App::witchcraft::Build->new(
                 packages => [@EMERGING],
-                id       => last_commit(
-                    $cfg->param('OVERLAY_PATH'),
-                    ".git/refs/heads/master"
-                ),
+                id       => $id,
                 track_build => 1
             )->build;
             chdir($cwd);

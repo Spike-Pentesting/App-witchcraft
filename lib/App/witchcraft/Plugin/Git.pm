@@ -140,7 +140,7 @@ sub register {
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
              
              emit( "packages.from_diff" =>
-                        git::diff( $last_commit, '--name-only' ) );
+                      ($last_commit,  git::diff( $last_commit, '--name-only' ) ));
                             
             } else {
                                 send_report(
@@ -148,7 +148,7 @@ sub register {
                     local_commit => $last_commit, last_commit => $git_last_commit)))
                 );
                 emit( "packages.from_diff" =>
-                        git::diff( $last_commit, '--name-only' ) );
+                        ($last_commit,git::diff( $last_commit, '--name-only' ) ) );
                             }
             }
             else {
