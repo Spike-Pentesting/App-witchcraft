@@ -2,7 +2,7 @@ package App::witchcraft::Utils::Git;
 use base qw(Exporter);
 our @EXPORT    = ();
 our @EXPORT_OK = qw(last_commit detect_rebase get_commit_by_order invalid_commit);
-use App::witchcraft::Utils qw(info error give_stderr_to_dogs);
+use App::witchcraft::Utils qw(info error give_stderr_to_dogs give_stdout_to_dogs);
 use Locale::TextDomain 'App-witchcraft';
 
 #  name: last_commit
@@ -52,12 +52,18 @@ sub get_commit_by_order {
 
 sub invalid_commit{
     my $commit=shift;
-                 if (   system("git show $commit|cat") != 0)
+    return give_stdout_to_dogs(
+        su{
+            if (   system("git show $_[0]|cat") != 0)
             {
               return 1;
             }  else {
                 return 0;
-            }
+            }     
+        },
+        $commit
+    );
+            
 }
 
 1;

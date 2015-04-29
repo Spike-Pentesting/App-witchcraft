@@ -6,7 +6,7 @@ use App::witchcraft::Utils
     qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line uniq);
 use App::witchcraft::Utils::Gentoo
     qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild remove_emerge_packages);
-use App::witchcraft::Utils::Git qw(last_commit);
+use App::witchcraft::Utils::Git qw(last_commit get_commit_by_order);
 use Cwd;
 use App::witchcraft::Constants qw(BUILD_SUCCESS BUILD_FAILED BUILD_UNKNOWN);
 
@@ -18,7 +18,8 @@ sub register {
             my $self=shift;
             my $cfg   = App::witchcraft->instance->Config;
             my $cwd   = cwd();
-            my $id=shift @_;
+            shift;
+            my $id=get_commit_by_order(1);
             my @FILES = map {
                 $_ =~ s/.*\K\/.*?$//g;    #Removing the last part
                 atom($_)

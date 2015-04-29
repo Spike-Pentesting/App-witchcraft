@@ -80,6 +80,7 @@ our @EXPORT_OK = (
 
         upgrade
         give_stderr_to_dogs
+        give_stdout_to_dogs
 
         ), @EXPORT
 );
@@ -444,7 +445,7 @@ sub send_report {
                     my ( $warning, $service ) = @_;
                     warn "$service: $warning";
                 },
-                services => [ "Pastie", "Shadowcat" ],
+                services => [ "Pastie" ],
             );
             1;
         };
@@ -682,6 +683,29 @@ sub give_stderr_to_dogs{
     open STDERR,">/dev/null";
     my $r=shift->(@_);
     open STDERR, ">&SAVEERR";
+    return $r;
+}
+
+sub give_stdout_to_dogs{
+    local (*SAVEOUT);
+    open SAVEOUT, ">&STDOUT";
+    open STDOUT,">/dev/null";
+    my $r=shift->(@_);
+    open STDOUT, ">&SAVEOUT";
+    return $r;
+}
+
+sub give_everything_to_dogs{
+    local (*SAVEERR,*SAVEOUT);
+    open SAVEERR, ">&STDERR";
+    open SAVEOUT, ">&STDOUT";
+
+    open STDERR,">/dev/null";
+    open STDOUT,">/dev/null";
+    my $r=shift->(@_);
+    open STDERR, ">&SAVEERR";
+    open STDOUT, ">&SAVEOUT";
+
     return $r;
 }
 
