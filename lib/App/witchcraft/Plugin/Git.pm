@@ -114,11 +114,7 @@ sub register {
                 if ( !defined $last_commit );
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-            my $git_last_commit=last_commit(
-                    App::witchcraft->instance->Config->param(
-                        'GIT_REPOSITORY'),
-                    ".git/refs/heads/master"
-                );
+            my $git_last_commit=get_commit_by_order(1);
             if ($git_last_commit ne $last_commit)
             {
             

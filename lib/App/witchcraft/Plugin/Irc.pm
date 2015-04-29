@@ -21,14 +21,14 @@ sub register {
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
             $emitter->emit( send_irc_message => $message . " - "
-                    . $url ." from [$hostname]" );
+                    . $url ." [$hostname]" );
         }
     );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             $emitter->emit(
-                send_irc_message => $message." from [$hostname]" );
+                send_irc_message => $message." [$hostname]" );
         }
     );
     $emitter->on(

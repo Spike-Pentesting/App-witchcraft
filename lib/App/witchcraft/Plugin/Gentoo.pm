@@ -184,10 +184,10 @@ sub register {
 
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
             send_report(
-                __x("Emerge in progress for commit {commit}",
-                    commit => $commit
-                ),
-                @DIFFS
+                info(__x("[{commit}] building packages: {packages}",
+                    commit => $commit,
+                    packages => "@DIFFS"
+                ))
             );
             my $rs           = _emerge( $emerge_options, @DIFFS, $commit );
             my $build_status = $rs->[0];
@@ -199,7 +199,7 @@ sub register {
                 ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
                 send_report(
-                    __x("<{commit}> Build completed for: {diffs}",
+                    __x("[{commit}] Build completed for: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
                     )
@@ -211,7 +211,7 @@ sub register {
             if ( ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
                 send_report(
-                    __x("<{commit}> Merged: {merged} | Unmerged: {unmerged}",
+                    __x("[{commit}] Merged: {merged} | Unmerged: {unmerged}",
                         commit   => $commit,
                         merged   => "@merged",
                         unmerged => "@unmerged"
@@ -221,7 +221,7 @@ sub register {
 
             if ( $build_status == BUILD_FAILED ) {
                 send_report(
-                    __x("<{commit}> Failed: {diffs}",
+                    __x("[{commit}] Failed: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
                     )
@@ -275,7 +275,7 @@ sub _emerge(@) {
             )
         {
             push( @merged, $package );
-            send_report( info(_x("{package} builded successfully" , package=> $package)) );
+            send_report( info(__x("{package} builded successfully" , package=> $package)) );
             App::witchcraft->instance->emit(
                 "packages.build.after.emerge" => ( $package, $commit ) );
         }
