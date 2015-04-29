@@ -123,8 +123,8 @@ sub register {
                 my $commit_ahead=App::witchcraft->instance->Config->param('GIT_REBASE_COMMIT_AHEAD') // 2; #defaults to penultimate commit
                 $last_commit=get_commit_by_order($commit_ahead);
                 send_report(
-                    join("\n",info(__x( 'Building packages from {local_commit}...{last_commit} (rebase detected, {$commit_ahead} commit(s) ahead',
-                    local_commit => $last_commit, last_commit => $git_last_commit, $commit_ahead=> $commit_ahead )))
+                    join("\n",info(__x( '[{local_commit}...{last_commit}] Rebase detected, {$commit_ahead} commit(s) ahead, spawning build',
+                    local_commit => $last_commit, last_commit => $git_last_commit, commit_ahead=> $commit_ahead )))
                 );
                 
                 chdir(   App::witchcraft->instance->Config->param('OVERLAY_PATH'));
@@ -143,9 +143,9 @@ sub register {
                         git::diff( $last_commit, '--name-only' ) );
                             
             } else {
-                send_report(
-                    join("\n",info(__x( 'Building packages {local_commit}...{last_commit}',
-                    local_commit => $last_commit, last_commit => $git_last_commit )))
+                                send_report(
+                    join("\n",info(__x( '[{local_commit}...{last_commit}] Spawning build "{last_commit}"',
+                    local_commit => $last_commit, last_commit => $git_last_commit)))
                 );
                 emit( "packages.from_diff" =>
                         git::diff( $last_commit, '--name-only' ) );

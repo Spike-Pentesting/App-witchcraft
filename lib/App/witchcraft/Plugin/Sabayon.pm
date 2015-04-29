@@ -89,15 +89,13 @@ sub register {
     $emitter->on(
         "packages.build.after.push" => sub {
             my $commit = pop @_;
-            info(
-                __x("<{commit}> All went smooth, HURRAY!",
-                    commit => $commit
-                )
-            );
+            
             send_report(
-                __x("<{commit}> All went smooth, HURRAY! do an equo up to checkout the juicy stuff",
+              info(
+                __x("<{commit}> Pushed to repository",
                     commit => $commit
                 )
+            )
             );
             entropy_rescue;
             entropy_update;
@@ -115,12 +113,7 @@ sub register {
             local $ENV{ETP_NONINTERACTIVE} = "1";      #quick hack
             my $commit = pop @_;
             my @DIFFS  = @_;
-            info(
-                __x("Compressing {count} package(s): {packages}",
-                    count    => scalar(@DIFFS),
-                    packages => "@DIFFS"
-                )
-            );
+           
 
             App::witchcraft->instance->emit(
                 "packages.build.before.compression" => (@DIFFS) );
@@ -131,7 +124,12 @@ sub register {
             #$Expect->spawn( "eit", "commit", "--quick",";echo ____END____" )
             #   or send_report("Cannot spawn eit: $!\n");
             sleep 1;
-            send_report( __("Compressing packages"), @DIFFS );
+            send_report(  info(
+                __x("[$commit] Compressing {count} package(s): {packages}",
+                    count    => scalar(@DIFFS),
+                    packages => "@DIFFS"
+                )
+            ), @DIFFS );
 
             my ( $out, $err );
             run3(

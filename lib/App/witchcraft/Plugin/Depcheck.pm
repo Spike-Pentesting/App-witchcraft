@@ -24,13 +24,8 @@ sub test {
     my ( $self, $ebuild ) = @_;
     my @RDEPEND = uniq( $self->depcheck($ebuild) );
     if ( @RDEPEND > 0 ) {
-        error __x(
-            "{ebuild} seems missing that RDPENDs: {RDEPEND}",
-            ebuild  => $ebuild,
-            RDEPEND => "@RDEPEND"
-        );
-        send_report( __x( "RDEPEND missing for {ebuild}", ebuild => $ebuild ),
-            @RDEPEND );
+    send_report( error(__x( "[Depcheck] {ebuild} seems missing that RDPENDs: {RDEPEND}",RDEPEND => "@RDEPEND", ebuild => $ebuild ),
+            @RDEPEND ));
     }
 }
 

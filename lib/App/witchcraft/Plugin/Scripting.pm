@@ -15,7 +15,7 @@ sub register {
             my ( $event, @args ) = @_;
             if ( -e $DIR . $event ) {
                 info __x(
-                    "[Plugin::Scripting] Executing script: ({script})",
+                    "[Scripting] Executing script: ({script})",
                     script => "cd $DIR;./$event @args"
                 );
                 system("cd $DIR;./$event @args");
