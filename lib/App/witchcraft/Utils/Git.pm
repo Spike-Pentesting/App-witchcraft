@@ -1,7 +1,7 @@
 package App::witchcraft::Utils::Git;
 use base qw(Exporter);
 our @EXPORT    = ();
-our @EXPORT_OK = qw(last_commit detect_rebase get_commit_by_order);
+our @EXPORT_OK = qw(last_commit detect_rebase get_commit_by_order invalid_commit);
 use App::witchcraft::Utils qw(info error give_stderr_to_dogs);
 use Locale::TextDomain 'App-witchcraft';
 
@@ -48,6 +48,16 @@ sub get_commit_by_order {
     my @hashs=`git log --format="%H" -n $number`;
     chomp(@hashs);
     return $hashs[$number-1];
+}
+
+sub invalid_commit{
+    my $commit=shift;
+                 if (   system("git show $commit|cat") != 0)
+            {
+              return 1;
+            }  else {
+                return 0;
+            }
 }
 
 1;

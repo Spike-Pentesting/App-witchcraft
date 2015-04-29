@@ -5,7 +5,7 @@ use App::witchcraft::Utils
     qw(info error notice append dialog_yes_default send_report spurt chwn uniq draw_up_line draw_down_line on emit compiled_commit);
 use Cwd;
 use Git::Sub;
-use App::witchcraft::Utils::Git qw(last_commit detect_rebase get_commit_by_order);
+use App::witchcraft::Utils::Git qw(last_commit detect_rebase get_commit_by_order invalid_commit);
 use Git::Sub qw(diff stash fetch reset);
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Build;
@@ -119,11 +119,11 @@ sub register {
             {
             
             # detecting rebases, oh god.
-             if (detect_rebase($last_commit) ) {
+             if (detect_rebase($last_commit) or invalid_commit($last_commit) ) {
                 my $commit_ahead=App::witchcraft->instance->Config->param('GIT_REBASE_COMMIT_AHEAD') // 2; #defaults to penultimate commit
                 $last_commit=get_commit_by_order($commit_ahead);
                 send_report(
-                    join("\n",info(__x( '[{local_commit}...{last_commit}] Rebase detected, {$commit_ahead} commit(s) ahead, spawning build',
+                    join("\n",info(__x( '[{local_commit}...{last_commit}] Rebase or invalid commit hash detected, {commit_ahead} commit(s) ahead, spawning build',
                     local_commit => $last_commit, last_commit => $git_last_commit, commit_ahead=> $commit_ahead )))
                 );
                 
