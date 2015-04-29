@@ -1,8 +1,8 @@
 package App::witchcraft::Utils::Git;
 use base qw(Exporter);
 our @EXPORT    = ();
-our @EXPORT_OK = qw(last_commit);
-use App::witchcraft::Utils qw(info error);
+our @EXPORT_OK = qw(last_commit detect_rebase get_commit_by_order);
+use App::witchcraft::Utils qw(info error give_stderr_to_dogs);
 use Locale::TextDomain 'App-witchcraft';
 
 #  name: last_commit
@@ -29,6 +29,25 @@ sub last_commit {
     chomp(@FILE);
     close $FH;
     return $FILE[0];
+}
+
+sub detect_rebase{
+    my $commit=shift;
+    return give_stderr_to_dogs(
+                        sub{
+        
+                            my @cmd=`git fsck --unreachable --no-reflog | grep $_[1]`;
+                            return 0 if @cmd==0;
+                            return 1;
+                            
+                        }, $commit );
+}
+
+sub get_commit_by_order {
+    my $number= shift;
+    my @hashs=`git log --format="%H" -n $number`;
+    chomp(@hashs);
+    return $hashs[$number-1];
 }
 
 1;

@@ -5,7 +5,7 @@ use App::witchcraft::Utils
     qw(info error notice append dialog_yes_default send_report spurt chwn uniq draw_up_line draw_down_line on emit compiled_commit);
 use Cwd;
 use Git::Sub;
-use App::witchcraft::Utils::Git qw(last_commit);
+use App::witchcraft::Utils::Git qw(last_commit detect_rebase get_commit_by_order);
 use Git::Sub qw(diff stash fetch reset);
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Build;
@@ -32,7 +32,7 @@ sub register {
                             'GIT_REPOSITORY')
                     )
                 );
-            }
+            }            
         }
     );
     $emitter->on(
@@ -114,22 +114,46 @@ sub register {
                 if ( !defined $last_commit );
             chdir(
                 App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
-            if (last_commit(
+            my $git_last_commit=last_commit(
                     App::witchcraft->instance->Config->param(
                         'GIT_REPOSITORY'),
                     ".git/refs/heads/master"
-                ) ne $last_commit
-                )
+                );
+            if ($git_last_commit ne $last_commit)
             {
-                info __x( 'Emerging packages from commit {commit}',
-                    commit => $last_commit );
+            
+            # detecting rebases, oh god.
+             if (detect_rebase($last_commit) ) {
+                my $commit_ahead=App::witchcraft->instance->Config->param('GIT_REBASE_COMMIT_AHEAD') // 2; #defaults to penultimate commit
+                $last_commit=get_commit_by_order($commit_ahead);
                 send_report(
-                    __x("Align start, building commit from {commit}",
-                        commit => $last_commit
-                    )
+                    join("\n",info(__x( 'Building packages from {local_commit}...{last_commit} (rebase detected, {$commit_ahead} commit(s) ahead',
+                    local_commit => $last_commit, last_commit => $git_last_commit, $commit_ahead=> $commit_ahead )))
+                );
+                
+                chdir(   App::witchcraft->instance->Config->param('OVERLAY_PATH'));
+                     if (   system("git fetch --all") != 0
+                or system("git reset --hard origin/master") != 0 )
+            {
+                send_report( __ "Error resetting layman repository", $@ );
+                error($@);
+            } 
+                
+                #Resetting layman git
+                         chdir(
+                App::witchcraft->instance->Config->param('GIT_REPOSITORY') );
+             
+             emit( "packages.from_diff" =>
+                        git::diff( $last_commit, '--name-only' ) );
+                            
+            } else {
+                send_report(
+                    join("\n",info(__x( 'Building packages {local_commit}...{last_commit}',
+                    local_commit => $last_commit, last_commit => $git_last_commit )))
                 );
                 emit( "packages.from_diff" =>
                         git::diff( $last_commit, '--name-only' ) );
+                            }
             }
             else {
                 info( __("Nothing to do") );

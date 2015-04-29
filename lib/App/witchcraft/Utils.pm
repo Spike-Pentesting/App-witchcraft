@@ -79,6 +79,7 @@ our @EXPORT_OK = (
         save_compiled_commit
 
         upgrade
+        give_stderr_to_dogs
 
         ), @EXPORT
 );
@@ -635,6 +636,7 @@ sub error {
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
+    return @msg;
 }
 
 sub info {
@@ -644,6 +646,7 @@ sub info {
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
+    return @msg;
 }
 
 sub notice {
@@ -653,6 +656,7 @@ sub notice {
     print STDERR color 'bold white';
     print STDERR join( "\n", @msg ), "\n";
     print STDERR color 'reset';
+    return @msg;
 }
 
 sub dialog_yes_default {
@@ -670,6 +674,15 @@ sub dialog_yes_default {
     }
     return 1 if $a =~ /y/;
     return 1;    # default to Y
+}
+
+sub give_stderr_to_dogs{
+    local (*SAVEERR);
+    open SAVEERR, ">&STDERR";
+    open STDERR,">/dev/null";
+    my $r=shift->(@_);
+    open STDERR, ">&SAVEERR";
+    return $r;
 }
 
 1;

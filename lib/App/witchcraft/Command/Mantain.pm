@@ -100,7 +100,7 @@ sub run {
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
     if ( $self->{'loop'} ) {
-        while (1) {
+        while (sleep 1) {
             $self->launch();
         }
     }
@@ -127,7 +127,6 @@ sub launch {
     $self->clean;
     $self->align;
     $self->conflict;
-    system("eit cleanup --quick");
     $self->sync;
     $self->upgrade;
     $self->euscan;

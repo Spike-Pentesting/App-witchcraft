@@ -9,24 +9,6 @@ use App::witchcraft::Utils::Gentoo
 use App::witchcraft::Utils::Git qw(last_commit);
 use Cwd;
 use App::witchcraft::Constants qw(BUILD_SUCCESS BUILD_FAILED BUILD_UNKNOWN);
-#
-#  name: process
-#  input: @DIFFS
-#  output: void
-# from an array of atoms ("category/atom","category/atom2")
-# it generates then a list that would be emerged and then added to the repo, each error would be reported
-
-=head1 process(@Atoms,$commit,$usage)
-
-Processes the atoms, can also be given in net-im/something::overlay type
-
-=head2 EMITS
-
-=head3 before_process => (@ATOMS)
-
-=head3 after_process => (@ATOMS)
-
-=cut
 
 sub register {
     my ( $self, $emitter ) = @_;
@@ -217,7 +199,7 @@ sub register {
                 ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
                 send_report(
-                    __x("<{commit}> Compiled: {diffs}",
+                    __x("<{commit}> Build completed for: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
                     )
@@ -287,20 +269,19 @@ sub _emerge(@) {
     my @merged;
     my @unmerged;
     foreach my $package (@DIFFS) {
-        send_report( __("Emerging $package") );
+        send_report( __("Building $package") );
         if (log_command(
                 "nice -20 emerge --color n -v $emerge_options $package  2>&1")
             )
         {
             push( @merged, $package );
-            info( __("All went smooth, HURRAY! packages merged correctly") );
-            send_report( __("Package merged successfully"), $package );
+            send_report( info(_x("{package} builded successfully" , package=> $package)) );
             App::witchcraft->instance->emit(
                 "packages.build.after.emerge" => ( $package, $commit ) );
         }
         else {
             push( @unmerged, $package );
-            send_report( __x( "Logs for: {diffs}", diffs => $package ),
+            send_report( __x( "{package} build failed", package => $package ),
                 join( " ", find_logs() ) );
             $rs = BUILD_FAILED;
         }

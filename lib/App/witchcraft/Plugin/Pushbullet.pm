@@ -48,7 +48,7 @@ sub bullet {
         my $req = POST 'https://api.pushbullet.com/v2/pushes',
             [
             type  => $type,
-            title => "Witchcraft\@$hostname: " . $title,
+            title => $title ." from [$hostname]",
             $api  => $arg
             ];
         $req->authorization_basic($BULL);
