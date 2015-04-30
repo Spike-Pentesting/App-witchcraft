@@ -268,7 +268,7 @@ sub _emerge(@) {
     my @merged;
     my @unmerged;
     foreach my $package (@DIFFS) {
-        send_report( __("Building $package") );
+        send_report( __x("Building {package}",package=> $package) );
         if (log_command(
                 "nice -20 emerge --color n -v $emerge_options $package  2>&1")
             )
