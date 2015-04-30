@@ -4,7 +4,7 @@ App::witchcraft - Continuous integration tool, repository manager for Gentoo or 
 
 # VERSION
 
-version 0.06
+version 0.07
 
 # SYNOPSIS
 
