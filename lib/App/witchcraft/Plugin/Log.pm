@@ -17,9 +17,9 @@ sub register {
             my $dir = $self->prepare_dir;
             append(
                 $message
-                    . "\n\n########################################\n"
-                    . $log
-                    . "\n\n############END##########\n\n",
+                  . "\n\n########################################\n"
+                  . $log
+                  . "\n\n############END##########\n\n",
                 $dir . "/" . DateTime->now->day . ".log"
             ) if $dir;
         }
@@ -30,16 +30,15 @@ sub register {
             my $dir = $self->prepare_dir;
             append( $url . ": " . $message . "\n",
                 $dir . "/" . DateTime->now->day . ".log" )
-                if $dir;
+              if $dir;
         }
     );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             my $dir = $self->prepare_dir;
-            append( $message . "\n",
-                $dir . "/" . DateTime->now->day . ".log" )
-                if $dir;
+            append( $message . "\n", $dir . "/" . DateTime->now->day . ".log" )
+              if $dir;
         }
     );
 
@@ -53,11 +52,11 @@ sub prepare_dir {
     make_path($dir);
     if ( $cfg->param('LOGS_USER') ) {
         chwn $cfg->param('LOGS_USER'),
-            $cfg->param('LOGS_USER'),
-            $cfg->param('LOGS_DIR');
+          $cfg->param('LOGS_USER'),
+          $cfg->param('LOGS_DIR');
         chwn $cfg->param('LOGS_USER'),
-            $cfg->param('LOGS_USER'),
-            $cfg->param('LOGS_DIR') . "/" . $dt->year;
+          $cfg->param('LOGS_USER'),
+          $cfg->param('LOGS_DIR') . "/" . $dt->year;
         chwn $cfg->param('LOGS_USER'), $cfg->param('LOGS_USER'), $dir;
     }
     return $dir;

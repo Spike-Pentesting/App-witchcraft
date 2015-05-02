@@ -13,22 +13,22 @@ BEGIN {
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
     bind_textdomain_filter 'App-witchcraft' => \&Encode::decode_utf8;
 }
-our $VERSION = 0.07;
-our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG} // "witchcraft.conf"
-    ;    #with this you can handle multiple repos configurations
+our $VERSION     = 0.07;
+our $CONFIG_FILE = $ENV{WITCHCRAFT_CONFIG}
+  // "witchcraft.conf";  #with this you can handle multiple repos configurations
 our $IGNORE_FILE          = "ignored.packages";
 our $WITCHCRAFT_DIRECTORY = ".witchcraft";
 our $HOME                 = join( "/", $ENV{HOME}, $WITCHCRAFT_DIRECTORY );
-our $CONFIG
-    = -e join( "/", $HOME, $CONFIG_FILE )
-    ? join( "/", $HOME, $CONFIG_FILE )
-    : join( "/", '.',   $CONFIG_FILE );
+our $CONFIG =
+  -e join( "/", $HOME, $CONFIG_FILE )
+  ? join( "/", $HOME, $CONFIG_FILE )
+  : join( "/", '.',   $CONFIG_FILE );
 $CONFIG = Config::Simple->new($CONFIG) if ( -e $CONFIG );
-our $IGNORE
-    = -e join( "/", $HOME, $IGNORE_FILE ) ? join( "/", $HOME, $IGNORE_FILE )
-    : $CONFIG->isa("Config::Simple")
-    ? join( "/", $CONFIG->param("GIT_REPOSITORY"), $IGNORE_FILE )
-    : "";
+our $IGNORE =
+  -e join( "/", $HOME, $IGNORE_FILE ) ? join( "/", $HOME, $IGNORE_FILE )
+  : $CONFIG->isa("Config::Simple")
+  ? join( "/", $CONFIG->param("GIT_REPOSITORY"), $IGNORE_FILE )
+  : "";
 
 our $HOSTNAME = `hostname`;
 chomp($HOSTNAME);
@@ -41,7 +41,7 @@ sub emit {
     my $self = shift;
 
     $self->emit( "emit", @_ )
-        if $_[0] ne "emit";    #this allows plugin to listen what happens
+      if $_[0] ne "emit";    #this allows plugin to listen what happens
     $self->SUPER::emit(@_);
 
 }

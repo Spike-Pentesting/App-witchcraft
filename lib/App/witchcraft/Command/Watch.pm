@@ -3,7 +3,7 @@ package App::witchcraft::Command::Watch;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-    qw(daemonize error draw_up_line draw_down_line info notice send_report last_md5 repo_update);
+  qw(daemonize error draw_up_line draw_down_line info notice send_report last_md5 repo_update);
 use warnings;
 use strict;
 use File::Find;
@@ -91,48 +91,51 @@ sub run {
 sub manual_update($) {
     my $overlay = shift;
     my $cfg     = App::witchcraft->instance->Config;
-    my $overlay_to_compile_packages
-        = $cfg->param('OVERLAY_MANUAL_COMPILE_FILE');
+    my $overlay_to_compile_packages =
+      $cfg->param('OVERLAY_MANUAL_COMPILE_FILE');
 
     if ( -e $overlay . "/" . $overlay_to_compile_packages ) {
         open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
-            or send_report(
-            __x("Cannot open {overlay}/{packages}: {error}",
+          or send_report(
+            __x(
+                "Cannot open {overlay}/{packages}: {error}",
                 overlay  => $overlay,
                 packages => $overlay_to_compile_packages,
                 error    => $!
             )
-            );
+          );
         binmode($fh);
         my $calculated_md5 = Digest::MD5->new->addfile($fh)
-            ->hexdigest
-            ;    #Computing the md5 of the file containing the packages
+          ->hexdigest;    #Computing the md5 of the file containing the packages
         close $fh;
         my $last_md5 = last_md5();
         info(
-            __x("Last md5 {md5} of {overlay}/{packages}",
+            __x(
+                "Last md5 {md5} of {overlay}/{packages}",
                 md5      => $last_md5,
                 overlay  => $overlay,
                 packages => $overlay_to_compile_packages
             )
         ) if defined $last_md5;
         if ( !defined $last_md5 or ( $calculated_md5 ne $last_md5 ) )
-        {        #If they are different, then proceed the compile them
+        {                 #If they are different, then proceed the compile them
             open( my $fh, '<', $overlay . "/" . $overlay_to_compile_packages )
-                or (
-                __x("Cannot open {overlay}/{packages}: {error}",
+              or (
+                __x(
+                    "Cannot open {overlay}/{packages}: {error}",
                     overlay  => $overlay,
                     packages => $overlay_to_compile_packages,
                     error    => $!
                 )
                 and return
-                );
+              );
 
             my @DIFFS = <$fh>;
             close $fh;
             chomp(@DIFFS);
             send_report(
-                __x("Issued a manual packages compile, start compiling process for : {packages}",
+                __x(
+"Issued a manual packages compile, start compiling process for : {packages}",
                     packages => "@DIFFS"
                 )
             );
@@ -145,7 +148,7 @@ sub manual_update($) {
         }
         else {
             notice( __
-                    "Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
+"Are you looking at me? i have NOTHING better to do than sleeping... can you say the same?"
             );
         }
     }

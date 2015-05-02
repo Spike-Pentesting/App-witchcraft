@@ -5,7 +5,8 @@ use base qw(App::CLI::Command App::CLI);
 use constant global_options => ( 'h|help' => 'help' );
 
 sub alias {
-    (   "l"  => "list",
+    (
+        "l"  => "list",
         "s"  => "sync",
         "e"  => "euscan",
         "t"  => "test",

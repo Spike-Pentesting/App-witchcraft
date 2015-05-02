@@ -86,7 +86,8 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 =cut
 
 sub options {
-    (   "a|align"    => "align",
+    (
+        "a|align"    => "align",
         "s|sync"     => "sync",
         "u|upgrade"  => "upgrade",
         "c|conflict" => "conflict",
@@ -100,7 +101,7 @@ sub run {
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $self = shift;
     if ( $self->{'loop'} ) {
-        while (sleep 1) {
+        while ( sleep 1 ) {
             $self->launch();
         }
     }

@@ -22,67 +22,67 @@ use Cwd;
 $|++;    # turn off output buffering;
 
 our @EXPORT = qw(
-    info
-    error
-    notice
-    draw_up_line
-    draw_down_line
-    send_report
-    on
-    emit
+  info
+  error
+  notice
+  draw_up_line
+  draw_down_line
+  send_report
+  on
+  emit
 );
 
 our @EXPORT_OK = (
     qw(
 
-        slurp
-        spurt
-        append
+      slurp
+      spurt
+      append
 
-        uniq
-        natural_order
-        truncate_words
+      uniq
+      natural_order
+      truncate_words
 
-        build_processed
-        build_processed_manually
-        last_manual_build
-        last_build
+      build_processed
+      build_processed_manually
+      last_manual_build
+      last_build
 
-        daemonize
+      daemonize
 
-        vagrant_box_cmd
-        log_command
-        command
-        vagrant_box_status
-        chwn
+      vagrant_box_cmd
+      log_command
+      command
+      vagrant_box_status
+      chwn
 
-        password_dialog
-        dialog_yes_default
-        print_list
+      password_dialog
+      dialog_yes_default
+      print_list
 
-        stage
-        test_untracked
-        clean_stash
-        clean_untracked
-        index_sync
-        find_ext
-        repo_update
-        filetoatom
+      stage
+      test_untracked
+      clean_stash
+      clean_untracked
+      index_sync
+      find_ext
+      repo_update
+      filetoatom
 
-        last_md5
+      last_md5
 
-        on
-        emit
+      on
+      emit
 
-        compiled_commit
-        save_compiled_packages
-        save_compiled_commit
+      compiled_commit
+      save_compiled_packages
+      save_compiled_commit
 
-        upgrade
-        give_stderr_to_dogs
-        give_stdout_to_dogs
+      upgrade
+      give_stderr_to_dogs
+      give_stdout_to_dogs
 
-        ), @EXPORT
+      ), @EXPORT
 );
 
 =encoding utf-8
@@ -147,20 +147,20 @@ sub repo_update {
 
 sub last_md5() {
     open my $last,
-          "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or (
+        "<"
+      . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+      or (
         &send_report(
             __("Can't access to last compiled packages md5"),
-            __x('Can\'t open {md5} -> {error}',
-                md5 =>
-                    App::witchcraft->instance->Config->param('MD5_PACKAGES'),
+            __x(
+                'Can\'t open {md5} -> {error}',
+                md5 => App::witchcraft->instance->Config->param('MD5_PACKAGES'),
                 error => $!
             )
         )
         and return undef
-        );
+      );
     my $last_md5 = <$last>;
     close $last;
     return $last_md5;
@@ -183,7 +183,8 @@ sub find_ext($$) {
     my $ext = shift;
     my @EBUILDS;
     find(
-        {   wanted => sub { push @EBUILDS, $_ if $_ =~ /\.$ext$/ },
+        {
+            wanted => sub { push @EBUILDS, $_ if $_ =~ /\.$ext$/ },
             no_chdir => 1
         },
         $dir
@@ -222,41 +223,41 @@ sub chwn {
 sub upgrade {
     my $cfg = App::witchcraft->instance->Config;
     &log_command( "cpanm " . $cfg->param('WITCHCRAFT_GIT') )
-        if ( $cfg->param('WITCHCRAFT_GIT') );
+      if ( $cfg->param('WITCHCRAFT_GIT') );
 }
 
 sub natural_order {
     my @a = @_;
     return [
         @a[    #natural sort order for strings containing numbers
-            map { unpack "N", substr( $_, -4 ) } #going back to normal representation
-            sort
-            map {
-                my $key = $a[$_];
-                $key =~ s[(\d+)][ pack "N", $1 ]ge
-                    ;    #transforming all numbers in ascii representation
-                $key . pack "CNN", 0, 0, $_
-            } 0 .. $#a
+          map { unpack "N", substr( $_, -4 ) } #going back to normal representation
+          sort
+          map {
+              my $key = $a[$_];
+              $key =~ s[(\d+)][ pack "N", $1 ]ge
+                ;    #transforming all numbers in ascii representation
+              $key . pack "CNN", 0, 0, $_
+          } 0 .. $#a
         ]
     ];
 }
 
 sub last_manual_build() {
     open my $last,
-          "<"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or (
+        "<"
+      . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+      or (
         &send_report(
             __("Can't access to last compiled packages md5"),
-            __x('Can\'t open {md5} -> {error}',
-                md5 =>
-                    App::witchcraft->instance->Config->param('MD5_PACKAGES'),
+            __x(
+                'Can\'t open {md5} -> {error}',
+                md5 => App::witchcraft->instance->Config->param('MD5_PACKAGES'),
                 error => $!
             )
         )
         and return undef
-        );
+      );
     my $last_md5 = <$last>;
     close $last;
     return $last_md5;
@@ -270,11 +271,10 @@ sub last_manual_build() {
 
 sub compiled_commit() {
     open FILE,
-          "<"
-        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or
-        ( &notice( __("Nothing was previously compiled") ) and return undef );
+        "<"
+      . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+      or ( &notice( __("Nothing was previously compiled") ) and return undef );
     my @LAST = <FILE>;
     close FILE;
     chomp(@LAST);
@@ -283,11 +283,10 @@ sub compiled_commit() {
 
 sub last_build() {
     open FILE,
-          "<"
-        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or
-        ( &notice( __("Nothing was previously compiled") ) and return undef );
+        "<"
+      . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+      or ( &notice( __("Nothing was previously compiled") ) and return undef );
     my @LAST = <FILE>;
     close FILE;
     chomp(@LAST);
@@ -300,28 +299,28 @@ sub last_build() {
 #  it just saves the last commit on the specified file
 sub save_compiled_commit($) {
     open FILE,
-          ">"
-        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
+        ">"
+      . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub save_compiled_packages($) {
     open FILE,
-          ">"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME');
+        ">"
+      . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME');
     print FILE shift;
     close FILE;
 }
 
 sub build_processed($) {
     open my $fh,
-          ">"
-        . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or return 0;
+        ">"
+      . App::witchcraft->instance->Config->param('LAST_COMMIT') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+      or return 0;
     return 0 if !$fh;
     print $fh shift;
     close $fh;
@@ -330,10 +329,10 @@ sub build_processed($) {
 
 sub build_processed_manually($) {
     open my $fh,
-          ">"
-        . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
-        . App::witchcraft->instance->Config->param('OVERLAY_NAME')
-        or return 0;
+        ">"
+      . App::witchcraft->instance->Config->param('MD5_PACKAGES') . "."
+      . App::witchcraft->instance->Config->param('OVERLAY_NAME')
+      or return 0;
     return 0 if !$fh;
     print $fh shift;
     close $fh;
@@ -370,8 +369,7 @@ sub log_command {
     }
     else {
         &error(
-            __x( "Something went wrong with {command}", command => $command )
-        );
+            __x( "Something went wrong with {command}", command => $command ) );
         &send_report( __x( "Phase: {command} failed", command => $command ),
             "$command : ", @LOG );
         return 0;
@@ -389,8 +387,7 @@ sub command {
     }
     else {
         &error(
-            __x( "Something went wrong with {command}", command => $command )
-        );
+            __x( "Something went wrong with {command}", command => $command ) );
         &send_report( __x( "Phase: {command} failed", command => $command ) );
         return 0;
     }
@@ -421,7 +418,7 @@ The @lines where successfully posted, $link is the url of the nopaste
 sub send_report {
     my $message = shift;
     return undef
-        unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
+      unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
         or App::witchcraft->instance->Config->param('IRC_CHANNELS') );
     &notice(">> $message ");
 
@@ -445,7 +442,7 @@ sub send_report {
                     my ( $warning, $service ) = @_;
                     warn "$service: $warning";
                 },
-                services => [ "Pastie" ],
+                services => ["Pastie"],
             );
             1;
         };
@@ -466,25 +463,24 @@ sub daemonize($) {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);
 
     open( SELFLOCK, "<$0" )
-        or die(
-        __x( "Couldn't open {file}: {error}", file => $0, error => $! ) );
+      or die( __x( "Couldn't open {file}: {error}", file => $0, error => $! ) );
 
     flock( SELFLOCK, LOCK_EX | LOCK_NB )
-        or die(
+      or die(
         _x( "Aborting: another {program} is already running",
             program => $ProgramName )
-            . "\n"
-        );
+          . "\n"
+      );
     open( STDOUT, "|-", "logger -t $ProgramName" )
-        or
-        die( __x( "Couldn't open logger output stream: {error}", error => $! )
-            . "\n" );
+      or
+      die( __x( "Couldn't open logger output stream: {error}", error => $! )
+          . "\n" );
     open( STDERR, ">&STDOUT" )
-        or
-        die( __x( "Couldn't redirect STDERR to STDOUT: {error}", error => $! )
-            . "\n" );
-    $| = 1; # Make output line-buffered so it will be flushed to syslog faster
-            # chdir('/')
+      or
+      die( __x( "Couldn't redirect STDERR to STDOUT: {error}", error => $! )
+          . "\n" );
+    $| = 1;   # Make output line-buffered so it will be flushed to syslog faster
+              # chdir('/')
       #    ; # Avoid the possibility of our working directory resulting in keeping an otherwise unused filesystem in use
     exit if ( fork() );
     exit if ( fork() );
@@ -508,11 +504,12 @@ sub password_dialog {
     chomp( my $password = <STDIN> );
     ReadMode(0);           # back to normal
     &notice(
-        __( "Note: ensure to give the right password, or install tests would fail"
+        __(
+"Note: ensure to give the right password, or install tests would fail"
         )
     );
     $password = &password_dialog
-        unless (
+      unless (
         system( 'echo ' . $password . ' | sudo -S echo Password OK' ) == 0 );
     return $password;
 }
@@ -522,10 +519,12 @@ sub uniq {
 }
 
 sub vagrant_box_status {
-    (   split /,/,    #splitting --machine-readable output
-        (   &vagrant_box_cmd( "status --machine-readable",
+    (
+        split /,/,    #splitting --machine-readable output
+        (
+            &vagrant_box_cmd( "status --machine-readable",
                 shift )    #taking just the output, ignoring the return status
-            )[1]->[1]      # the second line of the output contain the status
+          )[1]->[1]        # the second line of the output contain the status
     )[3];                  #the third column has the status
 }
 
@@ -550,7 +549,7 @@ sub print_list {
     my $column_w = 0;
 
     map { $column_w = length( $_->[0] ) if length( $_->[0] ) > $column_w; }
-        @lines;
+      @lines;
 
     my $screen_width = 92;
 
@@ -559,16 +558,16 @@ sub print_list {
         my $padding = int($column_w) - length($title);
 
         if ( $ENV{WRAP}
-            && ( $column_w + 3 + length( join( " ", @$arg ) ) )
-            > $screen_width )
+            && ( $column_w + 3 + length( join( " ", @$arg ) ) ) >
+            $screen_width )
         {
             # wrap description
-            my $string
-                = color('bold')
-                . $title
-                . color('reset')
-                . " " x $padding . " - "
-                . join( " ", @$arg ) . "\n";
+            my $string =
+                color('bold')
+              . $title
+              . color('reset')
+              . " " x $padding . " - "
+              . join( " ", @$arg ) . "\n";
 
             $string =~ s/\n//g;
 
@@ -617,7 +616,7 @@ sub print_list {
 sub draw_up_line {
     &notice(
         encode_utf8(
-            "▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"
+"▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼"
         )
     );
 }
@@ -625,7 +624,7 @@ sub draw_up_line {
 sub draw_down_line {
     &notice(
         encode_utf8(
-            "▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
+"▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲"
         )
     );
 }
@@ -677,32 +676,32 @@ sub dialog_yes_default {
     return 1;    # default to Y
 }
 
-sub give_stderr_to_dogs{
+sub give_stderr_to_dogs {
     local (*SAVEERR);
     open SAVEERR, ">&STDERR";
-    open STDERR,">/dev/null";
-    my $r=shift->(@_);
+    open STDERR,  ">/dev/null";
+    my $r = shift->(@_);
     open STDERR, ">&SAVEERR";
     return $r;
 }
 
-sub give_stdout_to_dogs{
+sub give_stdout_to_dogs {
     local (*SAVEOUT);
     open SAVEOUT, ">&STDOUT";
-    open STDOUT,">/dev/null";
-    my $r=shift->(@_);
+    open STDOUT,  ">/dev/null";
+    my $r = shift->(@_);
     open STDOUT, ">&SAVEOUT";
     return $r;
 }
 
-sub give_everything_to_dogs{
-    local (*SAVEERR,*SAVEOUT);
+sub give_everything_to_dogs {
+    local ( *SAVEERR, *SAVEOUT );
     open SAVEERR, ">&STDERR";
     open SAVEOUT, ">&STDOUT";
 
-    open STDERR,">/dev/null";
-    open STDOUT,">/dev/null";
-    my $r=shift->(@_);
+    open STDERR, ">/dev/null";
+    open STDOUT, ">/dev/null";
+    my $r = shift->(@_);
     open STDERR, ">&SAVEERR";
     open STDOUT, ">&SAVEOUT";
 

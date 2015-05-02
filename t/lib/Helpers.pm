@@ -6,9 +6,8 @@ use base qw(Exporter);
 use File::Basename qw(fileparse);
 use File::Spec::Functions qw(catdir catfile splitdir);
 our @EXPORT_OK = qw(
-    search_modules
+  search_modules
 );
-
 
 sub search_modules($) {
     my $ns = shift;
@@ -22,8 +21,7 @@ sub search_modules($) {
             next if $file eq '..' or $file eq '.';
             if ( -d catdir $path, $file ) {
                 $modules{$_}++
-                    for ( &search_modules("${ns}::${file}") )
-                    ;    #making recursive
+                  for ( &search_modules("${ns}::${file}") );   #making recursive
             }
             elsif ( $file =~ /\.pm/ ) {
                 next if -d catfile splitdir($path), $file;
@@ -35,6 +33,5 @@ sub search_modules($) {
 
     wantarray ? ( keys %modules ) : return [ keys %modules ];
 }
-
 
 1;

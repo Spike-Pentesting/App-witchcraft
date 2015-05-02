@@ -8,9 +8,8 @@ use File::Find;
 use Cwd;
 use Locale::TextDomain 'App-witchcraft';
 
-
 sub run {
-    notice(__("Starting githook server"));
+    notice( __("Starting githook server") );
     emit("githook.server.start");
 }
 

@@ -7,7 +7,7 @@ use Helpers qw(search_modules);
 use Test::More;
 
 BEGIN {
-    use_ok( $_) or BAIL_OUT("$_ failed") for search_modules("App::witchcraft");
+    use_ok($_) or BAIL_OUT("$_ failed") for search_modules("App::witchcraft");
 }
 
 done_testing();

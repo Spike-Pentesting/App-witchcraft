@@ -2,8 +2,7 @@ package App::witchcraft::Command::Align;
 
 use base qw(App::witchcraft::Command);
 use Carp::Always;
-use App::witchcraft::Utils
-    qw(error emit);
+use App::witchcraft::Utils qw(error emit);
 use App::witchcraft::Command::Clean;
 use warnings;
 use strict;
@@ -52,11 +51,13 @@ it under the same terms as Perl itself.
 L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 =cut
+
 sub run {
-    error(__('You must run it with root permissions')) and return 1 if $> != 0;
-    my $self = shift;
+    error( __('You must run it with root permissions') ) and return 1
+      if $> != 0;
+    my $self        = shift;
     my $last_commit = shift;
-    emit("align_to" => $last_commit);
+    emit( "align_to" => $last_commit );
 }
 
 1;

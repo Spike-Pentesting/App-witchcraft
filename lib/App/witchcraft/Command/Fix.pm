@@ -57,7 +57,8 @@ L<App::Witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub options {
-    (   "ns|nostash" => "no_stash",
+    (
+        "ns|nostash" => "no_stash",
         "f|force"    => "force"
     );
 }
@@ -66,26 +67,28 @@ our @AVAILABLE_CMDS = qw(metagen ebuild_missing digest);
 sub run {
     my ( $self, $action, $dir ) = @_;
     my $cfg = App::witchcraft->new->Config;
-    error __x("At leat one of this action must be specified: {cmds}", cmds=>"@AVAILABLE_CMDS")
-        and return 1
-        if !defined $action
-        or !( grep { $_ eq $action } @AVAILABLE_CMDS );
+    error __x( "At leat one of this action must be specified: {cmds}",
+        cmds => "@AVAILABLE_CMDS" )
+      and return 1
+      if !defined $action
+      or !( grep { $_ eq $action } @AVAILABLE_CMDS );
     $dir ||= $cfg->param('GIT_REPOSITORY');
-    $self->$action( $dir );
+    $self->$action($dir);
 }
 
 sub metagen {
     my $self = shift;
-    my $dir = shift;
+    my $dir  = shift;
     find(
-        {   wanted => sub {
+        {
+            wanted => sub {
                 my $file = $File::Find::name;
                 return if ( !-d $file );
                 return if ( $file =~ /files/ );
-                return if !grep {/\.ebuild/} <*>;
-                return if !grep {/metadata/} <*>;
+                return if !grep { /\.ebuild/ } <*>;
+                return if !grep { /metadata/ } <*>;
                 system("metagen -vm");
-                }
+            }
         },
         $dir
     );
@@ -95,14 +98,15 @@ sub ebuild_missing {
     my $self = shift;
     my $dir  = shift;
     find(
-        {   wanted => sub {
+        {
+            wanted => sub {
                 my $file = $File::Find::name;
                 return if ( !-d $file );
                 return if ( $file =~ /files/ );
-                return if !grep {/Manifest/} <*>;
-                return if grep {/\.ebuild/} <*>;
+                return if !grep { /Manifest/ } <*>;
+                return if grep { /\.ebuild/ } <*>;
                 info "$file";
-                }
+            }
         },
         $dir
     );
@@ -112,14 +116,15 @@ sub digest {
     my $self = shift;
     my $dir  = shift;
     finddepth(
-        {   wanted => sub {
+        {
+            wanted => sub {
                 my $file = $File::Find::name;
 
                 return if ( !-e $file );
                 return if ( $file =~ /files/ );
                 return if ( $file !~ /.ebuild/ );
                 system("ebuild $file digest");
-                }
+            }
         },
         $dir
     );

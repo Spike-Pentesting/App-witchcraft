@@ -2,8 +2,7 @@ package App::witchcraft::Command::Pack;
 
 use base qw(App::witchcraft::Command);
 use Carp::Always;
-use App::witchcraft::Utils
-    qw(error info notice draw_down_line draw_up_line );
+use App::witchcraft::Utils qw(error info notice draw_down_line draw_up_line );
 use App::witchcraft::Build;
 
 use warnings;

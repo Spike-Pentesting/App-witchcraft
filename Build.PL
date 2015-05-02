@@ -4,42 +4,35 @@ use strict;
 use warnings;
 
 use Module::Build 0.28;
-use lib qw{inc}; use Module::Build::Witchcraft;
+use lib qw{inc};
+use Module::Build::Witchcraft;
 
 my %module_build_args = (
-  "build_requires" => {
-    "Module::Build" => "0.28"
-  },
-  "configure_requires" => {
-    "Module::Build" => "0.28"
-  },
-  "dist_abstract" => "Continuous integration tool, repository manager for Gentoo or your Entropy server",
-  "dist_author" => [
-    "mudler <mudler\@dark-lab.net>"
-  ],
-  "dist_name" => "App-witchcraft",
-  "dist_version" => "0.07",
-  "license" => "perl",
-  "module_name" => "App::witchcraft",
-  "recommends" => {},
-  "recursive_test_files" => 1,
-  "requires" => {},
-  "script_files" => [
-    "bin/depcheck",
-    "bin/witchcraft"
-  ],
-  "test_requires" => {}
+    "build_requires" => {
+        "Module::Build" => "0.28"
+    },
+    "configure_requires" => {
+        "Module::Build" => "0.28"
+    },
+    "dist_abstract" =>
+"Continuous integration tool, repository manager for Gentoo or your Entropy server",
+    "dist_author"          => [ "mudler <mudler\@dark-lab.net>" ],
+    "dist_name"            => "App-witchcraft",
+    "dist_version"         => "0.07",
+    "license"              => "perl",
+    "module_name"          => "App::witchcraft",
+    "recommends"           => {},
+    "recursive_test_files" => 1,
+    "requires"             => {},
+    "script_files"         => [ "bin/depcheck", "bin/witchcraft" ],
+    "test_requires"        => {}
 );
 
-
-my %fallback_build_requires = (
-  "Module::Build" => "0.28"
-);
-
+my %fallback_build_requires = ( "Module::Build" => "0.28" );
 
 unless ( eval { Module::Build->VERSION(0.4004) } ) {
-  delete $module_build_args{test_requires};
-  $module_build_args{build_requires} = \%fallback_build_requires;
+    delete $module_build_args{test_requires};
+    $module_build_args{build_requires} = \%fallback_build_requires;
 }
 
 my $build = Module::Build::Witchcraft->new(%module_build_args);

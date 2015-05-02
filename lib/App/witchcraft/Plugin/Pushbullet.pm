@@ -46,11 +46,11 @@ sub bullet {
     foreach my $BULL (@BULLET) {
 
         my $req = POST 'https://api.pushbullet.com/v2/pushes',
-            [
+          [
             type  => $type,
-            title => $title ." [$hostname]",
+            title => $title . " [$hostname]",
             $api  => $arg
-            ];
+          ];
         $req->authorization_basic($BULL);
         my $res = $ua->request($req)->as_string;
         if ( $res =~ /HTTP\/1.1 200 OK/mg ) {

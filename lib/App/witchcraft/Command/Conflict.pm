@@ -48,7 +48,7 @@ sub run {
     my $self = shift;
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $overlay = shift
-        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+      // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     error __('No OVERLAY_NAME defined') and return 1 if ( !$overlay );
     info __(
         'Calculating packages that are already in other sabayon repositories '
@@ -58,21 +58,21 @@ sub run {
     @repos = grep { !/$overlay/ } @repos;
     info __x( "Searching packages in the following repositories: {repos}",
         repos => "@repos" );
-    my @other_repos_packages
-        = list_available( { "-q" => "", "-v" => "" }, @repos );
+    my @other_repos_packages =
+      list_available( { "-q" => "", "-v" => "" }, @repos );
     info __x( "retrieving packages in the {overlay} repository",
         overlay => $overlay );
     my @repo_packages = list_available( { "-q" => "", "-v" => "" }, $overlay )
-        ;    #also compare versions
+      ;    #also compare versions
     my %packs = map { $_ => 1 } @other_repos_packages;
     my @to_remove = uniq( grep( defined $packs{$_}, @repo_packages ) );
     info __ "Those are the packages that are already in other repository: ";
     notice "\t$_" for @to_remove;
     return if !$self->{delete};
     send_report( __ "[Conflict] Removing those packages ", @to_remove )
-        if @to_remove > 0;
+      if @to_remove > 0;
     log_command("eit remove --quick --nodeps --from $overlay $_ ")
-        for @to_remove;
+      for @to_remove;
 }
 
 1;

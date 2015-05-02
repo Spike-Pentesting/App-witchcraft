@@ -16,15 +16,16 @@ sub register {
             my $event   = shift;
             my $payload = $event->payload;
             info( __x( "Payload: {payload}", payload => $payload ) )
-                if $payload;
+              if $payload;
             info( __x( "Event: {event}", event => $event->event ) )
-                if $event->event;
+              if $event->event;
             emit("align_to");
         }
     );
     $emitter->on(
         "githook.server.start" => sub {
-            my $receiver = Github::Hooks::Receiver->new(
+            my $receiver =
+              Github::Hooks::Receiver->new(
                 secret => $cfg->param("GITHOOK_SECRET") );
             $receiver->on(
 

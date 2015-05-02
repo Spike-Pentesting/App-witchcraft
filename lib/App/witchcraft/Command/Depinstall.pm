@@ -2,7 +2,7 @@ package App::witchcraft::Command::Depinstall;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils qw(info log_command
-    error notice);
+  error notice);
 use App::witchcraft::Utils::Sabayon qw(calculate_missing);
 use warnings;
 use strict;
@@ -56,7 +56,7 @@ sub run {
     error __ "You must supply a package" and return 1 if ( !$package );
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
     info __x(
-        'Installing all dependencies for {package} with depth {depth} using equo',
+'Installing all dependencies for {package} with depth {depth} using equo',
         package => $package,
         depth   => $depth
     );
@@ -64,7 +64,7 @@ sub run {
     my @to_install = calculate_missing( $package, $depth );
     info __nx(
         "One package isn't present in the system and needs to be installed",
-        "{count} packages aren't present in the system and needs to be installed",
+"{count} packages aren't present in the system and needs to be installed",
         scalar(@to_install),
         count => scalar(@to_install)
     );

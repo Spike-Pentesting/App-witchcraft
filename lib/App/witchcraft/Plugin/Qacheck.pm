@@ -12,7 +12,11 @@ sub register {
         "packages.test.after" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
             send_report(
-                info(__x( "[QA] Repoman output for {ebuild}", ebuild => $ebuild )),
+                info(
+                    __x(
+                        "[QA] Repoman output for {ebuild}", ebuild => $ebuild
+                    )
+                ),
                 $self->repoman($ebuild)
             );
         }
@@ -21,7 +25,11 @@ sub register {
         "packages.build.after.emerge" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
             send_report(
-                info(__x( "[QA] Repoman output for {ebuild}", ebuild => $ebuild )),
+                info(
+                    __x(
+                        "[QA] Repoman output for {ebuild}", ebuild => $ebuild
+                    )
+                ),
                 $self->repoman($ebuild)
             );
         }
@@ -30,7 +38,11 @@ sub register {
         "packages.build.success" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
             send_report(
-                info(__x( "[QA] Repoman output for {ebuild}", ebuild => $ebuild )),
+                info(
+                    __x(
+                        "[QA] Repoman output for {ebuild}", ebuild => $ebuild
+                    )
+                ),
                 $self->repoman($ebuild)
             );
         }
@@ -43,8 +55,8 @@ sub repoman {
     local $_ = shift;
     stripoverlay;
     atom;
-    chdir( App::witchcraft->instance->Config->param('GIT_REPOSITORY') . "/"
-            . $_ );
+    chdir(
+        App::witchcraft->instance->Config->param('GIT_REPOSITORY') . "/" . $_ );
     my @repoman = qx/repoman scan/;
     chdir($cwd);
     return @repoman;

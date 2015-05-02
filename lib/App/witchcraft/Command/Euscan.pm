@@ -85,7 +85,8 @@ L<App::witchcraft>, L<App::witchcraft::Command::Sync>
 =cut
 
 sub options {
-    (   "v|verbose"  => "verbose",
+    (
+        "v|verbose"  => "verbose",
         "q|quiet"    => "quiet",
         "c|check"    => "check",
         "u|update"   => "update",
@@ -100,7 +101,7 @@ sub options {
 sub run {
     my $self = shift;
     my $Repo = shift
-        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+      // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info __x( 'Euscan of the repository {repo}', repo => $Repo );
     my $password = password_dialog();
     info __ "Retrevieng packages in the repository" if $self->{verbose};
@@ -110,10 +111,9 @@ sub run {
     my @Added;
     my $c = 1;
     info __x( "Starting Euscan of {packages}", packages => "@Packages" )
-        if $self->{verbose};
-    my $dir
-        = $self->{root}
-        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+      if $self->{verbose};
+    my $dir = $self->{root}
+      // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
 
     foreach my $Package (@Packages) {
@@ -126,7 +126,7 @@ sub run {
         }
         push( @Updates, @temp );
         push( @Added, $self->update( $Package, $password, @temp ) )
-            if ( @temp > 0 );
+          if ( @temp > 0 );
         $c++;
     }
     if ( @Updates > 0 ) {
@@ -144,17 +144,16 @@ sub update {
 
     my @temp = @_;
     return () if ( !$self->{update} and !$self->{check} );
-    my $dir
-        = $self->{root}
-        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+    my $dir = $self->{root}
+      // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     chdir($dir);
     error __ 'No GIT_REPOSITORY defined, or --root given' and exit 1
-        if ( !$dir );
+      if ( !$dir );
     my $atom = join( '/', $dir, $Package );
     info __x( "repository doesn't have that atom ({atom})", atom => $atom )
-        and draw_down_line
-        and return ()
-        if ( !-d $atom );
+      and draw_down_line
+      and return ()
+      if ( !-d $atom );
     my $pack = shift @{ natural_order(@temp) };
     $pack =~ s/.*?\/(.*?)\:.*/$1/g;    #my ebuild name
     my $updated = join( '/', $atom, $pack . '.ebuild' );
@@ -162,8 +161,8 @@ sub update {
 
     if ( !-f $updated ) {
         draw_down_line
-            and return ()
-            if ( $self->{check} );
+          and return ()
+          if ( $self->{check} );
         bump( $atom, $updated );
     }
     else {
@@ -172,11 +171,11 @@ sub update {
         return () if ( !$self->{force} );
     }
     draw_down_line
-        and return ()
-        if ( !$self->{manifest} );
+      and return ()
+      if ( !$self->{manifest} );
     my $Test = $updated;
     $Test =~ s/$dir\/?//g;
-    if (test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
+    if ( test_ebuild( $Test, $self->{manifest}, $self->{install}, $password ) )
     {
         stage($Package) if ( $self->{git} );
     }
