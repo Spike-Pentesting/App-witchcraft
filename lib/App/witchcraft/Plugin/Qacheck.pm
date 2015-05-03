@@ -11,6 +11,11 @@ sub register {
     $emitter->on(
         "packages.test.after" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
+            if ($ebuild =~ /\=/) {
+                $ebuild=~s/=//g;
+                $ebuild=stripoverlay($ebuild);
+                $ebuild=atom($ebuild);
+            }
             send_report(
                 info(
                     __x(
