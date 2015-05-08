@@ -74,7 +74,7 @@ sub run {
         overlay => $cfg->param('OVERLAY_NAME'),
         sleep   => $cfg->param('SLEEP_TIME')
     );
-    daemonize($0) if $self->{daemon};
+    daemonize if $self->{daemon};
     send_report( __ "Watching the repo forever" );
     while (1) {
         info __ "Checking for updates, and merging up!";

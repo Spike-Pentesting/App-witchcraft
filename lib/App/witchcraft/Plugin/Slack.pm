@@ -25,6 +25,7 @@ sub register {
             $slack->chat->post_message(
                 channel  => $emitter->Config->param('SLACK_CHANNEL'),
                 text     => $message . '-' . $log,
+                parse    => "full",
                 username => $emitter->Config->param('SLACK_NICK'),
             );
         }

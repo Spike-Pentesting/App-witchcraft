@@ -11,18 +11,7 @@ sub register {
     $emitter->on(
         "packages.test.after" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
-            if ( $ebuild =~ /\=/ ) {
-                $ebuild =~ s/=//g;
-                $ebuild = stripoverlay($ebuild);
-                $ebuild = atom($ebuild);
-                info(
-                    "XXX: FOR GOD SAKE it's "
-                      . App::witchcraft->instance->Config->param(
-                        'GIT_REPOSITORY')
-                      . "/"
-                      . $ebuild
-                );
-            }
+            $ebuild = ebuild_check($ebuild);
             send_report(
                 info(
                     __x(
@@ -36,6 +25,7 @@ sub register {
     $emitter->on(
         "packages.build.after.emerge" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
+            $ebuild = ebuild_check($ebuild);
             send_report(
                 info(
                     __x(
@@ -49,6 +39,7 @@ sub register {
     $emitter->on(
         "packages.build.success" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
+            $ebuild = ebuild_check($ebuild);
             send_report(
                 info(
                     __x(
@@ -59,6 +50,18 @@ sub register {
             );
         }
     );
+}
+
+sub ebuild_check {
+    my $ebuild = shift;
+    if ( $ebuild =~ /\=/ ) {
+        $_ = $ebuild;
+        s/=//g;
+        stripoverlay;
+        atom;
+        $ebuild = $_;
+    }
+    return $ebuild;
 }
 
 sub repoman {

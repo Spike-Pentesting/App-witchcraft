@@ -36,8 +36,7 @@ error "You must create a proper "
     -e join( "/", ${App::witchcraft::HOME}, ${App::witchcraft::CONFIG_FILE} ) );
 App::witchcraft::Command->global_help and exit
   if ( defined $act and $act eq "--help" );
-
-App::witchcraft->new->load_plugins;
+App::witchcraft->new->on_load;
 App::witchcraft->instance->emit("on_load");
 App::witchcraft::Command->invoke( ($act), @ARGV );
 App::witchcraft->instance->emit("on_exit");

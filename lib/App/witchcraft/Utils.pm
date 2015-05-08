@@ -459,7 +459,7 @@ sub send_report {
     return $success;
 }
 
-sub daemonize($) {
+sub daemonize() {
     our ( $ProgramName, $PATH, $SUFFIX ) = fileparse($0);
 
     open( SELFLOCK, "<$0" )
