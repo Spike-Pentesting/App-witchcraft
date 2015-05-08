@@ -296,12 +296,20 @@ sub _emerge(@) {
     @CMD = map { stripoverlay($_); $_ } @CMD;
     my $args = $emerge_options . " " . join( " ", @DIFFS );
     clean_logs;
-    App::witchcraft->instance->emit(
+    emit(
         "packages.build.before.emerge" => ( @CMD, $commit ) );
     my @merged;
     my @unmerged;
     foreach my $package (@DIFFS) {
+        $_=$package;
+        s/\=//g;
+        atom;
+        my $atom=$_;
+        my $follow_revision = $atom eq $package? 0 :1;
         send_report( __x( "Building {package}", package => $package ) );
+        emit("package.$package.before.build"=> ($atom,$package,$commit) );
+        emit("package.$atom.before.build"=> ($atom,$package,$commit) ) if ($follow_revision ==0);
+
         if (
             log_command(
                 "nice -20 emerge --color n -v $emerge_options $package  2>&1")
@@ -315,10 +323,14 @@ sub _emerge(@) {
                     )
                 )
             );
-            App::witchcraft->instance->emit(
+        emit("package.$atom.after.build.success"=> ($atom,$package,$commit) );
+        emit("package.$package.after.build.success"=> ($atom,$package,$commit) )if ($follow_revision ==0);
+        emit(
                 "packages.build.after.emerge" => ( $package, $commit ) );
         }
         else {
+            emit("package.$atom.after.build.fail"=> ($atom,$package,$commit) );
+            emit("package.$package.after.build.fail"=> ($atom,$package,$commit) )if ($follow_revision ==0);
             push( @unmerged, $package );
             send_report( __x( "{package} build failed", package => $package ),
                 join( " ", find_logs() ) );
