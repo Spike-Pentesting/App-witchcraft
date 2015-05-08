@@ -41,6 +41,7 @@ sub register {
             return ( 1, undef ) if ( @Atoms == 0 );
             my $cwd    = cwd();
             my $return = 1;
+
             #emit "index_sync";
             foreach my $atom (@Atoms) {
                 eval { git::add $atom; };

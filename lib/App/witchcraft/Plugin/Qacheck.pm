@@ -11,10 +11,17 @@ sub register {
     $emitter->on(
         "packages.test.after" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
-            if ($ebuild =~ /\=/) {
-                $ebuild=~s/=//g;
-                $ebuild=stripoverlay($ebuild);
-                $ebuild=atom($ebuild);
+            if ( $ebuild =~ /\=/ ) {
+                $ebuild =~ s/=//g;
+                $ebuild = stripoverlay($ebuild);
+                $ebuild = atom($ebuild);
+                info(
+                    "XXX: FOR GOD SAKE it's "
+                      . App::witchcraft->instance->Config->param(
+                        'GIT_REPOSITORY')
+                      . "/"
+                      . $ebuild
+                );
             }
             send_report(
                 info(
