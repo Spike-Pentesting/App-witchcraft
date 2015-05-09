@@ -16,7 +16,7 @@ my %module_build_args = (
     },
     "dist_abstract" =>
 "Continuous integration tool, repository manager for Gentoo or your Entropy server",
-    "dist_author"          => ["mudler <mudler\@dark-lab.net>"],
+    "dist_author"          => [ "mudler <mudler\@dark-lab.net>" ],
     "dist_name"            => "App-witchcraft",
     "dist_version"         => "0.08",
     "license"              => "perl",
