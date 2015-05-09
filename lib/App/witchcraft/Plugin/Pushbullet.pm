@@ -16,20 +16,17 @@ sub register {
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;
             $self->bullet( "note", $message, $log );
-        }
-    );
+        } );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
             $self->bullet( "link", $message, $url );
-        }
-    );
+        } );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             $self->bullet( "note", "Status", $message );
-        }
-    );
+        } );
 
 }
 
@@ -46,11 +43,11 @@ sub bullet {
     foreach my $BULL (@BULLET) {
 
         my $req = POST 'https://api.pushbullet.com/v2/pushes',
-          [
+            [
             type  => $type,
             title => $title . " [$hostname]",
             $api  => $arg
-          ];
+            ];
         $req->authorization_basic($BULL);
         my $res = $ua->request($req)->as_string;
         if ( $res =~ /HTTP\/1.1 200 OK/mg ) {

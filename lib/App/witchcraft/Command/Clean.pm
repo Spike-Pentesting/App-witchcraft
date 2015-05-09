@@ -53,9 +53,9 @@ sub options {
 sub run {
     my $self = shift;
     my $dir  = shift
-      // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error __ 'No GIT_REPOSITORY defined, or --root given' and return 1
-      if ( !$dir );
+        if ( !$dir );
     info __x( 'Cleaning all the untracked files in {dir}', dir => $dir );
     clean_untracked($dir);
     clean_stash($dir) unless ( $self->{no_stash} );

@@ -19,9 +19,7 @@ sub register {
                         __x(
                             "[Scripting] Executing script: ({script})",
                             script => "cd $DIR;./$event @args"
-                        )
-                    )
-                );
+                        ) ) );
                 my $rt = system("cd $DIR;./$event @args");
                 send_report(
                     info(
@@ -29,12 +27,9 @@ sub register {
                             "[Scripting] {script} returned {status}",
                             script => "cd $DIR;./$event @args",
                             status => $rt,
-                        )
-                    )
-                );
+                        ) ) );
             }
-        }
-    );
+        } );
 }
 
 1;

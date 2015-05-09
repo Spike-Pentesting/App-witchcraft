@@ -46,7 +46,7 @@ sub run {
     error __('You must run it with root permissions') and return 1 if $> != 0;
     my $self = shift;
     my $Repo = shift
-      // App::witchcraft->instance->Config->param('OVERLAY_NAME');
+        // App::witchcraft->instance->Config->param('OVERLAY_NAME');
     info __x( 'Upgrade of the repository {repo}', repo => $Repo );
     my $password = password_dialog();
     info __("Retrevieng packages in the repository") if $self->{verbose};
@@ -55,9 +55,8 @@ sub run {
         packages => [@Packages],
         args     => {
             +App::witchcraft->instance->Config->param('EMERGE_UPGRADE_OPTS')
-              // '-n' => ""
-        }
-    )->build;
+                // '-n' => ""
+        } )->build;
 
     sleep 5;    #assures to propagate the messages
     return 1;

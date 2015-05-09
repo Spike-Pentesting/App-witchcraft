@@ -1,7 +1,8 @@
 package App::witchcraft::Command::Test;
 
 use base qw(App::witchcraft::Command);
-use App::witchcraft::Utils qw(password_dialog stage test_untracked info error);
+use App::witchcraft::Utils
+    qw(password_dialog stage test_untracked info error);
 use warnings;
 use strict;
 use Locale::TextDomain 'App-witchcraft';
@@ -61,23 +62,21 @@ sub run {
     my $self = shift;
     my $add  = $self->{'ignore'} ? 1 : 0;
     my $dir  = shift
-      // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error __ 'No GIT_REPOSITORY defined, or --root given' and return 1
-      if ( !$dir );
+        if ( !$dir );
     info __x( 'Manifest & Install of the untracked files in {dir}',
         dir => $dir );
     test_untracked(
         { dir => $dir, ignore => $add, password => +password_dialog() } )
-      and return
-      if ( !$self->{stage} );
-    test_untracked(
-        {
+        and return
+        if ( !$self->{stage} );
+    test_untracked( {
             dir      => $dir,
             ignore   => $add,
             password => +password_dialog(),
             cb       => sub { stage(@_) }
-        }
-    );
+        } );
     return;
 }
 

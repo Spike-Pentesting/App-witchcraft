@@ -69,9 +69,9 @@ sub run {
     my $cfg = App::witchcraft->new->Config;
     error __x( "At leat one of this action must be specified: {cmds}",
         cmds => "@AVAILABLE_CMDS" )
-      and return 1
-      if !defined $action
-      or !( grep { $_ eq $action } @AVAILABLE_CMDS );
+        and return 1
+        if !defined $action
+        or !( grep { $_ eq $action } @AVAILABLE_CMDS );
     $dir ||= $cfg->param('GIT_REPOSITORY');
     $self->$action($dir);
 }
@@ -79,14 +79,13 @@ sub run {
 sub metagen {
     my $self = shift;
     my $dir  = shift;
-    find(
-        {
+    find( {
             wanted => sub {
                 my $file = $File::Find::name;
                 return if ( !-d $file );
                 return if ( $file =~ /files/ );
-                return if !grep { /\.ebuild/ } <*>;
-                return if !grep { /metadata/ } <*>;
+                return if !grep {/\.ebuild/} <*>;
+                return if !grep {/metadata/} <*>;
                 system("metagen -vm");
             }
         },
@@ -97,14 +96,13 @@ sub metagen {
 sub ebuild_missing {
     my $self = shift;
     my $dir  = shift;
-    find(
-        {
+    find( {
             wanted => sub {
                 my $file = $File::Find::name;
                 return if ( !-d $file );
                 return if ( $file =~ /files/ );
-                return if !grep { /Manifest/ } <*>;
-                return if grep { /\.ebuild/ } <*>;
+                return if !grep {/Manifest/} <*>;
+                return if grep {/\.ebuild/} <*>;
                 info "$file";
             }
         },
@@ -115,8 +113,7 @@ sub ebuild_missing {
 sub digest {
     my $self = shift;
     my $dir  = shift;
-    finddepth(
-        {
+    finddepth( {
             wanted => sub {
                 my $file = $File::Find::name;
 

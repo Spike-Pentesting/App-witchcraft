@@ -1,16 +1,16 @@
 package App::witchcraft::Utils::Sabayon;
 use base qw(Exporter);
 our @EXPORT = ();
-our @EXPORT_OK =
-  qw(calculate_missing conf_update  list_available remove_available entropy_rescue entropy_update);
+our @EXPORT_OK
+    = qw(calculate_missing conf_update  list_available remove_available entropy_rescue entropy_update);
 use Locale::TextDomain 'App-witchcraft';
 use constant DEBUG => $ENV{DEBUG} || 0;
 
 #use IPC::Run3;
 use App::witchcraft::Utils
-  qw(info error notice uniq send_report save_compiled_packages save_compiled_commit log_command upgrade);
+    qw(info error notice uniq send_report save_compiled_packages save_compiled_commit log_command upgrade);
 use App::witchcraft::Utils::Gentoo
-  qw(clean_logs find_logs depgraph remove_emerge_packages);
+    qw(clean_logs find_logs depgraph remove_emerge_packages);
 
 #here functs can be overloaded.
 
@@ -39,11 +39,11 @@ sub conf_update {
 sub emerge(@) {
     my $options = shift;
     App::witchcraft->instance->emit( before_emerge => ($options) );
-    my $emerge_options =
-      join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
-    $emerge_options .=
-      " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
-      if App::witchcraft->instance->Config->param('EMERGE_OPTS');
+    my $emerge_options
+        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    $emerge_options
+        .= " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
+        if App::witchcraft->instance->Config->param('EMERGE_OPTS');
     my @DIFFS = @_;
     my @CMD   = @DIFFS;
     my @equo_install;
@@ -61,12 +61,10 @@ sub emerge(@) {
         push( @equo_install, &calculate_missing( $_, 1 ) ) for @CMD;
         info(
             __xn(
-"One dependency of the package is not present in the system, installing them with equo",
-"{count} dependencies of the package are not present in the system, installing them with equo",
+                "One dependency of the package is not present in the system, installing them with equo",
+                "{count} dependencies of the package are not present in the system, installing them with equo",
                 scalar(@equo_install),
-                count => scalar(@equo_install)
-            )
-        );
+                count => scalar(@equo_install) ) );
         my $Installs = join( " ", @equo_install );
         info( __ "Installing: " );
         notice($_) for @equo_install;
@@ -74,19 +72,19 @@ sub emerge(@) {
     }
     @DIFFS
 
-      & conf_update;    #EXPECT per DISPATCH-CONF
+        & conf_update;    #EXPECT per DISPATCH-CONF
 
     #XXX: emerge 1 a 1
     foreach my $package (@DIFFS) {
         if (
             log_command(
                 "nice -20 emerge --color n -v -B $emerge_options $package  2>&1"
-            )
-          )
+            ) )
         {
             App::witchcraft->instance->emit( after_emerge => ($package) );
             info(
-                __x( "Compressing package: {package}", package => $package ) );
+                __x( "Compressing package: {package}", package => $package )
+            );
             &conf_update;
             App::witchcraft->instance->emit( before_compressing => (@DIFFS) );
 
@@ -106,7 +104,7 @@ sub emerge(@) {
             #     \$out, \$err
             # );
             system(
-'eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
+                'eit inject `find /usr/portage/packages -name "*.tbz2" | xargs echo`'
             );
 
             if ( $? == 0 ) {
@@ -118,9 +116,8 @@ sub emerge(@) {
                     info( __("All went smooth, HURRAY!") );
                     send_report(
                         __(
-"All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
-                        )
-                    );
+                            "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                        ) );
                     App::witchcraft->instance->emit( after_push => (@DIFFS) );
                     $rs = 1;
                     &entropy_rescue;
@@ -130,7 +127,7 @@ sub emerge(@) {
             else {
                 send_report(
                     __(
-"Error in compression phase, you have to manually solve it"
+                        "Error in compression phase, you have to manually solve it"
                     ),
                     $out, $err
                 );
@@ -151,7 +148,7 @@ sub emerge(@) {
     #Maintenance stuff
     upgrade;
     remove_emerge_packages
-      ; # packages emerged before must be included, this is in the case you installed something else that you forgot to add, in the worst scenario you just have to call conflict
+        ; # packages emerged before must be included, this is in the case you installed something else that you forgot to add, in the worst scenario you just have to call conflict
     return $rs;
 }
 
@@ -163,9 +160,7 @@ sub calculate_missing($$) {
         __x(
             "{package}: has {deps} dependencies ",
             package => $package,
-            deps    => scalar(@Packages)
-        )
-    );
+            deps    => scalar(@Packages) ) );
     my @Installed_Packages = qx/equo q -q list installed/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
@@ -223,8 +218,7 @@ sub process(@) {
                     "<{commit}> Compiled: {diffs}",
                     commit => $commit,
                     diffs  => "@DIFFS"
-                )
-            );
+                ) );
             App::witchcraft->instance->emit( after_process => (@DIFFS) );
             if ( $use == 0 ) {
                 &save_compiled_commit($commit);
@@ -238,8 +232,8 @@ sub process(@) {
 
 sub list_available {
     my $options = shift;
-    my $equo_options =
-      join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
+    my $equo_options
+        = join( " ", map { "$_ " . $options->{$_} } keys %{$options} );
     my @r;
     push( @r, &uniq(`equo query list available $_ $equo_options`) ) for @_;
     chomp @r;

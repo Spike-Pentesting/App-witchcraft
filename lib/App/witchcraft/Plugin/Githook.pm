@@ -16,28 +16,24 @@ sub register {
             my $event   = shift;
             my $payload = $event->payload;
             info( __x( "Payload: {payload}", payload => $payload ) )
-              if $payload;
+                if $payload;
             info( __x( "Event: {event}", event => $event->event ) )
-              if $event->event;
+                if $event->event;
             emit("align_to");
-        }
-    );
+        } );
     $emitter->on(
         "githook.server.start" => sub {
-            my $receiver =
-              Github::Hooks::Receiver->new(
+            my $receiver = Github::Hooks::Receiver->new(
                 secret => $cfg->param("GITHOOK_SECRET") );
             $receiver->on(
 
                 #listening on events it's supported for github "push" =>
                 sub {
                     $emitter->emit( "git_push" => @_ );
-                }
-            );
+                } );
             my $psgi = $receiver->to_app;
             $receiver->run( $cfg->param("GITHOOK_PLACK_OPTIONS") );
-        }
-    );
+        } );
 }
 
 1;

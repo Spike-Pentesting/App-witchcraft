@@ -4,7 +4,7 @@ use base qw(App::witchcraft::Command);
 use Carp::Always;
 use Locale::TextDomain 'App-witchcraft';
 use App::witchcraft::Utils
-  qw(error info notice draw_down_line draw_up_line send_report vagrant_box_status vagrant_box_cmd);
+    qw(error info notice draw_down_line draw_up_line send_report vagrant_box_status vagrant_box_cmd);
 use warnings;
 use Child;
 use strict;
@@ -83,9 +83,9 @@ sub run {
     my @args   = @_;
     error __x( "At least one of this action must be specified: {cmds}",
         cmds => "@AVAILABLE_CMDS" )
-      and return 1
-      if !defined $action
-      or !( grep { $_ eq $action } @AVAILABLE_CMDS );
+        and return 1
+        if !defined $action
+        or !( grep { $_ eq $action } @AVAILABLE_CMDS );
     App::witchcraft->instance->emit("irc_exit");    # prevent irc collapse
 
     my $cfg          = App::witchcraft->instance->Config;
@@ -99,9 +99,9 @@ sub run {
     $ENV{VAGRANT_HOME} = $FAKE_ENV_VAGRANT_HOME if ($FAKE_ENV_VAGRANT_HOME);
 
     ( -d $_ )
-      ? $self->$action( $_, @args )
-      : error("Something is wrong, i can't find your box: $_")
-      for $cfg->param("VAGRANT_BOXES");
+        ? $self->$action( $_, @args )
+        : error("Something is wrong, i can't find your box: $_")
+        for $cfg->param("VAGRANT_BOXES");
 
     $ENV{HOME}         = $HOME;
     $ENV{VAGRANT_HOME} = $VAGRANT_HOME;
@@ -115,7 +115,7 @@ sub status { info $_[1] . ": " . vagrant_box_status( $_[1] ); }
 
 sub up {
     error $_[1] . ": " . __ "box is already running" and return 1
-      if ( vagrant_box_status( $_[1] ) eq "running" );
+        if ( vagrant_box_status( $_[1] ) eq "running" );
     info __ "Starting up " . $_[1];
     info $_[1] . ": ";
     notice join( "\n", @{ ( vagrant_box_cmd( "up", $_[1] ) )[1] } );
@@ -131,11 +131,11 @@ sub ssh {
     my $self = shift;
     my $box  = shift;
     info __x( "Spawning ssh on {box}", box => $box );
-    system( "tmux new-window 'export HOME=\""
-          . $ENV{HOME}
-          . "\";export VAGRANT_HOME=\""
-          . $ENV{VAGRANT_HOME}
-          . "\";cd $box; vagrant ssh' &" );
+    system(   "tmux new-window 'export HOME=\""
+            . $ENV{HOME}
+            . "\";export VAGRANT_HOME=\""
+            . $ENV{VAGRANT_HOME}
+            . "\";cd $box; vagrant ssh' &" );
 }
 
 sub monitor_start {
@@ -145,9 +145,10 @@ sub monitor_start {
     my $secs = $min * 60;
 
     $self->_clean_monitor($box) if ( -e "$box/.monitor.pid" );
-    error __x( "it seems that a monitor is already up for {box}", box => $box )
-      and return 0
-      unless ( !-e "$box/.monitor.pid" );
+    error __x( "it seems that a monitor is already up for {box}",
+        box => $box )
+        and return 0
+        unless ( !-e "$box/.monitor.pid" );
 
     info __x( "Monitoring {box} for {min} m ", box => $box, min => $min );
 
@@ -156,11 +157,10 @@ sub monitor_start {
             my ($parent) = @_;
             while (1) {
                 notice join( "\n", @{ ( vagrant_box_cmd( "up", $box ) )[1] } )
-                  if vagrant_box_status($box) eq "poweroff";
+                    if vagrant_box_status($box) eq "poweroff";
                 sleep $secs;
             }
-        }
-    );
+        } );
     my $proc = $child->start;
     open my $PIDFILE, ">$box/.monitor.pid";
     print $PIDFILE $proc->pid;
@@ -174,8 +174,8 @@ sub monitor_stop {
     my $secs = $min * 60;
     error __x( "it seems that there isn't a monitor running for {box}",
         box => $box )
-      and return 0
-      unless ( -e "$box/.monitor.pid" );
+        and return 0
+        unless ( -e "$box/.monitor.pid" );
     open my $PIDFILE, "<$box/.monitor.pid";
     my $PID = <$PIDFILE>;
     close $PIDFILE;

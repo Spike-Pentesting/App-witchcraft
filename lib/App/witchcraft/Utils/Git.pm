@@ -1,10 +1,10 @@
 package App::witchcraft::Utils::Git;
 use base qw(Exporter);
 our @EXPORT = ();
-our @EXPORT_OK =
-  qw(last_commit detect_rebase get_commit_by_order invalid_commit);
+our @EXPORT_OK
+    = qw(last_commit detect_rebase get_commit_by_order invalid_commit);
 use App::witchcraft::Utils
-  qw(info error give_stderr_to_dogs give_stdout_to_dogs);
+    qw(info error give_stderr_to_dogs give_stdout_to_dogs);
 use Locale::TextDomain 'App-witchcraft';
 
 #  name: last_commit
@@ -15,19 +15,18 @@ sub last_commit {
     my $git_repository_path = $_[0];
     my $master = $_[1] // ".git/refs/heads/master";
     open my $FH,
-        "<"
-      . $git_repository_path . "/"
-      . $master
-      or (
+          "<"
+        . $git_repository_path . "/"
+        . $master
+        or (
         error(
             __x(
-'Something is terribly wrong, cannot open {git_repository_path} {master}',
+                'Something is terribly wrong, cannot open {git_repository_path} {master}',
                 git_repository_path => $git_repository_path,
                 master              => $master
-            )
-        )
+            ) )
         and exit 1
-      );
+        );
     my @FILE = <$FH>;
     chomp(@FILE);
     close $FH;

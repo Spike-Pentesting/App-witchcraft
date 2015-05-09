@@ -4,12 +4,12 @@ use Locale::TextDomain 'App-witchcraft';
 use Deeme::Obj "App::witchcraft::Plugin::Gentoo";
 use App::witchcraft;
 use App::witchcraft::Utils
-  qw(info error notice append spurt chwn log_command send_report);
+    qw(info error notice append spurt chwn log_command send_report);
 use App::witchcraft::Utils::Gentoo
-  qw(stripoverlay clean_logs find_logs to_ebuild remove_emerge_packages);
+    qw(stripoverlay clean_logs find_logs to_ebuild remove_emerge_packages);
 
 use App::witchcraft::Utils::Sabayon
-  qw(entropy_update conf_update entropy_rescue calculate_missing);
+    qw(entropy_update conf_update entropy_rescue calculate_missing);
 use IPC::Run3;
 
 sub register {
@@ -26,10 +26,11 @@ sub register {
                 == 1 )
             {
 
-                my ($kernel) = `equo match -q --installed virtual/linux-binary`;
+                my ($kernel)
+                    = `equo match -q --installed virtual/linux-binary`;
                 chomp($kernel);
-                my ($current_kernel) =
-                  `equo match --installed "$kernel" -q --showslot`;
+                my ($current_kernel)
+                    = `equo match --installed "$kernel" -q --showslot`;
                 chomp($current_kernel);
 
                 my ($available_kernel) = `equo match "$kernel" -q --showslot`;
@@ -52,10 +53,9 @@ sub register {
                 "packages.build.after.compression" => (@PACKAGES) );
             App::witchcraft->instance->emit(
                 "packages.build.after.push" => ( @PACKAGES, $commit ) )
-              if ( log_command("eit push --quick") );
+                if ( log_command("eit push --quick") );
             log_command("equo rescue spmsync");
-        }
-    );
+        } );
 
     $emitter->on(
         "packages.build.before.emerge" => sub {
@@ -64,42 +64,42 @@ sub register {
             my @equo_install;
             entropy_update;
             return
-              if !App::witchcraft->instance->Config->param('EQUO_DEPINSTALL')
-              or App::witchcraft->instance->Config->param('EQUO_DEPINSTALL') !=
-              1;
+                if !App::witchcraft->instance->Config->param(
+                'EQUO_DEPINSTALL')
+                or App::witchcraft->instance->Config->param('EQUO_DEPINSTALL')
+                != 1;
 
             #reticulating splines here...
             push( @equo_install, &calculate_missing( $_, 1 ) ) for @_;
             info(
                 __xn(
-"One dependency of the package is not present in the system, installing them with equo",
-"{count} dependencies of the package are not present in the system, installing them with equo",
+                    "One dependency of the package is not present in the system, installing them with equo",
+                    "{count} dependencies of the package are not present in the system, installing them with equo",
                     scalar(@equo_install),
-                    count => scalar(@equo_install)
-                )
-            );
+                    count => scalar(@equo_install) ) );
             my $Installs = join( " ", @equo_install );
             info( __("Installing: ") );
             notice($_) for @equo_install;
             system("sudo equo i -q --relaxed $Installs");
 
-        }
-    );
+        } );
     $emitter->on(
         "packages.build.after.push" => sub {
             my $commit = pop @_;
 
             send_report(
                 info(
-                    __x( "<{commit}> Pushed to repository", commit => $commit )
-                )
-            );
+                    __x(
+                        "<{commit}> Pushed to repository",
+                        commit => $commit
+                    ) ) );
             entropy_rescue;
             entropy_update;
-        }
+        } );
+    $emitter->on( "packages.build.before.compression" => sub { conf_update; }
     );
-    $emitter->on( "packages.build.before.compression" => sub { conf_update; } );
-    $emitter->on( "packages.build.after.compression"  => sub { conf_update; } );
+    $emitter->on( "packages.build.after.compression" => sub { conf_update; }
+    );
 
     $emitter->on(
         "packages.build.after.emerge" => sub {
@@ -141,8 +141,7 @@ sub register {
 # );
 
             remove_emerge_packages;
-        }
-    );
+        } );
 
 }
 

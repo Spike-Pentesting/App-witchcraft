@@ -20,22 +20,20 @@ sub register {
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            $emitter->emit(
-                send_irc_message => $message . " - " . $url . " [$hostname]" );
-        }
-    );
+            $emitter->emit( send_irc_message => $message . " - "
+                    . $url
+                    . " [$hostname]" );
+        } );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
             $emitter->emit( send_irc_message => $message . " [$hostname]" );
-        }
-    );
+        } );
     $emitter->on(
         "send_irc_message" => sub {
             my ( $witchcraft, $message ) = @_;
             $self->irc_msg($_) for truncate_words( $message, 300 );
-        }
-    );
+        } );
 
     $emitter->on( "on_exit"  => sub { $emitter->emit("irc_exit") } );
     $emitter->on( "irc_exit" => sub { $self->thread->kill('SIGUSR1') } );
@@ -46,10 +44,10 @@ sub irc_msg {
     my $self    = shift;
     my $message = shift;
     notice( __x( "Sending >>{message}<< on IRC ", message => $message ) )
-      if DEBUG;
+        if DEBUG;
     if ( my $socket = $self->irc ) {
         printf $socket "PRIVMSG $_ :$message\r\n"
-          for App::witchcraft->instance->Config->param('IRC_CHANNELS');
+            for App::witchcraft->instance->Config->param('IRC_CHANNELS');
     }
     else {
         $self->irc_msg_join_part($message);
@@ -82,7 +80,8 @@ sub _handle {
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
     my $thr = threads->new(
         sub {
-            local $SIG{USR1} = sub { printf $socket "QUIT\r\n"; threads->exit };
+            local $SIG{USR1}
+                = sub { printf $socket "QUIT\r\n"; threads->exit };
             while ( my $line = <$socket> ) {
                 print $line if DEBUG;
                 if ( $line =~ /^PING \:(.*)/ ) {
@@ -93,8 +92,7 @@ sub _handle {
                 }
             }
             $socket->close if ( defined $socket );
-        }
-    );
+        } );
     $thr->detach;
     $self->thread($thr);
 }
@@ -112,9 +110,9 @@ sub irc_msg_join_part {
         PeerPort => $cfg->param('IRC_PORT'),
         Proto    => "tcp",
         Timeout  => 10
-      )
-      or error( __ "Couldn't connect to the irc server" )
-      and return undef;
+        )
+        or error( __ "Couldn't connect to the irc server" )
+        and return undef;
     info( __ "Sending notification also on IRC" ) if DEBUG;
     return undef unless $socket;
     $socket->autoflush(1);
@@ -134,11 +132,9 @@ sub irc_msg_join_part {
                     __x(
                         "Joining {chan} on {server}",
                         chan   => $chan,
-                        server => $cfg->param('IRC_SERVER')
-                    )
-                ) if DEBUG;
+                        server => $cfg->param('IRC_SERVER') ) ) if DEBUG;
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2
-                  for (@MESSAGES);
+                    for (@MESSAGES);
                 sleep 5;
             }
             printf $socket "QUIT\r\n";

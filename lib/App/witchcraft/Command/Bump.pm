@@ -3,7 +3,7 @@ package App::witchcraft::Command::Bump;
 use base qw(App::witchcraft::Command);
 use Carp::Always;
 use App::witchcraft::Utils
-  qw(error info notice draw_down_line draw_up_line find_ext uniq filetoatom);
+    qw(error info notice draw_down_line draw_up_line find_ext uniq filetoatom);
 use App::witchcraft::Utils::Gentoo qw(euscan);
 use warnings;
 use App::witchcraft::Command::Euscan;
@@ -80,9 +80,9 @@ sub run {
 
     error __x( "At leat one of this action must be specified: {cmds}",
         cmds => "@AVAILABLE_CMDS" )
-      and return 1
-      if !defined $action
-      or !( grep { $_ eq $action } @AVAILABLE_CMDS );
+        and return 1
+        if !defined $action
+        or !( grep { $_ eq $action } @AVAILABLE_CMDS );
 
     my $Euscan = App::witchcraft::Command::Euscan->new;
     $Euscan->{git}      = $self->{git};
@@ -97,7 +97,7 @@ sub scan {
     my $Euscan = shift;
     my @args   = @_;
     push( @args, join( "/", ( split( /\//, cwd ) )[ -2 .. -1 ] ) )
-      unless @args > 0;
+        unless @args > 0;
     chomp(@args);
     $self->euscan_packages( $Euscan, @args );
 }
@@ -124,7 +124,7 @@ sub euscan_packages {
         info "** " . $_ for @temp;
         push( @Updates, @temp );
         push( @Added, $Euscan->update( $Package, undef, @temp ) )
-          if ( @temp > 0 );
+            if ( @temp > 0 );
 
         $c++;
     }

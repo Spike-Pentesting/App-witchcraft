@@ -10,14 +10,12 @@ sub register {
         "packages.test.after" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
             $self->test($ebuild);
-        }
-    );
+        } );
     $emitter->on(
         "packages.build.after.emerge" => sub {
             my ( $witchcraft, $ebuild, undef ) = @_;
             $self->test($ebuild);
-        }
-    );
+        } );
 }
 
 sub test {
@@ -32,8 +30,7 @@ sub test {
                     ebuild  => $ebuild
                 ),
                 @RDEPEND
-            )
-        );
+            ) );
     }
 }
 
@@ -44,7 +41,7 @@ sub depcheck {
     my @RDEPEND;
     foreach my $line (@depcheck) {
         push( @RDEPEND, split( / /, $1 ) )
-          if ( $line =~ /RDEPEND on (.*)/ or $line =~ /RDEPEND: (.*)/ );
+            if ( $line =~ /RDEPEND on (.*)/ or $line =~ /RDEPEND: (.*)/ );
     }
     return @RDEPEND;
 }

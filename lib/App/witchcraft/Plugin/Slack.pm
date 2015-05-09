@@ -13,13 +13,12 @@ sub register {
     return undef unless $emitter->Config->param('SLACK_TOKEN');
     return undef unless $emitter->Config->param('SLACK_CHANNEL');
     my $username = $emitter->Config->param('SLACK_NICK')
-      // $App::witchcraft::HOSTNAME;
+        // $App::witchcraft::HOSTNAME;
 
     $emitter->on(
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;
-            my $slack =
-              WebService::Slack::WebApi->new(
+            my $slack = WebService::Slack::WebApi->new(
                 token => $emitter->Config->param('SLACK_TOKEN') );
 
             $slack->chat->post_message(
@@ -28,13 +27,11 @@ sub register {
                 parse    => "full",
                 username => $emitter->Config->param('SLACK_NICK'),
             );
-        }
-    );
+        } );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            my $slack =
-              WebService::Slack::WebApi->new(
+            my $slack = WebService::Slack::WebApi->new(
                 token => $emitter->Config->param('SLACK_TOKEN') );
 
             $slack->chat->post_message(
@@ -42,13 +39,11 @@ sub register {
                 text     => $message . ' - ' . $url,
                 username => $emitter->Config->param('SLACK_NICK'),
             );
-        }
-    );
+        } );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
-            my $slack =
-              WebService::Slack::WebApi->new(
+            my $slack = WebService::Slack::WebApi->new(
                 token => $emitter->Config->param('SLACK_TOKEN') );
 
             $slack->chat->post_message(
@@ -56,8 +51,7 @@ sub register {
                 text     => $message,
                 username => $emitter->Config->param('SLACK_NICK'),
             );
-        }
-    );
+        } );
 
 }
 

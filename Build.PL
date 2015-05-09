@@ -15,8 +15,8 @@ my %module_build_args = (
         "Module::Build" => "0.28"
     },
     "dist_abstract" =>
-"Continuous integration tool, repository manager for Gentoo or your Entropy server",
-    "dist_author"          => [ "mudler <mudler\@dark-lab.net>" ],
+        "Continuous integration tool, repository manager for Gentoo or your Entropy server",
+    "dist_author"          => ["mudler <mudler\@dark-lab.net>"],
     "dist_name"            => "App-witchcraft",
     "dist_version"         => "0.08",
     "license"              => "perl",
@@ -25,8 +25,7 @@ my %module_build_args = (
     "recursive_test_files" => 1,
     "requires"             => {},
     "script_files"         => [ "bin/depcheck", "bin/witchcraft" ],
-    "test_requires"        => {}
-);
+    "test_requires"        => {} );
 
 my %fallback_build_requires = ( "Module::Build" => "0.28" );
 

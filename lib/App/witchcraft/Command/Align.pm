@@ -54,7 +54,7 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 sub run {
     error( __('You must run it with root permissions') ) and return 1
-      if $> != 0;
+        if $> != 0;
     my $self        = shift;
     my $last_commit = shift;
     emit( "align_to" => $last_commit );

@@ -3,9 +3,9 @@ use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj -base;
 use App::witchcraft::Utils
-  qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line uniq);
+    qw(info error notice append spurt chwn log_command send_report upgrade on emit draw_up_line draw_down_line uniq);
 use App::witchcraft::Utils::Gentoo
-  qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild remove_emerge_packages);
+    qw(stripoverlay clean_logs find_logs to_ebuild atom repo_update test_ebuild remove_emerge_packages);
 use App::witchcraft::Utils::Git qw(last_commit get_commit_by_order);
 use Cwd;
 use App::witchcraft::Constants qw(BUILD_SUCCESS BUILD_FAILED BUILD_UNKNOWN);
@@ -31,12 +31,12 @@ sub register {
 
                     $_ =~ s/.*\K\/Manifest$//g;    #removing manifest
                     $_
-                  } grep {
+                    } grep {
                     /Manifest$/i    #Only with the manifest are interesting
-                  } @_;
+                    } @_;
 
                 @EMERGING = map { $_ . "::" . $cfg->param('OVERLAY_NAME') }
-                  grep { -d $_ and $_ =~ /\S/ } @FILES;
+                    grep { -d $_ and $_ =~ /\S/ } @FILES;
 
             }
             elsif ( $cfg->param('FOLLOW_VERSIONING')
@@ -44,22 +44,24 @@ sub register {
             {
                 @EMERGING = map {
                     if ( $_ =~ /(.*?)\/.*\/(.*?)\.ebuild/ ) {
-                        $_ = "="
-                          . $1 . "/"
-                          . $2 . "::"
-                          . $cfg->param('OVERLAY_NAME');
+                        $_
+                            = "="
+                            . $1 . "/"
+                            . $2 . "::"
+                            . $cfg->param('OVERLAY_NAME');
                     }
                     $_;
-                  } grep {
+                    } grep {
                     /\.ebuild$/i and -e $_    #Only ebuilds that exists worth
-                  } @_;
+                    } @_;
             }
 
             #  system("git stash");
             #my $Clean = App::witchcraft::Command::Clean->new;
             #$Clean->run;
             if ( @EMERGING > 0 ) {
-                notice( __('These are the packages that would be processed:') );
+                notice(
+                    __('These are the packages that would be processed:') );
                 draw_up_line;
                 info "\t* " . $_ for @EMERGING;
                 draw_down_line;
@@ -74,8 +76,7 @@ sub register {
                 track_build => 1
             )->build;
             chdir($cwd);
-        }
-    );
+        } );
 
     $emitter->on(
         "packages.test" => sub {
@@ -99,8 +100,7 @@ sub register {
                         count => $c,
                         total => scalar(@Untracked),
                         atom  => $new_pos
-                    )
-                );
+                    ) );
                 my $atom = $new_pos;
 
                 #$atom = filetoatom($atom);
@@ -119,39 +119,34 @@ sub register {
             }
             if ( $ignore and $ignore == 1 and @Failed > 0 ) {
                 tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
-                  or die( error $!);
+                    or die( error $!);
                 send_report(
                     __(
-"Witchcraft need your attention, i'm asking you few questions"
-                    )
-                );
+                        "Witchcraft need your attention, i'm asking you few questions"
+                    ) );
                 foreach my $fail (@Failed) {
                     push( @ignores, $fail )
-                      if (
+                        if (
                         dialog_yes_default(
                             __x(
                                 "Add {failed} to the ignore list?",
                                 failed => $fail
-                            )
-                        )
-                      );
+                            ) ) );
                 }
             }
             if ( @Installed > 0 ) {
                 &info(
                     __(
-"Those files where correctly installed, maybe you wanna check them: "
-                    )
-                );
+                        "Those files where correctly installed, maybe you wanna check them: "
+                    ) );
                 my $result;
                 notice($_) and $result .= " " . $_
-                  for ( uniq(@Atoms_Installed) );
+                    for ( uniq(@Atoms_Installed) );
                 send_report(
                     __x(
                         "These ebuilds where correctly installed: {result}",
                         result => $result
-                    )
-                );
+                    ) );
                 info( __("Generating the command for maintenance") );
                 notice("git add $result");
                 notice("eix-sync");
@@ -163,32 +158,28 @@ sub register {
             else {
                 info(
                     __(
-"No files where tested because there weren't untracked files or all packages failed to install"
-                    )
-                );
+                        "No files where tested because there weren't untracked files or all packages failed to install"
+                    ) );
             }
             chdir($cwd);
 
-        }
-    );
+        } );
 
     $emitter->on(
         "packages.untracked" => sub {
             my $self = shift;
             my $opts = shift;
 
-            my @Untracked = grep { /\.ebuild$/ } @_;
+            my @Untracked = grep {/\.ebuild$/} @_;
             info(
                 __x(
                     "Those are the file that would be tested: {untracked}",
                     untracked => "@Untracked"
-                )
-            );
+                ) );
             clean_logs;    #spring cleaning!
             emit( "packages.test" => $opts, @Untracked );
 
-        }
-    );
+        } );
     $emitter->on(
         "packages.build" => sub {
             my ( undef, @Packages ) = @_;
@@ -215,37 +206,35 @@ sub register {
                         "[{commit}] building packages: {packages}",
                         commit   => $commit,
                         packages => "@DIFFS"
-                    )
-                )
-            );
+                    ) ) );
             my $rs           = _emerge( $emerge_options, @DIFFS, $commit );
             my $build_status = $rs->[0];
             my @merged       = @{ $rs->[1] };
             my @unmerged     = @{ $rs->[2] };
 
             if ( $build_status == BUILD_SUCCESS
-                or ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
+                or
+                ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
                 send_report(
                     __x(
                         "[{commit}] Build completed for: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
-                    )
-                );
+                    ) );
                 $on_success->(@DIFFS) if defined $on_success;
                 emit( "packages.build.success" => ( $commit, @DIFFS ) );
             }
 
-            if ( ( exists $options->{relaxed} and $options->{relaxed} == 1 ) ) {
+            if ( ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
+            {
                 send_report(
                     __x(
                         "[{commit}] Merged: {merged} | Unmerged: {unmerged}",
                         commit   => $commit,
                         merged   => "@merged",
                         unmerged => "@unmerged"
-                    )
-                );
+                    ) );
             }
 
             if ( $build_status == BUILD_FAILED ) {
@@ -254,13 +243,11 @@ sub register {
                         "[{commit}] Failed: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
-                    )
-                );
+                    ) );
                 $on_failed->(@DIFFS) if defined $on_failed;
                 emit( "packages.build.failed" => ( $commit, @DIFFS ) );
             }
-        }
-    );
+        } );
 }
 
 =head1 _emerge(@Atoms,$commit,$usage)
@@ -280,12 +267,11 @@ sub _emerge(@) {
 
 # App::witchcraft->instance->emit( "packages.build.before.emerge" => ($options) );
 
-    $emerge_options =
-      join( " ",
+    $emerge_options = join( " ",
         map { "$_ " . $emerge_options->{$_} } keys %{$emerge_options} );
-    $emerge_options .=
-      " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
-      if App::witchcraft->instance->Config->param('EMERGE_OPTS');
+    $emerge_options
+        .= " " . App::witchcraft->instance->Config->param('EMERGE_OPTS')
+        if App::witchcraft->instance->Config->param('EMERGE_OPTS');
 
     my $commit = pop(@_);
     my @DIFFS  = @_;
@@ -306,36 +292,36 @@ sub _emerge(@) {
         my $atom = $_;
         my $follow_revision = $atom eq $package ? 0 : 1;
         send_report( __x( "Building {package}", package => $package ) );
-        emit( "package.$package.before.build" => ( $atom, $package, $commit ) );
-        emit( "package.$atom.before.build"    => ( $atom, $package, $commit ) )
-          if ( $follow_revision == 0 );
+        emit(
+            "package.$package.before.build" => ( $atom, $package, $commit ) );
+        emit( "package.$atom.before.build" => ( $atom, $package, $commit ) )
+            if ( $follow_revision == 0 );
 
         if (
             log_command(
                 "nice -20 emerge --color n -v $emerge_options $package  2>&1")
-          )
+            )
         {
             push( @merged, $package );
             send_report(
                 info(
                     __x(
-                        "{package} builded successfully", package => $package
-                    )
-                )
-            );
+                        "{package} builded successfully",
+                        package => $package
+                    ) ) );
             emit( "package.$atom.after.build.success" =>
-                  ( $atom, $package, $commit ) );
+                    ( $atom, $package, $commit ) );
             emit( "package.$package.after.build.success" =>
-                  ( $atom, $package, $commit ) )
-              if ( $follow_revision == 0 );
+                    ( $atom, $package, $commit ) )
+                if ( $follow_revision == 0 );
             emit( "packages.build.after.emerge" => ( $package, $commit ) );
         }
         else {
             emit( "package.$atom.after.build.fail" =>
-                  ( $atom, $package, $commit ) );
+                    ( $atom, $package, $commit ) );
             emit( "package.$package.after.build.fail" =>
-                  ( $atom, $package, $commit ) )
-              if ( $follow_revision == 0 );
+                    ( $atom, $package, $commit ) )
+                if ( $follow_revision == 0 );
             push( @unmerged, $package );
             send_report( __x( "{package} build failed", package => $package ),
                 join( " ", find_logs() ) );

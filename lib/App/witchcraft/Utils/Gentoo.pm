@@ -1,7 +1,7 @@
 package App::witchcraft::Utils::Gentoo;
 use base qw(Exporter);
 use App::witchcraft::Utils
-  qw(info error notice send_report uniq log_command draw_down_line);
+    qw(info error notice send_report uniq log_command draw_down_line);
 
 use Locale::TextDomain 'App-witchcraft';
 use Term::ANSIColor;
@@ -12,8 +12,8 @@ use IPC::Run3;
 use File::Copy;
 
 our @EXPORT = ();
-our @EXPORT_OK =
-  qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan test_ebuild bump remove_emerge_packages);
+our @EXPORT_OK
+    = qw(atom stripoverlay calculate_missing conf_update  depgraph find_logs clean_logs repo_update to_ebuild euscan test_ebuild bump remove_emerge_packages);
 
 sub remove_emerge_packages {
     system("rm -rf /usr/portage/packages/*");
@@ -38,35 +38,34 @@ sub bump {
     my $updated = shift;
     notice( __x( 'opening {atom}', atom => $atom ) );
     opendir( DH, $atom )
-      or ( error( __x( "Cannot open {atom}", atom => $atom ) )
+        or ( error( __x( "Cannot open {atom}", atom => $atom ) )
         and return undef );
-    my @files = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
-      grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
+    my @files
+        = sort { -M join( '/', $atom, $a ) <=> -M join( '/', $atom, $b ) }
+        grep { -f join( '/', $atom, $_ ) and /\.ebuild$/ } readdir(DH);
     closedir(DH);
     my $last = shift @files;
     error( __x( "No ebuild could be found in {atom}", atom => $atom ) )
-      and return undef
-      if ( !defined $last );
+        and return undef
+        if ( !defined $last );
     my $source = join( '/', $atom, $last );
     notice(
         __x(
             'Using =====> {ebuild} <===== as a skeleton for the new version',
             ebuild => $last
-        )
-    );
+        ) );
     notice( __("Copying") );
     send_report(
         __x(
             "Automatic bump: {atom} -> {updated}",
             atom    => $atom,
             updated => $updated
-        )
-    );
+        ) );
     info( __x( "Bumped: {updated} ", updated => $updated ) )
-      and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
-      and return 1
-      if defined $last
-      and copy( $source, $updated );
+        and App::witchcraft->instance->emit( bump => ( $atom, $updated ) )
+        and return 1
+        if defined $last
+        and copy( $source, $updated );
     return undef;
 }
 
@@ -101,7 +100,7 @@ sub repo_update {
 
 sub clean_logs {
     system("find /var/tmp/portage/ | grep build.log | xargs rm -rf")
-      ;    #spring cleaning!
+        ;    #spring cleaning!
 }
 
 #
@@ -165,9 +164,7 @@ sub calculate_missing($$) {
             "One dependency found",
             "{count} dependencies found ",
             scalar(@Packages),
-            count => scalar(@Packages)
-        )
-    );
+            count => scalar(@Packages) ) );
     my @Installed_Packages = qx/EIX_LIMIT_COMPACT=0 eix -Inc -#/;
     chomp(@Installed_Packages);
     my %packs = map { $_ => 1 } @Installed_Packages;
@@ -180,8 +177,8 @@ sub depgraph($$) {
     my $package = shift;
     my $depth   = shift;
     return
-      map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
-      qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
+        map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
+        qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
 sub conf_update {
@@ -205,33 +202,35 @@ sub test_ebuild {
         $password = "";
     }
     system( $password. " ebuild $ebuild clean" )
-      ;    #Cleaning before! at least it fails :P
+        ;    #Cleaning before! at least it fails :P
     if ( defined $manifest and system("ebuild $ebuild manifest") == 0 ) {
         info( __('Manifest created successfully') );
         clean_logs;
         draw_down_line
-          and return 1
-          if ( defined $manifest and !defined $install );
-        info( __x( "Starting installation for {ebuild}", ebuild => $ebuild ) );
+            and return 1
+            if ( defined $manifest and !defined $install );
+        info(
+            __x( "Starting installation for {ebuild}", ebuild => $ebuild ) );
         $ebuild =~ s/\.ebuild//;
         my @package = split( /\//, $ebuild );
         $ebuild = $package[0] . "/" . $package[2];
         my $specific_ebuild = "=" . $ebuild;
-        system( $password
-              . " PORTDIR_OVERLAY='"
-              . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
-              . "' emerge --onlydeps $specific_ebuild" )
-          if ( defined $install );
+        system(   $password
+                . " PORTDIR_OVERLAY='"
+                . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
+                . "' emerge --onlydeps $specific_ebuild" )
+            if ( defined $install );
         App::witchcraft->instance->emit( before_test => ($ebuild) );
 
         if (
             defined $install
             and system( $password
-                  . " PORTDIR_OVERLAY='"
-                  . App::witchcraft->instance->Config->param('GIT_REPOSITORY')
-                  . "' emerge -B  --nodeps $specific_ebuild"
+                    . " PORTDIR_OVERLAY='"
+                    . App::witchcraft->instance->Config->param(
+                    'GIT_REPOSITORY')
+                    . "' emerge -B  --nodeps $specific_ebuild"
             ) == 0
-          )
+            )
         {
             App::witchcraft->instance->emit( after_test => ($ebuild) );
             info( __x( '[{ebuild}] Installation OK', ebuild => $ebuild ) );
@@ -239,27 +238,32 @@ sub test_ebuild {
         }
         else {
             send_report(
-                __x( "Emerge failed for {ebuild}", ebuild => $specific_ebuild ),
-                __x( "Emerge failed for {ebuild}", ebuild => $specific_ebuild ),
-                join( " ", find_logs() )
-              )
-              if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
-              and
-              App::witchcraft->instance->Config->param("REPORT_TEST_FAILS") ==
-              1;
+                __x(
+                    "Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                __x(
+                    "Emerge failed for {ebuild}",
+                    ebuild => $specific_ebuild
+                ),
+                join( " ", find_logs() ) )
+                if App::witchcraft->instance->Config->param(
+                "REPORT_TEST_FAILS")
+                and
+                App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+                == 1;
             error( __("Installation failed") ) and return 0;
         }
     }
     else {
         send_report(
             __x(
-"Manifest phase failed for {ebuild} ... be more carefully next time!",
+                "Manifest phase failed for {ebuild} ... be more carefully next time!",
                 ebuild => $ebuild
-            )
-          )
-          if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
-          and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS") ==
-          1;
+            ) )
+            if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+            and App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
+            == 1;
         error( __("Manifest failed") ) and return 0;
     }
 }

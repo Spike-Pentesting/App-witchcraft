@@ -2,7 +2,7 @@ package App::witchcraft::Command::Sync;
 
 use base qw(App::witchcraft::Command);
 use App::witchcraft::Utils
-  qw(info error notice draw_up_line draw_down_line send_report stage index_sync password_dialog test_untracked);
+    qw(info error notice draw_up_line draw_down_line send_report stage index_sync password_dialog test_untracked);
 
 use warnings;
 use strict;
@@ -100,8 +100,8 @@ L<App::witchcraft>, L<App::witchcraft::Command::Euscan>
 
 sub options {
     (
-        "r|refactor=s"       => "refactor",           #Who is to refactor?
-        "t|refactortarget=s" => 'refactor_target',    #Who is the substitution?
+        "r|refactor=s"       => "refactor",          #Who is to refactor?
+        "t|refactortarget=s" => 'refactor_target',   #Who is the substitution?
         "u|update"  => "update",    #Wanna transfer directly the new files?
         "r|root=s"  => "root",      #where is the git repository?
         "i|install" => "install",
@@ -117,26 +117,27 @@ sub options {
 sub run {
     my $self    = shift;
     my @REMOTES = shift
-      // App::witchcraft->instance->Config->param('REMOTE_OVERLAY');
+        // App::witchcraft->instance->Config->param('REMOTE_OVERLAY');
     info __ "Syncing with remote repository and merging into one!";
     my $password  = password_dialog();
     my @REFACTORS = $self->{'refactor'}
-      // App::witchcraft->instance->Config->param('REFACTOR');
+        // App::witchcraft->instance->Config->param('REFACTOR');
     my @ignores;
     my $temp = $self->{'temp'}
-      // App::witchcraft->instance->Config->param('CVS_TMP');
+        // App::witchcraft->instance->Config->param('CVS_TMP');
     my $refactor_target = $self->{'refactor_target'}
-      // App::witchcraft->instance->Config->param('REFACTOR_TO');
+        // App::witchcraft->instance->Config->param('REFACTOR_TO');
     index_sync;
     tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE} or die( error $!);
     system( "rm -rf " . $temp . '*' );
     my $i = 0;
     draw_up_line;
-    send_report( __x( "Starting to sync: {remotes}", remotes => "@REMOTES" ) );
+    send_report(
+        __x( "Starting to sync: {remotes}", remotes => "@REMOTES" ) );
 
     foreach my $RepoUrl (@REMOTES) {
         App::witchcraft::Command::Clean->new
-          ->run;    #XXX: cleaning before each sync
+            ->run;    #XXX: cleaning before each sync
         $self->synchronize( $REFACTORS[$i], $refactor_target, $RepoUrl,
             $temp . int( rand(10000) ),
             $password, @ignores );
@@ -155,8 +156,8 @@ sub synchronize {
     my @ignores         = @_;
     my $add             = $self->{'ignore'} ? 1 : 0;
     chomp(@ignores);
-    my $flatten =
-      join( "|", map { $_ = quotemeta($_); $_ = qr/$_/; $_ } @ignores );
+    my $flatten
+        = join( "|", map { $_ = quotemeta($_); $_ = qr/$_/; $_ } @ignores );
     my $l_r = lc($refactor);
     my $u_r = uc($refactor);
     my $m_r = ucfirst($refactor);
@@ -165,23 +166,23 @@ sub synchronize {
     my $m_t = ucfirst($refactor_target);
     my @Installed;
     info __x( "Refactoring: {refactor}", refactor => $refactor )
-      if $self->{verbose};
+        if $self->{verbose};
     info __x( "Ignores: {ignores}", ignores => $flatten )
-      if $self->{verbose};
+        if $self->{verbose};
     sleep 2;
 
     if ( system("git ls-remote $RepoUrl") == 0 ) {
         info __x( '{url} is a git one!', url => $RepoUrl )
-          if $self->{verbose};
+            if $self->{verbose};
         git::clone $RepoUrl, $temp;
     }
     else {
         info __x( '{url} is a svn one!', url => $RepoUrl )
-          if $self->{verbose};
+            if $self->{verbose};
         system( "svn checkout -q $RepoUrl " . $temp );
     }
     info( __("Starting the refactoring/selection process") )
-      if $self->{verbose};
+        if $self->{verbose};
     finddepth(
         sub {
             my $file      = $File::Find::name;
@@ -193,7 +194,7 @@ sub synchronize {
                 unlink($file) if ( -f $file );
                 rmdir($file)  if ( -d $file );
                 error __x( "Removed: {file}", file => $file )
-                  if $self->{verbose};
+                    if $self->{verbose};
                 return;
             }
 
@@ -201,7 +202,7 @@ sub synchronize {
                 and $file_name =~ /\.ebuild$/ )
             {
                 info __x( "[File] analyzing {file} ", file => $file )
-                  if $self->{verbose};
+                    if $self->{verbose};
                 my $new_pos = $file;
 
                 # $new_pos =~ s/$l_r/$l_t/gi;
@@ -213,9 +214,9 @@ sub synchronize {
                 close FILE;
                 for (@LINES) {
                     next
-                      if (
-m!^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?!
-                      );
+                        if (
+                        m!^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?!
+                        );
                     if (/$u_r/) {
                         $_ =~ s/$u_r/$u_t/g;
                         info __x(
@@ -256,9 +257,9 @@ m!^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?!
     return if ( !$self->{update} );
     info __ "Copying content to git directory" if $self->{verbose};
     my $dir = $self->{root}
-      // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
+        // App::witchcraft->instance->Config->param('GIT_REPOSITORY');
     error __ 'No GIT_REPOSITORY defined, or --root given' and exit 1
-      if ( !$dir );
+        if ( !$dir );
     system( $self->{'ignore-existing'}
         ? "rsync --progress --ignore-existing -avp " . $temp . "/* $dir\/"
         : "rsync --progress --update -avp " . $temp . "/* $dir\/"
@@ -266,16 +267,13 @@ m!^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?!
     notice __x('Cleaning {temp} *') if $self->{verbose};
     system( "rm -rfv " . $temp . '*' );
     return if ( !$self->{install} );
-    test_untracked(
-        {
+    test_untracked( {
             dir      => $dir,
             ignore   => $add,
             password => $password,
             cb       => sub { stage(@_) }
-        }
-    ) if ( $self->{git} and !$self->{eit} );
-    test_untracked(
-        {
+        } ) if ( $self->{git} and !$self->{eit} );
+    test_untracked( {
             dir      => $dir,
             ignore   => $add,
             password => $password,
@@ -283,8 +281,7 @@ m!^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?!
                 stage(@_);
                 emit("align_to");
             }
-        }
-    ) if ( $self->{eit} );
+        } ) if ( $self->{eit} );
 }
 
 1;

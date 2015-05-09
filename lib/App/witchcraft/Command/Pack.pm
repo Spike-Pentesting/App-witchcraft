@@ -60,8 +60,7 @@ sub run {
         "One package will be built and pushed to the remote repository",
         'Emerging & Pushing {count} packages',
         scalar(@EMERGING),
-        count => scalar(@EMERGING)
-    );
+        count => scalar(@EMERGING) );
     my $cfg = App::witchcraft->instance->Config;
     notice __ 'Those are the packages that would be processed' . ":";
     draw_up_line;
