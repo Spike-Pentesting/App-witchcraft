@@ -469,7 +469,7 @@ sub daemonize() {
 
     flock( SELFLOCK, LOCK_EX | LOCK_NB )
         or die(
-        _x( "Aborting: another {program} is already running",
+        __x( "Aborting: another {program} is already running",
             program => $ProgramName )
             . "\n"
         );
