@@ -20,29 +20,38 @@ sub register {
     $emitter->on(
         "send_report_body" => sub {
             my ( $witchcraft, $message, $log ) = @_;
-            $slack->chat->post_message(
-                channel  => $emitter->Config->param('SLACK_CHANNEL'),
-                username => $emitter->Config->param('SLACK_NICK'),
-                text     => $message . ' - ' . $log,
-            );
+            eval {
+                $slack->chat->post_message(
+                    channel  => $emitter->Config->param('SLACK_CHANNEL'),
+                    username => $emitter->Config->param('SLACK_NICK'),
+                    text     => $message . ' - ' . $log,
+                );
+            };
+            warn $@ if $@;
         } );
     $emitter->on(
         "send_report_link" => sub {
             my ( $witchcraft, $message, $url ) = @_;
-            $slack->chat->post_message(
-                channel  => $emitter->Config->param('SLACK_CHANNEL'),
-                username => $emitter->Config->param('SLACK_NICK'),
-                text     => $message . ' - ' . $url,
-            );
+            eval {
+                $slack->chat->post_message(
+                    channel  => $emitter->Config->param('SLACK_CHANNEL'),
+                    username => $emitter->Config->param('SLACK_NICK'),
+                    text     => $message . ' - ' . $url,
+                );
+            };
+            warn $@ if $@;
         } );
     $emitter->on(
         "send_report_message" => sub {
             my ( $witchcraft, $message ) = @_;
-            $slack->chat->post_message(
-                channel  => $emitter->Config->param('SLACK_CHANNEL'),
-                username => $emitter->Config->param('SLACK_NICK'),
-                text     => $message,
-            );
+            eval {
+                $slack->chat->post_message(
+                    channel  => $emitter->Config->param('SLACK_CHANNEL'),
+                    username => $emitter->Config->param('SLACK_NICK'),
+                    text     => $message,
+                );
+            };
+            warn $@ if $@;
         } );
 
 }
