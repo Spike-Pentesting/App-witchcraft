@@ -19,34 +19,6 @@ sub register {
 
     $emitter->on(
         "packages.build.success" => sub {
-            if (
-                defined App::witchcraft->instance->Config->param(
-                    'KERNEL_UPGRADE')
-                and App::witchcraft->instance->Config->param('KERNEL_UPGRADE')
-                == 1 )
-            {
-
-                my ($kernel)
-                    = `equo match -q --installed virtual/linux-binary`;
-                chomp($kernel);
-                my ($current_kernel)
-                    = `equo match --installed "$kernel" -q --showslot`;
-                chomp($current_kernel);
-
-                my ($available_kernel) = `equo match "$kernel" -q --showslot`;
-                chomp($available_kernel);
-                if ( $current_kernel != $available_kernel ) {
-                    system("kernel-switcher switch $available_kernel");
-                }
-
-            }
-
-        }
-
-    );
-
-    $emitter->on(
-        "packages.build.success" => sub {
             shift;
             my ( $commit, @PACKAGES ) = @_;
             App::witchcraft->instance->emit(
@@ -89,8 +61,7 @@ sub register {
 
             send_report(
                 info(
-                    __x(
-                        "<{commit}> Pushed to repository",
+                    __x("<{commit}> Pushed to repository",
                         commit => $commit
                     ) ) );
             entropy_rescue;
@@ -100,7 +71,6 @@ sub register {
     );
     $emitter->on( "packages.build.after.compression" => sub { conf_update; }
     );
-
     $emitter->on(
         "packages.build.after.emerge" => sub {
             shift;
@@ -120,8 +90,7 @@ sub register {
             sleep 1;
             send_report(
                 info(
-                    __x(
-                        "[$commit] Compressing {count} package(s): {packages}",
+                    __x("[$commit] Compressing {count} package(s): {packages}",
                         count    => scalar(@DIFFS),
                         packages => "@DIFFS"
                     )
