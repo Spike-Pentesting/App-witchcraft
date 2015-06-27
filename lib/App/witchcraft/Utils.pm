@@ -361,6 +361,7 @@ sub log_command {
     &info("Phase: $command");
     &emit("before_$command");
     my @LOG = `$command 2>&1`;
+    print "@LOG\n" if $ENV{VERBOSE} and $ENV{VERBOSE}==1;
     if ( $? == 0 ) {
         &notice( __x( "{command} succeded", command => $command ) );
         &emit("after_$command");
