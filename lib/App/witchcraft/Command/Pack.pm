@@ -56,6 +56,8 @@ sub run {
     error __ 'You must run it with root permissions' and return 1 if $> != 0;
     my $self     = shift;
     my @EMERGING = @_;
+    error( __x("no packages to build") ) and return 1
+        if scalar(@EMERGING) == 0;
     info __xn(
         "One package will be built and pushed to the remote repository",
         'Emerging & Pushing {count} packages',
