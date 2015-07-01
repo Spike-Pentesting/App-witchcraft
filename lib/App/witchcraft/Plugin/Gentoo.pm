@@ -95,8 +95,7 @@ sub register {
             my @Failed;
             foreach my $new_pos (@Untracked) {
                 info(
-                    __x(
-                        "[{count}/{total}] Testing {atom}",
+                    __x("[{count}/{total}] Testing {atom}",
                         count => $c,
                         total => scalar(@Untracked),
                         atom  => $new_pos
@@ -121,30 +120,26 @@ sub register {
                 tie @ignores, 'Tie::File', ${App::witchcraft::IGNORE}
                     or die( error $!);
                 send_report(
-                    __(
-                        "Witchcraft need your attention, i'm asking you few questions"
+                    __( "Witchcraft need your attention, i'm asking you few questions"
                     ) );
                 foreach my $fail (@Failed) {
                     push( @ignores, $fail )
                         if (
                         dialog_yes_default(
-                            __x(
-                                "Add {failed} to the ignore list?",
+                            __x("Add {failed} to the ignore list?",
                                 failed => $fail
                             ) ) );
                 }
             }
             if ( @Installed > 0 ) {
                 &info(
-                    __(
-                        "Those files where correctly installed, maybe you wanna check them: "
+                    __( "Those files where correctly installed, maybe you wanna check them: "
                     ) );
                 my $result;
                 notice($_) and $result .= " " . $_
                     for ( uniq(@Atoms_Installed) );
                 send_report(
-                    __x(
-                        "These ebuilds where correctly installed: {result}",
+                    __x("These ebuilds where correctly installed: {result}",
                         result => $result
                     ) );
                 info( __("Generating the command for maintenance") );
@@ -157,8 +152,7 @@ sub register {
             }
             else {
                 info(
-                    __(
-                        "No files where tested because there weren't untracked files or all packages failed to install"
+                    __( "No files where tested because there weren't untracked files or all packages failed to install"
                     ) );
             }
             chdir($cwd);
@@ -172,8 +166,7 @@ sub register {
 
             my @Untracked = grep {/\.ebuild$/} @_;
             info(
-                __x(
-                    "Those are the file that would be tested: {untracked}",
+                __x("Those are the file that would be tested: {untracked}",
                     untracked => "@Untracked"
                 ) );
             clean_logs;    #spring cleaning!
@@ -202,8 +195,7 @@ sub register {
 #at this point, @DIFFS contains all the package to eit, and @TO_EMERGE, contains all the packages to ebuild.
             send_report(
                 info(
-                    __x(
-                        "[{commit}] building packages: {packages}",
+                    __x("[{commit}] building packages: {packages}",
                         commit   => $commit,
                         packages => "@DIFFS"
                     ) ) );
@@ -217,8 +209,7 @@ sub register {
                 ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
                 send_report(
-                    __x(
-                        "[{commit}] Build completed for: {diffs}",
+                    __x("[{commit}] Build completed for: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
                     ) );
@@ -229,8 +220,7 @@ sub register {
             if ( ( exists $options->{relaxed} and $options->{relaxed} == 1 ) )
             {
                 send_report(
-                    __x(
-                        "[{commit}] Merged: {merged} | Unmerged: {unmerged}",
+                    __x("[{commit}] Merged: {merged} | Unmerged: {unmerged}",
                         commit   => $commit,
                         merged   => "@merged",
                         unmerged => "@unmerged"
@@ -239,13 +229,15 @@ sub register {
 
             if ( $build_status == BUILD_FAILED ) {
                 send_report(
-                    __x(
-                        "[{commit}] Failed: {diffs}",
+                    __x("[{commit}] Failed: {diffs}",
                         commit => $commit,
                         diffs  => "@DIFFS"
                     ) );
-                $on_failed->(@DIFFS) if defined $on_failed;
                 emit( "packages.build.failed" => ( $commit, @DIFFS ) );
+                $on_failed->(@DIFFS) if defined $on_failed;
+                exit(1)
+                    if ($ENV{BUILDS_FAIL_EXITS}
+                    and $ENV{BUILDS_FAIL_EXITS} == 1 );
             }
         } );
 }
@@ -297,16 +289,14 @@ sub _emerge(@) {
         emit( "package.$atom.before.build" => ( $atom, $package, $commit ) )
             if ( $follow_revision == 0 );
 
-        if (
-            log_command(
+        if (log_command(
                 "nice -20 emerge --color n -v $emerge_options $package  2>&1")
             )
         {
             push( @merged, $package );
             send_report(
                 info(
-                    __x(
-                        "{package} builded successfully",
+                    __x("{package} builded successfully",
                         package => $package
                     ) ) );
             emit( "package.$atom.after.build.success" =>

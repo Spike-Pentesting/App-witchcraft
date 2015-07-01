@@ -52,8 +52,6 @@ sub on_load {
     $self->load_plugins;
 
     # ENV overrides
-    $self->Config->param( 'GIT_REPOSITORY', $ENV{GIT_REPOSITORY} )
-        if $ENV{GIT_REPOSITORY};
     $self->Config->param( 'FOLLOW_VERSIONING', $ENV{FOLLOW_VERSIONING} )
         if $ENV{FOLLOW_VERSIONING};
     $self->Config->param( 'GIT_REPOSITORY', $ENV{GIT_REPOSITORY} )
