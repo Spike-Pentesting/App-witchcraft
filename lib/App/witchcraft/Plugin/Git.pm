@@ -27,8 +27,7 @@ sub register {
             }
             else {
                 notice(
-                    __x(
-                        "Git pull for [{repository}]",
+                    __x("Git pull for [{repository}]",
                         repository =>
                             App::witchcraft->instance->Config->param(
                             'GIT_REPOSITORY') ) );
@@ -46,8 +45,7 @@ sub register {
                 eval { git::add $atom; };
                 if ($@) {
                     send_report(
-                        __x(
-                            "Error indexing {atom} to remote repository",
+                        __x("Error indexing {atom} to remote repository",
                             atom => $atom
                         ),
                         $@
@@ -62,8 +60,7 @@ sub register {
                 };
                 if ($@) {
                     send_report(
-                        __x(
-                            "Error committing {atom} to remote repository",
+                        __x("Error committing {atom} to remote repository",
                             atom => $atom
                         ),
                         $@
@@ -77,8 +74,7 @@ sub register {
                 eval { git::push; };
                 if ($@) {
                     send_report(
-                        __x(
-                            "Error pushin {atom} to remote repository",
+                        __x("Error pushin {atom} to remote repository",
                             atom => $atom
                         ),
                         $@
@@ -109,6 +105,7 @@ sub register {
             shift;
             emit "index_sync";
             my $last_commit = shift // compiled_commit();
+            my $to_commit   = shift // "master";
             error(
                 __('No compiled commit could be found, you must specify it') )
                 and return 1
@@ -131,8 +128,7 @@ sub register {
                         join(
                             "\n",
                             info(
-                                __x(
-                                    '[{local_commit}...{last_commit}] Rebase or invalid commit hash detected, {commit_ahead} commit(s) ahead, spawning build',
+                                __x('[{local_commit}...{last_commit}] Rebase or invalid commit hash detected, {commit_ahead} commit(s) ahead, spawning build',
                                     local_commit => $last_commit,
                                     last_commit  => $git_last_commit,
                                     commit_ahead => $commit_ahead
@@ -157,7 +153,9 @@ sub register {
                     emit(
                         "packages.from_diff" => (
                             $last_commit,
-                            git::diff( $last_commit, '--name-only' ) ) );
+                            git::diff(
+                                $last_commit, $to_commit, '--name-only'
+                            ) ) );
 
                 }
                 else {
@@ -165,15 +163,16 @@ sub register {
                         join(
                             "\n",
                             info(
-                                __x(
-                                    '[{local_commit}...{last_commit}] Spawning build "{last_commit}"',
+                                __x('[{local_commit}...{last_commit}] Spawning build "{last_commit}"',
                                     local_commit => $last_commit,
                                     last_commit  => $git_last_commit
                                 ) ) ) );
                     emit(
                         "packages.from_diff" => (
                             $last_commit,
-                            git::diff( $last_commit, '--name-only' ) ) );
+                            git::diff(
+                                $last_commit, $to_commit, '--name-only'
+                            ) ) );
                 }
             }
             else {

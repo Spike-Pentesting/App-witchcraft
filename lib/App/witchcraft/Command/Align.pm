@@ -57,7 +57,8 @@ sub run {
         if $> != 0;
     my $self        = shift;
     my $last_commit = shift;
-    emit( "align_to" => $last_commit );
+    my $to          = shift;
+    emit( "align_to" => $last_commit, $to );
 }
 
 1;

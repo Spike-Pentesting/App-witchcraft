@@ -50,9 +50,21 @@ sub emit {
 sub on_load {
     my $self = shift;
     $self->load_plugins;
+
+    # ENV overrides
+    $self->Config->param( 'GIT_REPOSITORY', $ENV{GIT_REPOSITORY} )
+        if $ENV{GIT_REPOSITORY};
+    $self->Config->param( 'FOLLOW_VERSIONING', $ENV{FOLLOW_VERSIONING} )
+        if $ENV{FOLLOW_VERSIONING};
+    $self->Config->param( 'GIT_REPOSITORY', $ENV{GIT_REPOSITORY} )
+        if $ENV{GIT_REPOSITORY};
+    $self->Config->param( 'OVERLAY_NAME', $ENV{OVERLAY_NAME} )
+        if $ENV{OVERLAY_NAME};
+
     daemonize
         if $self->Config->param("DAEMON")
         and $self->Config->param("DAEMON") == 1;
+
 }
 
 sub load_plugins {
