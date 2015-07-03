@@ -3,8 +3,8 @@ use Locale::TextDomain 'App-witchcraft';
 
 use Deeme::Obj -base;
 use IO::Socket::INET;
+use Child;
 use App::witchcraft::Utils qw(info error notice send_report truncate_words);
-use forks;
 use constant DEBUG => $ENV{DEBUG} || 0;
 
 has [qw (irc thread)];
@@ -35,8 +35,11 @@ sub register {
             $self->irc_msg($_) for truncate_words( $message, 300 );
         } );
 
-    $emitter->on( "on_exit"  => sub { $emitter->emit("irc_exit") } );
-    $emitter->on( "irc_exit" => sub { $self->thread->kill('SIGUSR1') } );
+    $emitter->on( "on_exit" => sub { $emitter->emit("irc_exit") } );
+    $emitter->on(
+        "irc_exit" => sub {    # Kill the child if it is not done
+            $self->thread->is_complete || $self->thread->kill(9);
+        } );
 
 }
 
@@ -78,12 +81,25 @@ sub _handle {
     my $socket   = $self->irc;
     printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
-    my $thr = threads->new(
+
+    my $child = Child->new(
         sub {
             local $SIG{USR1}
-                = sub { printf $socket "QUIT\r\n"; threads->exit };
+                = sub { printf $socket "QUIT\r\n"; exit() };
             while ( my $line = <$socket> ) {
                 print $line if DEBUG;
+                ## Nick Event ##
+
+                if ( $line =~ m/^\:(.+?)\s+433/i ) {
+                    printf $socket "NICK "
+                        . $cfg->param('IRC_NICKNAME')
+                        . int( rand(989328) ) . "\n";
+                }
+                if ( $line =~ m/^\:(.+?)\s+431/i ) {
+                    printf $socket "NICK "
+                        . $cfg->param('IRC_NICKNAME')
+                        . int( rand(989328) ) . "\n";
+                }
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";
                 }
@@ -93,8 +109,8 @@ sub _handle {
             }
             $socket->close if ( defined $socket );
         } );
-    $thr->detach;
-    $self->thread($thr);
+    my $proc = $child->start;
+    $self->thread($proc);
 }
 
 sub irc_msg_join_part {
@@ -129,8 +145,7 @@ sub irc_msg_join_part {
             foreach my $chan (@channels) {
                 printf $socket "JOIN $chan\r\n";
                 info(
-                    __x(
-                        "Joining {chan} on {server}",
+                    __x("Joining {chan} on {server}",
                         chan   => $chan,
                         server => $cfg->param('IRC_SERVER') ) ) if DEBUG;
                 printf $socket "PRIVMSG $chan :$_\r\n" and sleep 2

@@ -152,8 +152,7 @@ sub last_md5() {
         or (
         &send_report(
             __("Can't access to last compiled packages md5"),
-            __x(
-                'Can\'t open {md5} -> {error}',
+            __x('Can\'t open {md5} -> {error}',
                 md5 =>
                     App::witchcraft->instance->Config->param('MD5_PACKAGES'),
                 error => $!
@@ -181,8 +180,8 @@ sub find_ext($$) {
     my $dir = shift;
     my $ext = shift;
     my @EBUILDS;
-    find( {
-            wanted => sub { push @EBUILDS, $_ if $_ =~ /\.$ext$/ },
+    find(
+        {   wanted => sub { push @EBUILDS, $_ if $_ =~ /\.$ext$/ },
             no_chdir => 1
         },
         $dir
@@ -247,8 +246,7 @@ sub last_manual_build() {
         or (
         &send_report(
             __("Can't access to last compiled packages md5"),
-            __x(
-                'Can\'t open {md5} -> {error}',
+            __x('Can\'t open {md5} -> {error}',
                 md5 =>
                     App::witchcraft->instance->Config->param('MD5_PACKAGES'),
                 error => $!
@@ -361,7 +359,7 @@ sub log_command {
     &info("Phase: $command");
     &emit("before_$command");
     my @LOG = `$command 2>&1`;
-    print "@LOG\n" if $ENV{VERBOSE} and $ENV{VERBOSE}==1;
+    print "@LOG\n" if $ENV{VERBOSE} and $ENV{VERBOSE} == 1;
     if ( $? == 0 ) {
         &notice( __x( "{command} succeded", command => $command ) );
         &emit("after_$command");
@@ -419,9 +417,7 @@ The @lines where successfully posted, $link is the url of the nopaste
 #usage send_report("Message Title", @_);
 sub send_report {
     my $message = shift;
-    return undef
-        unless ( App::witchcraft->instance->Config->param('ALERT_BULLET')
-        or App::witchcraft->instance->Config->param('IRC_CHANNELS') );
+
     &notice(">> $message ");
 
     #  &info( 'Sending ' . $message );
@@ -430,11 +426,12 @@ sub send_report {
     if (@_) {
         my $log = join( "\n", @_ );
 
-        #   &notice( 'Attachment ' . $log );
+        &notice($log)
+            if ( exists $ENV{VERBOSE} and $ENV{VERBOSE} == 1 );
         my $url;
         eval {
             $url = nopaste(
-                text          => $log,
+                text          => $message . "\n@@@@@@@@@@@@@@@@@@@ Attachment @@@@@@@@@@@@@@@@@@@\n" . $log,
                 private       => 1,
                 error_handler => sub {
                     my ( $error, $service ) = @_;
@@ -507,8 +504,7 @@ sub password_dialog {
     chomp( my $password = <STDIN> );
     ReadMode(0);           # back to normal
     &notice(
-        __(
-            "Note: ensure to give the right password, or install tests would fail"
+        __( "Note: ensure to give the right password, or install tests would fail"
         ) );
     $password = &password_dialog
         unless (
@@ -521,10 +517,8 @@ sub uniq {
 }
 
 sub vagrant_box_status {
-    (
-        split /,/,    #splitting --machine-readable output
-        (
-            &vagrant_box_cmd( "status --machine-readable",
+    (   split /,/,    #splitting --machine-readable output
+        (   &vagrant_box_cmd( "status --machine-readable",
                 shift )    #taking just the output, ignoring the return status
             )[1]->[1]      # the second line of the output contain the status
     )[3];                  #the third column has the status
