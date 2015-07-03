@@ -22,7 +22,6 @@ requires 'Regexp::Common';
 requires 'Term::ANSIColor';
 requires 'Term::ReadKey';
 requires 'WebService::Slack::WebApi';
-requires 'forks';
 requires 'perl', '5.008_005';
 
 on configure => sub {
