@@ -49,7 +49,6 @@ sub emit {
 
 sub on_load {
     my $self = shift;
-    $self->load_plugins;
 
     # ENV overrides
     foreach my $param (
@@ -59,7 +58,7 @@ sub on_load {
         $self->Config->param( $param, $ENV{$param} )
             if $ENV{$param};
     }
-
+    $self->load_plugins;
     daemonize
         if $self->Config->param("DAEMON")
         and $self->Config->param("DAEMON") == 1;
