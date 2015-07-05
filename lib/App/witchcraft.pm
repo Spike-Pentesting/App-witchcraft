@@ -52,12 +52,13 @@ sub on_load {
     $self->load_plugins;
 
     # ENV overrides
-    $self->Config->param( 'FOLLOW_VERSIONING', $ENV{FOLLOW_VERSIONING} )
-        if $ENV{FOLLOW_VERSIONING};
-    $self->Config->param( 'GIT_REPOSITORY', $ENV{GIT_REPOSITORY} )
-        if $ENV{GIT_REPOSITORY};
-    $self->Config->param( 'OVERLAY_NAME', $ENV{OVERLAY_NAME} )
-        if $ENV{OVERLAY_NAME};
+    foreach my $param (
+        qw( FOLLOW_VERSIONING GIT_REPOSITORY OVERLAY_NAME IRC_SERVER IRC_PORT IRC_CHANNELS IRC_NICKNAME IRC_IDENT IRC_REALNAME)
+        )
+    {
+        $self->Config->param( $param, $ENV{$param} )
+            if $ENV{$param};
+    }
 
     daemonize
         if $self->Config->param("DAEMON")
