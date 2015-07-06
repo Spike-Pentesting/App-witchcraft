@@ -50,14 +50,12 @@ sub bump {
         if ( !defined $last );
     my $source = join( '/', $atom, $last );
     notice(
-        __x(
-            'Using =====> {ebuild} <===== as a skeleton for the new version',
+        __x('Using =====> {ebuild} <===== as a skeleton for the new version',
             ebuild => $last
         ) );
     notice( __("Copying") );
     send_report(
-        __x(
-            "Automatic bump: {atom} -> {updated}",
+        __x("Automatic bump: {atom} -> {updated}",
             atom    => $atom,
             updated => $updated
         ) );
@@ -173,11 +171,12 @@ sub calculate_missing($$) {
     return @to_install;
 }
 
-sub depgraph($$) {
+sub depgraph {
     my $package = shift;
     my $depth   = shift;
+    my $atom    = shift // 0;
     return
-        map { $_ =~ s/\[.*\]|\s//g; &atom($_); $_ }
+        map { $_ =~ s/\[.*\]|\s//g; &atom($_) if $atom; $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
 }
 
@@ -222,8 +221,7 @@ sub test_ebuild {
             if ( defined $install );
         App::witchcraft->instance->emit( before_test => ($ebuild) );
 
-        if (
-            defined $install
+        if (defined $install
             and system( $password
                     . " PORTDIR_OVERLAY='"
                     . App::witchcraft->instance->Config->param(
@@ -238,12 +236,10 @@ sub test_ebuild {
         }
         else {
             send_report(
-                __x(
-                    "Emerge failed for {ebuild}",
+                __x("Emerge failed for {ebuild}",
                     ebuild => $specific_ebuild
                 ),
-                __x(
-                    "Emerge failed for {ebuild}",
+                __x("Emerge failed for {ebuild}",
                     ebuild => $specific_ebuild
                 ),
                 join( " ", find_logs() ) )
@@ -257,8 +253,7 @@ sub test_ebuild {
     }
     else {
         send_report(
-            __x(
-                "Manifest phase failed for {ebuild} ... be more carefully next time!",
+            __x("Manifest phase failed for {ebuild} ... be more carefully next time!",
                 ebuild => $ebuild
             ) )
             if App::witchcraft->instance->Config->param("REPORT_TEST_FAILS")
