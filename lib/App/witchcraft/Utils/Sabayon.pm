@@ -2,7 +2,7 @@ package App::witchcraft::Utils::Sabayon;
 use base qw(Exporter);
 our @EXPORT = ();
 our @EXPORT_OK
-    = qw(calculate_missing conf_update  list_available remove_available entropy_rescue entropy_update);
+    = qw(calculate_missing conf_update  list_available remove_available entropy_rescue entropy_update dependencies_not_in_entropy);
 use Locale::TextDomain 'App-witchcraft';
 use constant DEBUG => $ENV{DEBUG} || 0;
 
@@ -76,8 +76,7 @@ sub emerge(@) {
 
     #XXX: emerge 1 a 1
     foreach my $package (@DIFFS) {
-        if (
-            log_command(
+        if (log_command(
                 "nice -20 emerge --color n -v -B $emerge_options $package  2>&1"
             ) )
         {
@@ -115,8 +114,7 @@ sub emerge(@) {
                 if ( log_command("eit push --quick") ) {
                     info( __("All went smooth, HURRAY!") );
                     send_report(
-                        __(
-                            "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
+                        __( "All went smooth, HURRAY! do an equo up to checkout the juicy stuff"
                         ) );
                     App::witchcraft->instance->emit( after_push => (@DIFFS) );
                     $rs = 1;
@@ -126,8 +124,7 @@ sub emerge(@) {
             }
             else {
                 send_report(
-                    __(
-                        "Error in compression phase, you have to manually solve it"
+                    __( "Error in compression phase, you have to manually solve it"
                     ),
                     $out, $err
                 );
@@ -157,8 +154,7 @@ sub calculate_missing($$) {
     my $depth    = shift;
     my @Packages = depgraph( $package, $depth );    #depth=0 it's all
     info(
-        __x(
-            "{package}: has {deps} dependencies ",
+        __x("{package}: has {deps} dependencies ",
             package => $package,
             deps    => scalar(@Packages) ) );
     my @Installed_Packages = qx/equo q -q list installed/;
@@ -214,8 +210,7 @@ sub process(@) {
             @DIFFS );
         if ( &emerge( {}, @DIFFS ) ) {
             &send_report(
-                __x(
-                    "<{commit}> Compiled: {diffs}",
+                __x("<{commit}> Compiled: {diffs}",
                     commit => $commit,
                     diffs  => "@DIFFS"
                 ) );
@@ -228,6 +223,19 @@ sub process(@) {
             }
         }
     }
+}
+
+sub dependencies_not_in_entropy {
+    my @packages = @_;
+    my @result;
+    my @repos = qx|equo repo list -q|;
+    chomp(@repos);
+    my @other_repos_packages
+        = list_available( { "-q" => "", "-v" => "" }, @repos );
+    foreach my $pack (@packages) {
+        push( @result, $pack ) if ( !grep {$_ =~ $pack} @other_repos_packages );
+    }
+    return @result;
 }
 
 sub list_available {
