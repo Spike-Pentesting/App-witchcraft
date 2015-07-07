@@ -59,15 +59,16 @@ sub irc_msg {
 }
 
 sub _connect {
-    my $cfg    = App::witchcraft->instance->Config;
     my $self   = shift;
+    my $cfg    = App::witchcraft->instance->Config;
     my $socket = IO::Socket::INET->new(
         PeerAddr => $cfg->param('IRC_SERVER'),
         PeerPort => $cfg->param('IRC_PORT'),
         Proto    => "tcp",
         Timeout  => 10
-    );
-    $socket->autoflush(1) if $socket;
+    )or (error( _x("Couldn't connect to the irc server: {error}", error=> $!) )
+        and return undef);
+    $socket->autoflush(1);
     return $socket;
 }
 
@@ -100,9 +101,13 @@ sub _handle {
                         . $cfg->param('IRC_NICKNAME')
                         . int( rand(989328) ) . "\n";
                 }
+                
+                ## Ping event ##
                 if ( $line =~ /^PING \:(.*)/ ) {
                     print $socket "PONG :$1\n";
                 }
+                
+                ## Ready to join ##
                 if ( $line =~ m/^\:(.+?)\s+376/i ) {
                     printf $socket "JOIN $_\r\n" for @channels;
                 }
@@ -114,24 +119,16 @@ sub _handle {
 }
 
 sub irc_msg_join_part {
-    shift;
+    my $self=shift;
     my @MESSAGES = map { $_ =~ s/\n/ /g; $_ } @_;
     my $cfg = App::witchcraft->instance->Config;
     return undef unless ( defined $cfg->param('IRC_IDENT') );
     my $ident    = $cfg->param('IRC_IDENT');
     my $realname = $cfg->param('IRC_REALNAME');
     my @channels = $cfg->param('IRC_CHANNELS');
-    my $socket   = IO::Socket::INET->new(
-        PeerAddr => $cfg->param('IRC_SERVER'),
-        PeerPort => $cfg->param('IRC_PORT'),
-        Proto    => "tcp",
-        Timeout  => 10
-        )
-        or error( __ "Couldn't connect to the irc server" )
-        and return undef;
-    info( __ "Sending notification also on IRC" ) if DEBUG;
+    my $socket   = $self->_connect();
     return undef unless $socket;
-    $socket->autoflush(1);
+        info( __ "Sending notification also on IRC" ) if DEBUG;
     sleep 2;
     printf $socket "NICK " . $cfg->param('IRC_NICKNAME') . "\r\n";
     printf $socket "USER $ident $ident $ident $ident :$realname\r\n";
@@ -158,7 +155,6 @@ sub irc_msg_join_part {
         }
     }
     $socket->close if ( defined $socket );
-
 }
 
 1;
