@@ -174,7 +174,8 @@ sub calculate_missing($$) {
 sub depgraph {
     my $package = shift;
     my $depth   = shift;
-    my $atom    = shift // 0;
+    my $atom    = shift
+        // App::witchcraft->instance->Config->param("DEPGRAPH_ATOM") // 0;
     return
         map { $_ =~ s/\[.*\]|\s//g; &atom($_) if $atom; $_ }
         qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
