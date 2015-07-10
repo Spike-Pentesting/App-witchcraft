@@ -5,7 +5,7 @@ use Deeme::Obj -base;
 use App::witchcraft;
 use App::witchcraft::Utils
     qw(info error notice append spurt chwn uniq log_command send_report);
-
+use App::witchcraft::Utils::Gentoo qw(atom);
 use App::witchcraft::Utils::Sabayon
     qw(entropy_update conf_update calculate_missing dependencies_not_in_entropy);
 
@@ -21,6 +21,15 @@ sub register {
 
             #reticulating splines here...
             push( @equo_install, &calculate_missing( $_, 1 ) ) for @_;
+            if ( App::witchcraft->instance->Config->param("FOLLOW_VERSIONING")
+                and
+                App::witchcraft->instance->Config->param("FOLLOW_VERSIONING")
+                == 1
+                and @equo_install == 0 )
+            {
+                push( @equo_install, &calculate_missing( $_, 1 ) )
+                    for map { atom($_); $_ =~ s/\=//g; $_ } @_;
+            }
             @equo_install = uniq(@equo_install);
             my @not_in_entropy = dependencies_not_in_entropy(@equo_install);
             return 0 if ( @equo_install == 0 );
