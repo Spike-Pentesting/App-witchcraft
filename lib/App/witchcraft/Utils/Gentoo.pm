@@ -173,12 +173,12 @@ sub calculate_missing($$) {
 
 sub depgraph {
     my $package = shift;
-    my $depth   = shift;
+    my $depth   = shift // 1;
     my $atom    = shift
         // App::witchcraft->instance->Config->param("DEPGRAPH_ATOM") // 0;
     return
-        map { $_ =~ s/\[.*\]|\s//g; &atom($_) if $atom; $_ }
-        qx/equery -C -q g --depth=$depth $package/;    #depth=0 it's all
+        map{ $_=~s/^.*\]|\s|\n//g; &atom($_) if $atom; $_ } grep{/\]/}
+        qx/emerge -poq --color n $package/;    #depth=0 it's all
 }
 
 sub conf_update {
